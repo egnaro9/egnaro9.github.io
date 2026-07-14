@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Erik Hill - agentic systems engineer. An autonomous development harness: a self-reviewing loop, a differential oracle, and a human-in-the-loop autonomy ladder.">
+<title>Erik Hill — Agentic Systems Engineer</title>
+<style>
+  :root {
+    --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
+    --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
+    --amber:#f2a53c; --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --maxw:880px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --ink:#e9edee; --panel:#f4f6f6; --raised:#ffffff;
+      --line:rgba(12,26,32,.12); --line-2:rgba(12,26,32,.07);
+      --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
+      --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
+      --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
+    --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
+    --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12);
+  }
+  :root[data-theme="light"]{
+    --ink:#e9edee; --panel:#f4f6f6; --raised:#ffffff;
+    --line:rgba(12,26,32,.12); --line-2:rgba(12,26,32,.07);
+    --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
+    --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
+    --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0}
+  .wrap{
+    background:var(--ink); color:var(--fg); font-family:var(--sans);
+    font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+    background-image:
+      linear-gradient(var(--line-2) 1px,transparent 1px),
+      linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:34px 34px; background-position:center top;
+    padding:0 20px 72px;
+  }
+  .col{max-width:var(--maxw); margin:0 auto}
+
+  .label{font-family:var(--mono); font-size:11.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--amber-ink)}
+  .label .tick{color:var(--fg-faint)}
+  h2{font-family:var(--mono); font-weight:600; font-size:clamp(20px,3.4vw,26px); letter-spacing:-.01em; margin:.5rem 0 0; text-wrap:balance; color:var(--fg)}
+  p{color:var(--fg-dim); max-width:64ch}
+  strong{color:var(--fg); font-weight:600}
+  a{color:var(--amber-ink); text-decoration:none}
+  a:focus-visible{outline:2px solid var(--amber-ink); outline-offset:3px; border-radius:3px}
+
+  /* ---- hero ---- */
+  header{padding:76px 0 34px; border-bottom:1px solid var(--line)}
+  .eye{font-family:var(--mono); font-size:12px; letter-spacing:.28em; text-transform:uppercase; color:var(--amber-ink); display:flex; align-items:center; gap:10px}
+  .eye::before{content:""; width:26px; height:1px; background:var(--amber-line)}
+  h1{font-family:var(--mono); font-weight:600; font-size:clamp(38px,9vw,74px); line-height:.98; letter-spacing:-.02em; margin:18px 0 0; color:var(--fg)}
+  .thesis{font-family:var(--sans); font-size:clamp(19px,3.2vw,25px); line-height:1.34; color:var(--fg); max-width:20ch; margin:24px 0 0; font-weight:450; text-wrap:balance}
+  .thesis b{color:var(--amber-ink); font-weight:600}
+  .lede{margin:20px 0 0; max-width:60ch}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:26px}
+  .chip{font-family:var(--mono); font-size:12.5px; color:var(--fg-dim); border:1px solid var(--line); background:var(--panel); padding:7px 12px; border-radius:2px; display:inline-flex; align-items:center; gap:7px}
+  .chip a{color:var(--fg)}
+  .chip .dot{width:6px; height:6px; border-radius:50%; background:var(--teal)}
+
+  section{padding:44px 0; border-bottom:1px solid var(--line)}
+  .intro{color:var(--fg-dim); margin-top:12px}
+
+  /* ---- pipeline ---- */
+  .pipe-scroll{overflow-x:auto; margin-top:26px; padding-bottom:6px}
+  .pipe{position:relative; display:grid; grid-template-columns:repeat(5,1fr); gap:0; min-width:560px}
+  .pipe::before{content:""; position:absolute; left:8%; right:8%; top:26px; height:2px; background:var(--line); z-index:0}
+  .signal{position:absolute; top:22px; left:8%; width:10px; height:10px; border-radius:50%; background:var(--amber-ink); box-shadow:0 0 0 4px var(--amber-soft); z-index:2; animation:flow 5.5s cubic-bezier(.6,0,.4,1) infinite}
+  @keyframes flow{
+    0%{left:8%; opacity:0}
+    6%{opacity:1}
+    92%{opacity:1}
+    100%{left:92%; opacity:0}
+  }
+  .node{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:0 6px}
+  .node .bead{width:14px; height:14px; border-radius:50%; background:var(--raised); border:2px solid var(--amber-line); margin-top:20px}
+  .node .nlab{font-family:var(--mono); font-size:12.5px; color:var(--fg); font-weight:600}
+  .node .nsub{font-size:11px; color:var(--fg-faint); font-family:var(--mono); letter-spacing:.02em}
+  .pipe-note{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px 26px; margin-top:30px}
+  .pipe-note div{border-left:2px solid var(--amber-line); padding-left:14px}
+  .pipe-note b{display:block; font-family:var(--mono); font-size:12.5px; color:var(--fg); margin-bottom:3px; letter-spacing:.02em}
+  .pipe-note span{font-size:14px; color:var(--fg-dim)}
+
+  /* ---- oracle callout ---- */
+  .oracle{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--amber-ink); border-radius:3px; padding:26px 26px 22px; margin-top:22px}
+  .oracle .big{font-family:var(--sans); font-size:clamp(18px,2.6vw,21px); color:var(--fg); font-weight:500; margin:0; max-width:52ch; line-height:1.4}
+  .oracle .big em{font-style:normal; color:var(--amber-ink)}
+  .diff{display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:22px; font-family:var(--mono); font-size:13px}
+  .impl{border:1px solid var(--line); background:var(--raised); padding:9px 14px; border-radius:2px; color:var(--fg)}
+  .eq{color:var(--fg-faint)}
+  .verdict{color:var(--teal); border:1px solid var(--teal); background:var(--teal-soft); padding:9px 14px; border-radius:2px; display:inline-flex; gap:8px; align-items:center}
+  .verdict .v{width:7px; height:7px; border-radius:50%; background:var(--teal)}
+
+  /* ---- ladder ---- */
+  .ladder{margin-top:24px; display:flex; flex-direction:column; gap:1px; border:1px solid var(--line); border-radius:3px; overflow:hidden}
+  .rung{display:grid; grid-template-columns:64px 1fr auto; align-items:center; gap:16px; padding:14px 18px; background:var(--panel)}
+  .rung .lv{font-family:var(--mono); font-size:14px; font-weight:600; color:var(--fg-faint)}
+  .rung .rt{font-size:14.5px; color:var(--fg-dim)}
+  .rung .rt b{color:var(--fg)}
+  .rung .tag{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-faint); border:1px solid var(--line); padding:3px 8px; border-radius:2px; white-space:nowrap}
+  .rung.here{background:var(--amber-soft)}
+  .rung.here .lv{color:var(--amber-ink)}
+  .rung.here .tag{color:var(--amber-ink); border-color:var(--amber-line)}
+  .ladder-note{font-family:var(--mono); font-size:12.5px; color:var(--fg-faint); margin-top:14px; letter-spacing:.01em}
+  .ladder-note b{color:var(--amber-ink); font-weight:600}
+
+  /* ---- stack ---- */
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:22px 30px; margin-top:22px}
+  .grid2 h3{font-family:var(--mono); font-size:12.5px; letter-spacing:.06em; color:var(--amber-ink); margin:0 0 8px; text-transform:uppercase}
+  .grid2 ul{margin:0; padding:0; list-style:none}
+  .grid2 li{font-size:14.5px; color:var(--fg-dim); padding:5px 0; border-bottom:1px solid var(--line-2)}
+  .grid2 li:last-child{border-bottom:0}
+
+  /* ---- path + cta ---- */
+  .path p{font-size:clamp(17px,2.5vw,20px); color:var(--fg); max-width:56ch; line-height:1.5}
+  .path p b{color:var(--amber-ink)}
+  footer{padding:44px 0 0; text-align:center}
+  .cta{display:inline-flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:8px}
+  .btn{font-family:var(--mono); font-size:13.5px; padding:12px 20px; border-radius:2px; border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft); transition:background .15s}
+  .btn.ghost{border-color:var(--line); color:var(--fg-dim); background:transparent}
+  @media (hover:hover){.btn:hover{background:var(--amber-ink); color:var(--ink)} .btn.ghost:hover{color:var(--fg); border-color:var(--fg-dim)}}
+  .foot-note{font-family:var(--mono); font-size:11px; color:var(--fg-faint); letter-spacing:.14em; text-transform:uppercase; margin-top:34px}
+
+  @media (max-width:560px){
+    header{padding:52px 0 28px}
+    .rung{grid-template-columns:44px 1fr; }
+    .rung .tag{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .signal{animation:none; opacity:1; left:50%}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<div class="col">
+
+  <header>
+    <div class="eye">Agentic Systems Engineer</div>
+    <h1>Erik Hill</h1>
+    <p class="thesis">I build agentic systems that <b>check their own work</b> — and keep a human on every step that can't be undone.</p>
+    <p class="lede">Self-taught in four months. I designed and built a full autonomous development harness: a multi-agent loop that plans, executes, critiques, and validates its own changes to a shipping React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it.</p>
+    <div class="meta">
+      <span class="chip"><span class="dot"></span>Charleston, SC · Remote (US)</span>
+      <span class="chip"><a href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a></span>
+      <span class="chip"><a href="https://www.linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">linkedin.com/in/erik-hill-98895575</a></span>
+    </div>
+  </header>
+
+  <section>
+    <div class="label"><span class="tick">//</span> Pipeline</div>
+    <h2>A loop that reviews itself before it ships</h2>
+    <p class="intro">Work moves through five stages. Each hands off to the next automatically — no manual relaunch — and judgment runs on a different, colder model than execution, so the critic isn't grading its own homework.</p>
+
+    <div class="pipe-scroll">
+      <div class="pipe" role="img" aria-label="Pipeline: Strategy to Execution to Critic to Evaluation to Ops">
+        <div class="signal" aria-hidden="true"></div>
+        <div class="node"><span class="bead"></span><span class="nlab">Strategy</span><span class="nsub">plan</span></div>
+        <div class="node"><span class="bead"></span><span class="nlab">Execution</span><span class="nsub">build</span></div>
+        <div class="node"><span class="bead"></span><span class="nlab">Critic</span><span class="nsub">review</span></div>
+        <div class="node"><span class="bead"></span><span class="nlab">Evaluation</span><span class="nsub">verify</span></div>
+        <div class="node"><span class="bead"></span><span class="nlab">Ops</span><span class="nsub">ship</span></div>
+      </div>
+    </div>
+
+    <div class="pipe-note">
+      <div><b>Per-role model routing</b><span>Reasoning-heavy judgment and routine execution run on different models, matched to the job.</span></div>
+      <div><b>Hook-based handoff</b><span>Stages arm the next leg on their own — the loop advances without a human babysitting it.</span></div>
+      <div><b>Cold, independent critic</b><span>Review runs in fresh context so it catches what the builder rationalized away.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="label"><span class="tick">//</span> The Oracle</div>
+    <h2>Correctness it can prove — not vibe-check</h2>
+    <div class="oracle">
+      <p class="big">The same game logic runs in <em>two independent implementations</em> — a React build and a native engine. Logic-invariant tests hold both to the same rules, so a regression in one is caught by the other <em>before it ships</em>.</p>
+      <div class="diff">
+        <span class="impl">React implementation</span>
+        <span class="eq">≟ must agree ≟</span>
+        <span class="impl">Native engine</span>
+        <span class="verdict"><span class="v"></span>differential oracle</span>
+      </div>
+    </div>
+    <p class="intro" style="margin-top:20px">On top of the differential check: invariant enforcement on the core game rules, plus on-device validation driven by adb automation — so &quot;it passed&quot; means it passed on real hardware, not just in a mock.</p>
+  </section>
+
+  <section>
+    <div class="label"><span class="tick">//</span> Autonomy Ladder</div>
+    <h2>Automate the launches. Never the approval.</h2>
+    <p class="intro">Trust is earned in named steps. Higher rungs remove <em>clicks</em>, never <em>gates</em> — a human still approves anything irreversible or outward-facing (deploys, commits, anything a user would see).</p>
+
+    <div class="ladder" role="list">
+      <div class="rung" role="listitem"><span class="lv">L4</span><span class="rt"><b>Lights-out</b> — a doctrine amendment, not a default. Operator's call, never self-granted.</span><span class="tag">gated</span></div>
+      <div class="rung" role="listitem"><span class="lv">L3</span><span class="rt"><b>Auto-advance launches</b> — the safe clicks fire on their own; write-gates still stop for a human.</span><span class="tag">gated</span></div>
+      <div class="rung here" role="listitem"><span class="lv">L2</span><span class="rt"><b>Hands-off relay</b> — the loop chains itself end to end; every irreversible act still waits for approval.</span><span class="tag">◀ current</span></div>
+      <div class="rung" role="listitem"><span class="lv">L1</span><span class="rt"><b>Assisted</b> — humans drive; the harness proposes and prepares each step.</span><span class="tag">manual</span></div>
+      <div class="rung" role="listitem"><span class="lv">L0</span><span class="rt"><b>Manual</b> — every action is a human keystroke.</span><span class="tag">manual</span></div>
+    </div>
+    <p class="ladder-note"><b>Rule:</b> reliability earns launch-automation — it never earns gate-removal.</p>
+  </section>
+
+  <section>
+    <div class="label"><span class="tick">//</span> Stack &amp; Practice</div>
+    <h2>What I actually work in</h2>
+    <div class="grid2">
+      <div><h3>Agentic</h3><ul>
+        <li>Multi-agent orchestration</li>
+        <li>Prompt &amp; context engineering</li>
+        <li>Evals &amp; oracle design</li>
+        <li>Human-in-the-loop safety</li>
+      </ul></div>
+      <div><h3>Build</h3><ul>
+        <li>Python</li>
+        <li>JavaScript / React</li>
+        <li>Capacitor · Android (adb)</li>
+        <li>Git</li>
+      </ul></div>
+      <div><h3>Systems</h3><ul>
+        <li>Capability catalogs</li>
+        <li>Validation pipelines</li>
+        <li>Device-test automation</li>
+        <li>Governance / doctrine</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section class="path">
+    <div class="label"><span class="tick">//</span> The Path</div>
+    <h2 style="margin-bottom:16px">Not the usual route</h2>
+    <p>I came to this from professional kitchens, not a CS program — six years of running high-volume lines, then four months of building agentic systems from first principles. <b>Judge me on the work, and I'll take that trade every time.</b></p>
+  </section>
+
+  <footer>
+    <div class="label" style="justify-content:center"><span class="tick">//</span> Open to work</div>
+    <h2 style="margin-top:8px">Building trustworthy agents — on a team</h2>
+    <div class="cta">
+      <a class="btn" href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a>
+      <a class="btn ghost" href="https://www.linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+    <div class="foot-note">Erik Hill · Agentic Systems Engineer · 2026</div>
+  </footer>
+
+</div>
+</div>
+</body>
+</html>
