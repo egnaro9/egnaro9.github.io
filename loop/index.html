@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="One real arc through a self-reviewing agent loop — where the critic refused the execution report's claim, re-derived the truth from source, and blocked the work.">
+<title>The loop, catching itself — Erik Hill</title>
+<style>
+  :root {
+    --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
+    --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
+    --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12);
+    --red:#f87171; --red-soft:rgba(248,113,113,.12);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --ink:#e9edee; --panel:#f4f6f6; --raised:#ffffff;
+      --line:rgba(12,26,32,.12); --line-2:rgba(12,26,32,.07);
+      --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
+      --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
+      --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1); }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ink); color:var(--fg); font-family:var(--sans); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased; padding:0 20px 80px;
+    background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:34px 34px}
+  .col{max-width:840px; margin:0 auto}
+  a{color:var(--amber-ink); text-decoration:none}
+  code{font-family:var(--mono); color:var(--amber-ink); font-size:.92em}
+  header{padding:52px 0 26px; border-bottom:1px solid var(--line)}
+  .eye{font-family:var(--mono); font-size:12px; letter-spacing:.28em; text-transform:uppercase; color:var(--amber-ink); display:flex; align-items:center; gap:10px}
+  .eye::before{content:""; width:26px; height:1px; background:var(--amber-line)}
+  h1{font-family:var(--mono); font-weight:600; font-size:clamp(26px,5vw,42px); line-height:1.05; letter-spacing:-.02em; margin:14px 0 0}
+  .lede{color:var(--fg-dim); max-width:64ch; margin:18px 0 0}
+  .lede b{color:var(--fg)}
+
+  /* stepper */
+  .steps{display:flex; gap:0; margin:26px 0 0; overflow-x:auto; padding-bottom:4px}
+  .stab{flex:1; min-width:104px; background:transparent; border:0; border-top:2px solid var(--line); padding:11px 8px 0;
+    text-align:left; cursor:pointer; font-family:var(--mono); font-size:11px; color:var(--fg-faint); transition:all .15s}
+  .stab:hover{color:var(--fg-dim)}
+  .stab.on{border-top-color:var(--amber-ink); color:var(--amber-ink)}
+  .stab.on.flag{border-top-color:var(--red); color:var(--red)}
+  .stab .sn{display:block; font-size:9.5px; letter-spacing:.1em; opacity:.7}
+  .stab .st{display:block; margin-top:2px; font-size:12px; font-weight:600}
+
+  .stage{border:1px solid var(--line); border-left:3px solid var(--amber-line); background:var(--panel);
+    border-radius:3px; padding:24px; margin-top:18px; animation:in .25s}
+  .stage.flag{border-left-color:var(--red)}
+  .stage.ok{border-left-color:var(--teal)}
+  @keyframes in{from{opacity:0; transform:translateY(4px)}to{opacity:1; transform:none}}
+  @media (prefers-reduced-motion:reduce){.stage{animation:none}}
+  .stage h2{font-family:var(--mono); font-size:19px; margin:0 0 4px}
+  .role{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-faint);
+    border:1px solid var(--line); padding:2px 8px; border-radius:2px; display:inline-block; margin-bottom:10px}
+  .stage p{color:var(--fg-dim); margin:10px 0 0; max-width:66ch}
+  .stage p b{color:var(--fg)}
+
+  blockquote{margin:16px 0 0; padding:14px 16px; border-left:2px solid var(--red); background:var(--red-soft);
+    border-radius:0 3px 3px 0; font-size:15px; color:var(--fg)}
+  blockquote .attrib{display:block; font-family:var(--mono); font-size:10.5px; color:var(--fg-faint); margin-top:8px; letter-spacing:.04em}
+
+  .metric{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
+  .mx{border:1px solid var(--line); background:var(--raised); border-radius:3px; padding:9px 13px; font-family:var(--mono); font-size:12.5px}
+  .mx b{color:var(--fg)}
+  .mx .was{color:var(--fg-faint); text-decoration:line-through}
+  .mx .now{color:var(--teal)}
+  .bad{color:var(--red)} .good{color:var(--teal)}
+
+  .nav{display:flex; gap:8px; margin-top:18px}
+  button.nb{font-family:var(--mono); font-size:12.5px; padding:10px 16px; border-radius:2px; cursor:pointer;
+    border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft)}
+  button.nb:hover:not(:disabled){background:var(--amber-ink); color:var(--ink)}
+  button.nb:disabled{opacity:.35; cursor:not-allowed}
+  button.nb.ghost{border-color:var(--line); color:var(--fg-dim); background:transparent}
+
+  section{padding:34px 0; border-bottom:1px solid var(--line)}
+  .note{border-left:2px solid var(--amber-line); padding-left:14px; color:var(--fg-faint); font-size:13.5px; max-width:68ch}
+  .note b{color:var(--fg-dim)}
+  .big{font-size:clamp(17px,2.4vw,20px); color:var(--fg); max-width:56ch; line-height:1.45}
+  .big em{font-style:normal; color:var(--amber-ink)}
+  footer{padding:30px 0 0; color:var(--fg-faint); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="col">
+
+  <header>
+    <div class="eye">One real arc</div>
+    <h1>The loop, catching itself</h1>
+    <p class="lede">Every agent demo shows the happy path. This is the opposite: <b>a real piece of work from my harness where the reviewer refused the builder's report, proved it wrong from source, and blocked the change.</b> The builder and the reviewer are both me — or rather, both the loop. Click through the five stages.</p>
+    <p class="lede" style="font-size:14px">Nothing here is reconstructed for the demo. It happened, in that order, on my own machine.</p>
+  </header>
+
+  <section>
+    <div class="steps" id="steps"></div>
+    <div id="stage"></div>
+    <div class="nav">
+      <button class="nb ghost" id="prev">← back</button>
+      <button class="nb" id="next">next stage →</button>
+    </div>
+  </section>
+
+  <section>
+    <p class="big">The point isn't that the loop is clever. It's that <em>the reviewer didn't believe the report</em> — it went and checked.</p>
+    <p class="note" style="margin-top:18px">That's the same principle as the <a href="https://egnaro9.github.io/evals-differential-oracle/">differential oracle</a>: never accept one account of the truth when you can derive a second one independently and make them agree. There, it's two implementations of the same logic. Here, it's a report's arithmetic versus the file it describes. A claim that can't survive an independent re-derivation isn't evidence — it's just confident.</p>
+    <p class="note" style="margin-top:14px"><b>Why the reviewer runs cold.</b> It gets a fresh context — it never watched the work being done, so it has nothing invested in the story the builder tells. A reviewer who sat through the build inherits the builder's assumptions, and the one assumption in this arc that needed challenging was the one the builder was most confident about.</p>
+  </section>
+
+  <section>
+    <p class="note"><b>What's here and what isn't.</b> This is a narration, not a document dump. The loop's actual artifacts, formats, gate definitions and doctrine stay private — that's the machinery, and it's the part that took months. What's shown is the story and two lines from the review, which is all the evidence needs. If you want the runnable version of this same principle, <a href="https://egnaro9.github.io/evals-differential-oracle/">the oracle is public and executes in your browser</a>.</p>
+  </section>
+
+  <footer>
+    <p><a href="https://egnaro9.github.io">← back to the portfolio</a> · <a href="https://github.com/egnaro9/agentic-dev-harness">architecture case study</a> · Built by Erik Hill</p>
+  </footer>
+
+</div>
+<script src="./app.js"></script>
+</body>
+</html>
