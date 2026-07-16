@@ -250,14 +250,20 @@
     <h2>Don't read them — run them</h2>
     <p class="intro">Five focused repos, each built the same way as everything else here: with the harness, and checked. <strong>All five are live and interactive right now</strong> — no install, no signup, no API key. Every one runs its <em>real compiled code</em> in your browser, so what you're poking isn't a demo reimplementation: it's the same Python that runs in CI, and the same Java that ships on the phone. Try to fool the eval harness. Break the agent's guardrail. Flood the gateway until it rate-limits you. Play the game engine.</p>
 
-    <div class="compose" role="img" aria-label="rag-eval-lab produces eval_run.json which eval-dashboard renders">
+    <div class="compose" role="img" aria-label="agent-graph calls llm-gateway; rag-eval-lab produces eval_run.json which eval-dashboard renders">
+      <span class="cnode">agent-graph</span>
+      <span class="carr">its LLM calls ──►</span>
+      <span class="cnode">llm-gateway</span>
+      <span class="carr">auth · cache · cost</span>
+    </div>
+    <div class="compose" role="img" aria-label="rag-eval-lab produces eval_run.json which eval-dashboard renders" style="margin-top:10px">
       <span class="cnode">rag-eval-lab</span>
       <span class="carr">produces ──►</span>
       <span class="cfile">eval_run.json</span>
       <span class="carr">──► renders</span>
       <span class="cnode">eval-dashboard</span>
     </div>
-    <p class="compose-note">These two are halves of one pipeline, and you can watch them hand off: <b>run the eval in the lab, then click “Open this run in the dashboard”</b> — the run you just generated in your own browser appears there, passed directly between the two projects with no server in the middle.</p>
+    <p class="compose-note">Four of them aren't separate exercises — they're one stack, and the arrows are <b>function calls you can watch happen</b>. Run the eval in the lab, click <b>“Open this run in the dashboard”</b>, and the run you just generated appears there. Ask the agent something twice, and the second time <b>the gateway serves its LLM call from cache</b> — both projects running in one tab, the agent installing the gateway's own published wheel. The fifth, <b>match3-engine</b>, is deliberately not in this stack: it's the engine out of my shipping game, and forcing it in would be a gimmick.</p>
 
     <div class="projects-grid">
       <div class="proj">
