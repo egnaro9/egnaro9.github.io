@@ -127,6 +127,15 @@
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
   @media (prefers-reduced-motion:reduce){.proj .pci.live .v{animation:none}}
 
+  /* ---- compose strip ---- */
+  .compose{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:22px; padding:18px;
+    border:1px solid var(--line); border-left:3px solid var(--teal); background:var(--panel); border-radius:3px}
+  .compose .cnode{font-family:var(--mono); font-size:13px; color:var(--fg); border:1px solid var(--line); background:var(--raised); padding:8px 12px; border-radius:2px}
+  .compose .cfile{font-family:var(--mono); font-size:12.5px; color:var(--teal); border:1px dashed var(--teal); background:var(--teal-soft); padding:8px 12px; border-radius:2px}
+  .compose .carr{font-family:var(--mono); font-size:11.5px; color:var(--fg-faint); letter-spacing:.04em}
+  .compose-note{color:var(--fg-dim); font-size:14px; margin-top:12px; max-width:62ch}
+  .compose-note b{color:var(--fg)}
+
   /* ---- ladder ---- */
   .ladder{margin-top:24px; display:flex; flex-direction:column; gap:1px; border:1px solid var(--line); border-radius:3px; overflow:hidden}
   .rung{display:grid; grid-template-columns:64px 1fr auto; align-items:center; gap:16px; padding:14px 18px; background:var(--panel)}
@@ -240,6 +249,15 @@
     <div class="label"><span class="tick">//</span> Selected Projects</div>
     <h2>Don't read them — run them</h2>
     <p class="intro">Five focused repos, each built the same way as everything else here: with the harness, and checked. Four are <strong>live and interactive right now</strong> — no install, no signup, no API key. Three of those run their <em>actual Python</em> in your browser via WebAssembly, so what you're poking isn't a demo reimplementation, it's the same code that runs in CI. Try to fool the eval harness. Break the agent's guardrail. Flood the gateway until it rate-limits you. The fifth is the shipping game's own engine, pulled out and held to 16 property-based invariants.</p>
+
+    <div class="compose" role="img" aria-label="rag-eval-lab produces eval_run.json which eval-dashboard renders">
+      <span class="cnode">rag-eval-lab</span>
+      <span class="carr">produces ──►</span>
+      <span class="cfile">eval_run.json</span>
+      <span class="carr">──► renders</span>
+      <span class="cnode">eval-dashboard</span>
+    </div>
+    <p class="compose-note">These two are halves of one pipeline, and you can watch them hand off: <b>run the eval in the lab, then click “Open this run in the dashboard”</b> — the run you just generated in your own browser appears there, passed directly between the two projects with no server in the middle.</p>
 
     <div class="projects-grid">
       <div class="proj">
