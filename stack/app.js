@@ -82,12 +82,13 @@ from ragevallab.data import SAMPLE_DOCS                 # rag-eval-lab
 from ragevallab.evals import faithfulness, FAITHFULNESS_THRESHOLD, precision_at_k, recall_at_k
 from llmgateway.app import Config as GwConfig, create_app as create_gateway   # llm-gateway
 from agentgraph.graph import run as agent_run           # agent-graph
-from agentgraph.rag import rag_policy, rag_tools
+from agentgraph.rag import rag_tools
 from agentgraph.gateway import GatewayPolicy
 
 GATEWAY = create_gateway(GwConfig(api_keys=frozenset({"dev-key"}), rate_capacity=60))
-TOOLS = rag_tools()                 # agent-graph's search IS rag-eval-lab's retriever
-PLANNER = rag_policy()
+# agent-graph's search IS rag-eval-lab's retriever. No policy change needed —
+# each tool owns its own trigger, so the planner adapts on its own.
+TOOLS = rag_tools()
 GW = GatewayPolicy(transport=None, model="mock-1")
 
 async def _asgi(method, path, body=None):
@@ -126,7 +127,7 @@ async def run_case(i):
     q = case["q"]
 
     # 1+2. agent-graph runs, retrieving through rag-eval-lab's pipeline.
-    state = agent_run(q, policy=PLANNER, tools_registry=TOOLS)
+    state = agent_run(q, tools_registry=TOOLS)
     search = TOOLS["search"]
     contexts, retrieved = list(search.last_contexts), list(search.last_retrieved)
     tools_used = [s["tool"] for s in state["steps"] if s["type"] == "action"]
