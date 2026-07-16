@@ -119,6 +119,13 @@
   .proj .ptag{font-family:var(--mono); font-size:11px; color:var(--fg-faint); border:1px solid var(--line); padding:3px 7px; border-radius:2px}
   .proj .plink{font-family:var(--mono); font-size:12.5px; color:var(--amber-ink); margin-top:auto; padding-top:4px}
   .proj .plink span{color:var(--fg-faint)}
+  .proj .plive{display:inline-flex; align-items:center; gap:8px; align-self:flex-start; font-family:var(--mono); font-size:12.5px; padding:9px 14px; border-radius:2px; border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft); margin-top:auto; transition:background .15s}
+  .proj .plive + .plink{margin-top:0}
+  @media (hover:hover){.proj .plive:hover{background:var(--amber-ink); color:var(--ink)}}
+  .proj .pci.live{color:var(--amber-ink); border-color:var(--amber-line); background:var(--amber-soft)}
+  .proj .pci.live .v{background:var(--amber-ink); animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @media (prefers-reduced-motion:reduce){.proj .pci.live .v{animation:none}}
 
   /* ---- ladder ---- */
   .ladder{margin-top:24px; display:flex; flex-direction:column; gap:1px; border:1px solid var(--line); border-radius:3px; overflow:hidden}
@@ -232,7 +239,7 @@
   <section>
     <div class="label"><span class="tick">//</span> Selected Projects</div>
     <h2>Small, self-contained, and green in CI</h2>
-    <p class="intro">Four focused repos, each built the same way as everything else here — with the harness, and checked. All run offline with deterministic mock backends, so the tests pass in CI without a single API key. Clone any of them and see for yourself.</p>
+    <p class="intro">Four focused repos, each built the same way as everything else here — with the harness, and checked. All run offline with deterministic mock backends, so the tests pass in CI without a single API key. <strong>One of them is live right now</strong> — open the dashboard below and you're looking at a real eval run, hallucination flagged in red. Clone any of the rest and see for yourself.</p>
 
     <div class="projects-grid">
       <div class="proj">
@@ -268,10 +275,11 @@
       <div class="proj">
         <div class="ph">
           <span class="pname">eval-dashboard</span>
-          <span class="pci"><span class="v"></span>CI green</span>
+          <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>A <strong>Next.js + TypeScript</strong> dashboard that turns an eval run into metric cards and a per-case table, flagging hallucinations in red. Strict TS, static export, zero vulnerabilities.</p>
+        <p>A <strong>Next.js + TypeScript</strong> dashboard that turns an eval run into metric cards and a per-case table, flagging hallucinations in red. It's rendering <strong>rag-eval-lab's actual output</strong> — the flagged row is the planted hallucination, caught.</p>
         <div class="ptags"><span class="ptag">Next.js</span><span class="ptag">TypeScript</span><span class="ptag">Vitest</span></div>
+        <a class="plive" href="https://egnaro9.github.io/eval-dashboard/" target="_blank" rel="noopener">▶ Open the live dashboard</a>
         <a class="plink" href="https://github.com/egnaro9/eval-dashboard" target="_blank" rel="noopener">github.com/egnaro9/eval-dashboard <span>→</span></a>
       </div>
     </div>
