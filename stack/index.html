@@ -75,8 +75,11 @@
   .askrow input:focus{outline:none; border-color:var(--amber-line)}
   .asksug{margin-top:8px}
 
-  .corpus{font-family:var(--mono); font-size:11.5px; color:var(--fg-faint); background:#0a0e11; border:1px solid var(--line);
-    border-radius:3px; padding:13px; margin-top:16px; line-height:1.7}
+  .corpuswrap{margin-top:16px; padding:14px; border:1px solid var(--line); border-left:3px solid var(--teal); background:var(--panel); border-radius:3px}
+  #corpusBox{width:100%; background:#0a0e11; border:1px solid var(--line); border-radius:3px; color:var(--fg-dim);
+    font-family:var(--mono); font-size:11.5px; line-height:1.65; padding:12px; resize:vertical}
+  #corpusBox:focus{outline:none; border-color:var(--teal)}
+  .corpusnote{font-size:12.5px; color:var(--fg-faint); margin-top:8px}
   .cid{color:var(--amber-ink)}
 
   #flow{margin-top:20px}
@@ -158,7 +161,15 @@
         <button class="tiny" data-q="hello" disabled>no tool needed</button>
       </div>
     </div>
-    <div class="corpus" id="corpus">Loading the corpus…</div>
+    <div class="corpuswrap">
+      <div class="asklab" style="text-align:left; margin-bottom:8px">The corpus the agent retrieves from — <span style="color:var(--amber-ink)">edit it</span>, one <code>id: text</code> per line</div>
+      <textarea id="corpusBox" rows="7" spellcheck="false" aria-label="The corpus">Loading…</textarea>
+      <div class="askrow" style="margin-top:8px">
+        <button id="reindex" class="ghost" disabled>Re-index this corpus</button>
+        <button id="corpusReset" class="tiny" disabled>reset to planets</button>
+      </div>
+      <div class="corpusnote" id="corpusNote">Paste your own documents and the retriever rebuilds around them — the planets are just what the demo shipped with. Then ask a question about <b>your</b> corpus above.</div>
+    </div>
 
     <div id="flow"></div>
     <div id="finale"></div>

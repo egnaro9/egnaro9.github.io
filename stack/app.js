@@ -118,8 +118,25 @@ CASES = [
     {"q": "Who wrote Hamlet?", "gold": []},   # NOT in the corpus — retrieval must fail honestly
 ]
 
+DOCS = dict(SAMPLE_DOCS)
+
 def corpus_json():
-    return json.dumps(SAMPLE_DOCS)
+    return json.dumps(DOCS)
+
+def reindex(docs_json):
+    """Swap in a visitor-supplied corpus.
+
+    rag_tools(docs=...) rebuilds the retriever around whatever it's given, so
+    the pipeline isn't tied to the sample data — the demo just happened to ship
+    with planets.
+    """
+    global TOOLS, DOCS
+    docs = json.loads(docs_json)
+    if not docs:
+        return json.dumps({"ok": False, "error": "corpus is empty"})
+    DOCS = docs
+    TOOLS = rag_tools(docs=docs)
+    return json.dumps({"ok": True, "n": len(docs)})
 
 async def run_case(i):
     """One question through all four projects."""
@@ -223,9 +240,7 @@ def build_eval_run(cases_json):
     setStatus("Ready — all four projects installed and wired in this tab", "ready");
     document.querySelectorAll("button").forEach((b) => (b.disabled = false));
     const docs = JSON.parse(await py.runPythonAsync("corpus_json()"));
-    $("corpus").innerHTML =
-      "<b>The corpus the agent retrieves from:</b><br>" +
-      Object.entries(docs).map(([k, v]) => `<span class="cid">${esc(k)}#0</span> ${esc(v)}`).join("<br>");
+    $("corpusBox").value = Object.entries(docs).map(([k, v]) => `${k}: ${v}`).join("\n");
   } catch (err) {
     setStatus("Failed to boot: " + err, "err");
     console.error(err);
@@ -356,6 +371,31 @@ async function runMine() {
   document.querySelectorAll("button").forEach((b) => (b.disabled = false));
 }
 
+async function reindex() {
+  const raw = $("corpusBox").value.trim();
+  const docs = {};
+  for (const line of raw.split("\n")) {
+    const i = line.indexOf(":");
+    if (i < 1) continue;
+    const id = line.slice(0, i).trim().replace(/\s+/g, "_");
+    const text = line.slice(i + 1).trim();
+    if (id && text) docs[id] = text;
+  }
+  const btn = $("reindex");
+  btn.disabled = true;
+  const r = JSON.parse(await py.runPythonAsync(`reindex(${JSON.stringify(JSON.stringify(docs))})`));
+  $("corpusNote").innerHTML = r.ok
+    ? `<span class="good">✓ re-indexed ${r.n} document(s)</span> — ask it anything about <b>your</b> corpus now. The canned four-case run still uses the planet questions, so reset if you want that.`
+    : `<span class="bad">${esc(r.error)}</span>`;
+  btn.disabled = false;
+}
+
+$("reindex").addEventListener("click", reindex);
+$("corpusReset").addEventListener("click", async () => {
+  const docs = JSON.parse(await py.runPythonAsync("json.dumps(dict(SAMPLE_DOCS))"));
+  $("corpusBox").value = Object.entries(docs).map(([k, v]) => `${k}: ${v}`).join("\n");
+  await reindex();
+});
 $("run").addEventListener("click", runStack);
 $("runMine").addEventListener("click", runMine);
 $("myq").addEventListener("keydown", (e) => { if (e.key === "Enter") runMine(); });
