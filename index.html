@@ -117,6 +117,17 @@
   .proj p{margin:0; font-size:14px; color:var(--fg-dim); line-height:1.5}
   .proj .ptags{display:flex; flex-wrap:wrap; gap:6px; margin-top:2px}
   .proj .ptag{font-family:var(--mono); font-size:11px; color:var(--fg-faint); border:1px solid var(--line); padding:3px 7px; border-radius:2px}
+  .proj.p-agent{border-left-color:var(--amber-line)}
+  .proj.p-gw{border-left-color:#a78bfa}
+  .proj.p-rag{border-left-color:var(--teal)}
+  .proj.p-dash{border-left-color:#60a5fa}
+  .proj.p-solo{border-left-color:var(--fg-faint)}
+  .proj .pstep{font-family:var(--mono); font-size:10px; color:var(--fg-faint); border:1px solid var(--line);
+    width:19px; height:19px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; flex:none}
+  .solo-head{display:flex; align-items:center; gap:14px; margin:40px 0 14px}
+  .solo-rule{flex:1; height:1px; background:var(--line)}
+  .solo-label{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--fg-faint); white-space:nowrap}
+  .solo-grid{grid-template-columns:minmax(0,1fr); max-width:520px; margin-left:auto; margin-right:auto}
   .proj .plink{font-family:var(--mono); font-size:12.5px; color:var(--amber-ink); margin-top:auto; padding-top:4px}
   .proj .plink span{color:var(--fg-faint)}
   .proj .plive{display:inline-flex; align-items:center; gap:8px; align-self:flex-start; font-family:var(--mono); font-size:12.5px; padding:9px 14px; border-radius:2px; border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft); margin-top:auto; transition:background .15s}
@@ -331,33 +342,12 @@
 
     <p class="compose-note">An agent that retrieves, a gateway governing its model calls, a harness grading its answers, a dashboard showing what failed. One button runs a question through <b>all four</b> and hands you the result — including the case that's <b>perfectly faithful and completely wrong</b>, which is the most useful thing on this whole site.</p>
     <a class="plive" style="margin-top:14px" href="https://egnaro9.github.io/stack/">▶ Run all four together — one button</a>
-    <p class="compose-note" style="margin-top:12px">Or try each on its own below. The fifth, <b>match3-engine</b>, is deliberately <em>not</em> in this stack — it's the engine out of my shipping game. Forcing it in would be a gimmick.</p>
+    <p class="compose-note" style="margin-top:12px">Or try each stage on its own — the four below are numbered in the order they run.</p>
 
     <div class="projects-grid">
-      <div class="proj">
+      <div class="proj p-agent">
         <div class="ph">
-          <span class="pname">rag-eval-lab</span>
-          <span class="pci live"><span class="v"></span>live</span>
-        </div>
-        <p>A dependency-free RAG pipeline — retrieve, answer, and a deterministic eval harness (precision, recall, faithfulness) that <strong>catches a planted hallucination</strong>, re-checked on every push. The demo <strong>pip-installs the real wheel into your browser</strong> — try writing a false answer and watch it get caught, word by word.</p>
-        <div class="ptags"><span class="ptag">RAG</span><span class="ptag">pgvector</span><span class="ptag">evals</span><span class="ptag">Python</span><span class="ptag">WebAssembly</span></div>
-        <a class="plive" href="https://egnaro9.github.io/rag-eval-lab/" target="_blank" rel="noopener">▶ Try to fool it, in your browser</a>
-        <a class="plink" href="https://github.com/egnaro9/rag-eval-lab" target="_blank" rel="noopener">github.com/egnaro9/rag-eval-lab <span>→</span></a>
-      </div>
-
-      <div class="proj">
-        <div class="ph">
-          <span class="pname">llm-gateway</span>
-          <span class="pci live"><span class="v"></span>live</span>
-        </div>
-        <p>A multi-provider LLM gateway on <strong>FastAPI</strong>: auth, per-key rate limiting, response caching, retries, and per-model token &amp; cost accounting behind one OpenAI-shaped endpoint. <strong>The real ASGI app answers requests in the demo tab</strong> — flood it for a 429, strip the key for a 401, send twice for a cache hit.</p>
-        <div class="ptags"><span class="ptag">FastAPI</span><span class="ptag">rate-limit</span><span class="ptag">caching</span><span class="ptag">observability</span><span class="ptag">WebAssembly</span></div>
-        <a class="plive" href="https://egnaro9.github.io/llm-gateway/" target="_blank" rel="noopener">▶ Poke the API, in your browser</a>
-        <a class="plink" href="https://github.com/egnaro9/llm-gateway" target="_blank" rel="noopener">github.com/egnaro9/llm-gateway <span>→</span></a>
-      </div>
-
-      <div class="proj">
-        <div class="ph">
+          <span class="pstep">1</span>
           <span class="pname">agent-graph</span>
           <span class="pci live"><span class="v"></span>live</span>
         </div>
@@ -366,8 +356,53 @@
         <a class="plive" href="https://egnaro9.github.io/agent-graph/" target="_blank" rel="noopener">▶ Watch it think, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/agent-graph" target="_blank" rel="noopener">github.com/egnaro9/agent-graph <span>→</span></a>
       </div>
+      <div class="proj p-gw">
+        <div class="ph">
+          <span class="pstep">2</span>
+          <span class="pname">llm-gateway</span>
+          <span class="pci live"><span class="v"></span>live</span>
+        </div>
+        <p>A multi-provider LLM gateway on <strong>FastAPI</strong>: auth, per-key rate limiting, response caching, retries, and per-model token &amp; cost accounting behind one OpenAI-shaped endpoint. <strong>The real ASGI app answers requests in the demo tab</strong> — flood it for a 429, strip the key for a 401, send twice for a cache hit.</p>
+        <div class="ptags"><span class="ptag">FastAPI</span><span class="ptag">rate-limit</span><span class="ptag">caching</span><span class="ptag">observability</span><span class="ptag">WebAssembly</span></div>
+        <a class="plive" href="https://egnaro9.github.io/llm-gateway/" target="_blank" rel="noopener">▶ Poke the API, in your browser</a>
+        <a class="plink" href="https://github.com/egnaro9/llm-gateway" target="_blank" rel="noopener">github.com/egnaro9/llm-gateway <span>→</span></a>
+      </div>
+      <div class="proj p-rag">
+        <div class="ph">
+          <span class="pstep">3</span>
+          <span class="pname">rag-eval-lab</span>
+          <span class="pci live"><span class="v"></span>live</span>
+        </div>
+        <p>A dependency-free RAG pipeline — retrieve, answer, and a deterministic eval harness (precision, recall, faithfulness) that <strong>catches a planted hallucination</strong>, re-checked on every push. The demo <strong>pip-installs the real wheel into your browser</strong> — try writing a false answer and watch it get caught, word by word.</p>
+        <div class="ptags"><span class="ptag">RAG</span><span class="ptag">pgvector</span><span class="ptag">evals</span><span class="ptag">Python</span><span class="ptag">WebAssembly</span></div>
+        <a class="plive" href="https://egnaro9.github.io/rag-eval-lab/" target="_blank" rel="noopener">▶ Try to fool it, in your browser</a>
+        <a class="plink" href="https://github.com/egnaro9/rag-eval-lab" target="_blank" rel="noopener">github.com/egnaro9/rag-eval-lab <span>→</span></a>
+      </div>
+      <div class="proj p-dash">
+        <div class="ph">
+          <span class="pstep">4</span>
+          <span class="pname">eval-dashboard</span>
+          <span class="pci live"><span class="v"></span>live</span>
+        </div>
+        <p>A <strong>Next.js + TypeScript</strong> dashboard that turns an eval run into metric cards and a per-case table, flagging hallucinations in red. It's rendering <strong>rag-eval-lab's actual output</strong> — the flagged row is the planted hallucination, caught.</p>
+        <div class="ptags"><span class="ptag">Next.js</span><span class="ptag">TypeScript</span><span class="ptag">Vitest</span></div>
+        <a class="plive" href="https://egnaro9.github.io/eval-dashboard/" target="_blank" rel="noopener">▶ Open the live dashboard</a>
+        <a class="plink" href="https://github.com/egnaro9/eval-dashboard" target="_blank" rel="noopener">github.com/egnaro9/eval-dashboard <span>→</span></a>
+      </div>
+    </div>
 
-      <div class="proj">
+    <div class="solo-head">
+      <span class="solo-rule"></span>
+      <span class="solo-label">Not part of that stack — on purpose</span>
+      <span class="solo-rule"></span>
+    </div>
+    <p class="compose-note" style="margin:0 auto 16px; text-align:center; max-width:60ch">
+      The four above are AI infrastructure that calls itself. This one is different: it's the engine out of a
+      <b>game I actually shipped</b>, pulled out and held to property-based invariants. It doesn't plug into the
+      pipeline, and it shouldn't — that's the point of including it.
+    </p>
+    <div class="projects-grid solo-grid">
+      <div class="proj p-solo">
         <div class="ph">
           <span class="pname">match3-engine</span>
           <span class="pci live"><span class="v"></span>live</span>
@@ -376,17 +411,6 @@
         <div class="ptags"><span class="ptag">Java</span><span class="ptag">property-based testing</span><span class="ptag">jqwik</span><span class="ptag">TeaVM</span></div>
         <a class="plive" href="https://egnaro9.github.io/match3-engine/" target="_blank" rel="noopener">▶ Play the real engine, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/match3-engine" target="_blank" rel="noopener">github.com/egnaro9/match3-engine <span>→</span></a>
-      </div>
-
-      <div class="proj">
-        <div class="ph">
-          <span class="pname">eval-dashboard</span>
-          <span class="pci live"><span class="v"></span>live</span>
-        </div>
-        <p>A <strong>Next.js + TypeScript</strong> dashboard that turns an eval run into metric cards and a per-case table, flagging hallucinations in red. It's rendering <strong>rag-eval-lab's actual output</strong> — the flagged row is the planted hallucination, caught.</p>
-        <div class="ptags"><span class="ptag">Next.js</span><span class="ptag">TypeScript</span><span class="ptag">Vitest</span></div>
-        <a class="plive" href="https://egnaro9.github.io/eval-dashboard/" target="_blank" rel="noopener">▶ Open the live dashboard</a>
-        <a class="plink" href="https://github.com/egnaro9/eval-dashboard" target="_blank" rel="noopener">github.com/egnaro9/eval-dashboard <span>→</span></a>
       </div>
     </div>
   </section>
