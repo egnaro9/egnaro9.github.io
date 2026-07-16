@@ -80,6 +80,8 @@
     font-family:var(--mono); font-size:11.5px; line-height:1.65; padding:12px; resize:vertical}
   #corpusBox:focus{outline:none; border-color:var(--teal)}
   .corpusnote{font-size:12.5px; color:var(--fg-faint); margin-top:8px}
+  .whatis{font-size:13.5px; color:var(--fg-dim); line-height:1.55; border-left:2px solid var(--amber-line); padding-left:13px; margin-bottom:4px}
+  .whatis b{color:var(--fg)}
   .cid{color:var(--amber-ink)}
 
   #flow{margin-top:20px}
@@ -162,7 +164,17 @@
       </div>
     </div>
     <div class="corpuswrap">
-      <div class="asklab" style="text-align:left; margin-bottom:8px">The corpus the agent retrieves from — <span style="color:var(--amber-ink)">edit it</span>, one <code>id: text</code> per line</div>
+      <div class="whatis">
+        <b>What's a corpus?</b> Just the pile of documents the system is allowed to look things up in — its entire world knowledge. That's the whole idea behind RAG: instead of letting a model answer from memory, you force it to answer from documents <i>you</i> chose. Which is exactly why the answer can then be <b>checked</b> — a model answering from memory can't be audited; one answering from your documents can.
+        <br><br>So the stack handles <b>any topic</b> — you just have to hand it the documents. Ask about something that <i>isn't</i> in there and it won't know, which is the interesting case.
+      </div>
+      <div class="asksug" style="margin:12px 0 10px">
+        <button class="tiny" data-corpus="planets" disabled>🪐 planets</button>
+        <button class="tiny" data-corpus="coffee" disabled>☕ coffee</button>
+        <button class="tiny" data-corpus="company" disabled>🏢 an HR handbook</button>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--fg-faint);margin-left:6px">← swap the whole world it knows about</span>
+      </div>
+      <div class="asklab" style="text-align:left; margin-bottom:8px">…or write your own — one <code>id: text</code> per line</div>
       <textarea id="corpusBox" rows="7" spellcheck="false" aria-label="The corpus">Loading…</textarea>
       <div class="askrow" style="margin-top:8px">
         <button id="reindex" class="ghost" disabled>Re-index this corpus</button>

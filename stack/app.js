@@ -8,6 +8,33 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Swappable corpora — the point being that the pipeline isn't tied to any of
+// them. Whatever documents you give it become the only thing it knows.
+const CORPORA = {
+  planets: [
+    "mercury: Mercury is the smallest planet in the Solar System and the closest to the Sun. It has almost no atmosphere and a heavily cratered surface.",
+    "venus: Venus is the second planet from the Sun and the hottest planet in the Solar System. Its thick carbon dioxide atmosphere traps heat in a runaway greenhouse effect.",
+    "earth: Earth is the third planet from the Sun and the only known planet to support life. About seventy one percent of its surface is covered by water.",
+    "mars: Mars is the fourth planet from the Sun and is called the Red Planet because of iron oxide. It hosts Olympus Mons, the tallest volcano in the Solar System.",
+    "jupiter: Jupiter is the largest planet in the Solar System and is a gas giant of hydrogen and helium. Its Great Red Spot is a storm larger than Earth.",
+    "saturn: Saturn is the sixth planet from the Sun and is famous for its ring system of ice and rock. It is the second largest planet in the Solar System.",
+  ].join("\n"),
+  coffee: [
+    "espresso: Espresso is brewed by forcing hot water through finely ground coffee under about nine bars of pressure, which produces crema.",
+    "cold_brew: Cold brew is steeped in cold water for twelve to twenty-four hours. The low temperature extracts fewer acids, so it tastes smoother.",
+    "roasting: Darker roasts taste less acidic because roasting breaks down chlorogenic acids. Lighter roasts keep more of the bean's origin flavour.",
+    "grind: A finer grind increases surface area and extracts faster. Espresso needs a fine grind; a French press needs a coarse one.",
+    "arabica: Arabica beans have less caffeine and more sugar than robusta, which makes them sweeter and less bitter.",
+  ].join("\n"),
+  company: [
+    "pto: Employees accrue fifteen days of paid time off per year, rising to twenty days after three years of service.",
+    "remote: The company is remote-first. Staff may work from any location within their country of employment without prior approval.",
+    "expenses: Expenses under one hundred dollars need no receipt. Anything above requires a receipt and manager approval within thirty days.",
+    "onboarding: New engineers are paired with a buddy for their first month and are expected to ship a change in week one.",
+    "security: Laptops must have full-disk encryption enabled and screens must lock after five minutes of inactivity.",
+  ].join("\n"),
+};
+
 const WHEELS = {
   "rag-eval-lab": "https://egnaro9.github.io/rag-eval-lab/ragevallab-0.1.0-py3-none-any.whl",
   "llm-gateway": "https://egnaro9.github.io/llm-gateway/llmgateway-0.1.0-py3-none-any.whl",
@@ -391,6 +418,15 @@ async function reindex() {
 }
 
 $("reindex").addEventListener("click", reindex);
+document.querySelectorAll("[data-corpus]").forEach((b) =>
+  b.addEventListener("click", async () => {
+    $("corpusBox").value = CORPORA[b.dataset.corpus];
+    await reindex();
+    $("myq").value = { planets: "Which planet is the hottest?",
+                       coffee: "Why is cold brew less acidic?",
+                       company: "How many days of PTO do I get?" }[b.dataset.corpus];
+  })
+);
 $("corpusReset").addEventListener("click", async () => {
   const docs = JSON.parse(await py.runPythonAsync("json.dumps(dict(SAMPLE_DOCS))"));
   $("corpusBox").value = Object.entries(docs).map(([k, v]) => `${k}: ${v}`).join("\n");
