@@ -108,15 +108,28 @@
   .verdict .v{width:7px; height:7px; border-radius:50%; background:var(--teal)}
 
   /* ---- projects ---- */
-  .projects-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(248px,1fr)); gap:16px; margin-top:26px}
-  .proj{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--amber-line); border-radius:3px; padding:20px; display:flex; flex-direction:column; gap:11px}
-  .proj .ph{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .projects-flow{margin-top:26px}
+  .proj{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--amber-line); border-radius:3px;
+    padding:18px 20px; display:grid; grid-template-columns:1fr auto; gap:22px; align-items:center}
+  .proj .pmain{min-width:0}
+  .proj .pside{display:flex; flex-direction:column; gap:8px; align-items:stretch; justify-content:center; white-space:nowrap}
+  .proj .ph{display:flex; align-items:center; gap:10px}
   .proj .pname{font-family:var(--mono); font-size:14.5px; font-weight:600; color:var(--fg)}
   .proj .pci{font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); border:1px solid var(--teal); background:var(--teal-soft); padding:2px 7px; border-radius:2px; white-space:nowrap; display:inline-flex; gap:6px; align-items:center}
   .proj .pci .v{width:6px; height:6px; border-radius:50%; background:var(--teal)}
-  .proj p{margin:0; font-size:14px; color:var(--fg-dim); line-height:1.5}
-  .proj .ptags{display:flex; flex-wrap:wrap; gap:6px; margin-top:2px}
+  .proj p{margin:8px 0 0; font-size:14px; color:var(--fg-dim); line-height:1.5; max-width:70ch}
+  .proj .ptags{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
   .proj .ptag{font-family:var(--mono); font-size:11px; color:var(--fg-faint); border:1px solid var(--line); padding:3px 7px; border-radius:2px}
+  .proj .plink{font-family:var(--mono); font-size:12px; color:var(--amber-ink); text-align:center}
+  .proj .plink span{color:var(--fg-faint)}
+  .proj .plive{display:inline-flex; align-items:center; justify-content:center; gap:8px; font-family:var(--mono); font-size:12.5px;
+    padding:10px 15px; border-radius:2px; border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft); transition:background .15s}
+  @media (hover:hover){.proj .plive:hover{background:var(--amber-ink); color:var(--ink)}}
+  .proj .pci.live{color:var(--amber-ink); border-color:var(--amber-line); background:var(--amber-soft)}
+  .proj .pci.live .v{background:var(--amber-ink); animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @media (prefers-reduced-motion:reduce){.proj .pci.live .v{animation:none}}
+
   .proj.p-agent{border-left-color:var(--amber-line)}
   .proj.p-gw{border-left-color:#a78bfa}
   .proj.p-rag{border-left-color:var(--teal)}
@@ -124,19 +137,21 @@
   .proj.p-solo{border-left-color:var(--fg-faint)}
   .proj .pstep{font-family:var(--mono); font-size:10px; color:var(--fg-faint); border:1px solid var(--line);
     width:19px; height:19px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; flex:none}
-  .solo-head{display:flex; align-items:center; gap:14px; margin:40px 0 14px}
+
+  /* the connector between stages */
+  .flowlink{position:relative; padding:11px 0 11px 30px; font-family:var(--mono); font-size:11px; color:var(--fg-faint)}
+  .flowlink::before{content:""; position:absolute; left:12px; top:0; bottom:0; width:1px; background:var(--line)}
+  .flowlink .fl-a{color:var(--fg-dim)}
+
+  .solo-head{display:flex; align-items:center; gap:14px; margin:44px 0 14px}
   .solo-rule{flex:1; height:1px; background:var(--line)}
   .solo-label{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--fg-faint); white-space:nowrap}
-  .solo-grid{grid-template-columns:minmax(0,1fr); max-width:520px; margin-left:auto; margin-right:auto}
-  .proj .plink{font-family:var(--mono); font-size:12.5px; color:var(--amber-ink); margin-top:auto; padding-top:4px}
-  .proj .plink span{color:var(--fg-faint)}
-  .proj .plive{display:inline-flex; align-items:center; gap:8px; align-self:flex-start; font-family:var(--mono); font-size:12.5px; padding:9px 14px; border-radius:2px; border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft); margin-top:auto; transition:background .15s}
-  .proj .plive + .plink{margin-top:0}
-  @media (hover:hover){.proj .plive:hover{background:var(--amber-ink); color:var(--ink)}}
-  .proj .pci.live{color:var(--amber-ink); border-color:var(--amber-line); background:var(--amber-soft)}
-  .proj .pci.live .v{background:var(--amber-ink); animation:pulse 2s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-  @media (prefers-reduced-motion:reduce){.proj .pci.live .v{animation:none}}
+
+  @media (max-width:640px){
+    .proj{grid-template-columns:1fr; gap:14px}
+    .proj .pside{align-items:flex-start}
+    .proj .plive{width:100%}
+  }
 
   /* ---- architecture diagram ---- */
   .arch-wrap{margin-top:24px; border:1px solid var(--line); border-left:3px solid var(--teal); background:var(--panel); border-radius:3px; padding:18px}
@@ -344,50 +359,69 @@
     <a class="plive" style="margin-top:14px" href="https://egnaro9.github.io/stack/">▶ Run all four together — one button</a>
     <p class="compose-note" style="margin-top:12px">Or try each stage on its own — the four below are numbered in the order they run.</p>
 
-    <div class="projects-grid">
-      <div class="proj p-agent">
+    <div class="projects-flow">
+<div class="proj p-agent">
+        <div class="pmain">
         <div class="ph">
           <span class="pstep">1</span>
           <span class="pname">agent-graph</span>
           <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>A <strong>LangGraph</strong> ReAct agent with multi-step tool-calling and real guardrails — a safe expression evaluator and a step budget that stops runaway loops, both unit-tested. <strong>Real LangGraph runs in the demo tab</strong>: watch the agent⇄tools loop, then try to break the calculator with <code>__import__('os')</code>.</p>
+        <p>A <strong>LangGraph</strong> ReAct agent: multi-step tool-calling with guardrails that bite — a safe evaluator and a step budget, both tested. The demo runs <strong>real LangGraph in your tab</strong>; try breaking the calculator with <code>__import__('os')</code>.</p>
         <div class="ptags"><span class="ptag">LangGraph</span><span class="ptag">tool-calling</span><span class="ptag">guardrails</span><span class="ptag">WebAssembly</span></div>
+        </div>
+        <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/agent-graph/" target="_blank" rel="noopener">▶ Watch it think, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/agent-graph" target="_blank" rel="noopener">github.com/egnaro9/agent-graph <span>→</span></a>
+        </div>
       </div>
-      <div class="proj p-gw">
+      <div class="flowlink"><span class="fl-a">routes its LLM calls through ↓</span></div>
+<div class="proj p-gw">
+        <div class="pmain">
         <div class="ph">
           <span class="pstep">2</span>
           <span class="pname">llm-gateway</span>
           <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>A multi-provider LLM gateway on <strong>FastAPI</strong>: auth, per-key rate limiting, response caching, retries, and per-model token &amp; cost accounting behind one OpenAI-shaped endpoint. <strong>The real ASGI app answers requests in the demo tab</strong> — flood it for a 429, strip the key for a 401, send twice for a cache hit.</p>
+        <p>One OpenAI-shaped <strong>FastAPI</strong> endpoint fronting many providers: auth, per-key rate limiting, caching, retries, per-model cost accounting. <strong>The real ASGI app answers in the demo tab</strong> — flood it for a 429.</p>
         <div class="ptags"><span class="ptag">FastAPI</span><span class="ptag">rate-limit</span><span class="ptag">caching</span><span class="ptag">observability</span><span class="ptag">WebAssembly</span></div>
+        </div>
+        <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/llm-gateway/" target="_blank" rel="noopener">▶ Poke the API, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/llm-gateway" target="_blank" rel="noopener">github.com/egnaro9/llm-gateway <span>→</span></a>
+        </div>
       </div>
-      <div class="proj p-rag">
+      <div class="flowlink"><span class="fl-a">…which answers back. the agent then retrieves via ↓</span></div>
+<div class="proj p-rag">
+        <div class="pmain">
         <div class="ph">
           <span class="pstep">3</span>
           <span class="pname">rag-eval-lab</span>
           <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>A dependency-free RAG pipeline — retrieve, answer, and a deterministic eval harness (precision, recall, faithfulness) that <strong>catches a planted hallucination</strong>, re-checked on every push. The demo <strong>pip-installs the real wheel into your browser</strong> — try writing a false answer and watch it get caught, word by word.</p>
+        <p>A dependency-free RAG pipeline with a deterministic eval harness that <strong>catches a planted hallucination</strong>, re-checked on every push. The demo <strong>pip-installs the real wheel into your browser</strong> — write a false answer and watch it get caught, word by word.</p>
         <div class="ptags"><span class="ptag">RAG</span><span class="ptag">pgvector</span><span class="ptag">evals</span><span class="ptag">Python</span><span class="ptag">WebAssembly</span></div>
+        </div>
+        <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/rag-eval-lab/" target="_blank" rel="noopener">▶ Try to fool it, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/rag-eval-lab" target="_blank" rel="noopener">github.com/egnaro9/rag-eval-lab <span>→</span></a>
+        </div>
       </div>
-      <div class="proj p-dash">
+      <div class="flowlink"><span class="fl-a">retrieves, then grades the answer — writing eval_run.json ↓</span></div>
+<div class="proj p-dash">
+        <div class="pmain">
         <div class="ph">
           <span class="pstep">4</span>
           <span class="pname">eval-dashboard</span>
           <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>A <strong>Next.js + TypeScript</strong> dashboard that turns an eval run into metric cards and a per-case table, flagging hallucinations in red. It's rendering <strong>rag-eval-lab's actual output</strong> — the flagged row is the planted hallucination, caught.</p>
+        <p>Turns an eval run into metric cards and a per-case table, flagging hallucinations in red. Strict TypeScript, runtime schema validation, static export, <strong>zero vulnerabilities</strong>.</p>
         <div class="ptags"><span class="ptag">Next.js</span><span class="ptag">TypeScript</span><span class="ptag">Vitest</span></div>
+        </div>
+        <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/eval-dashboard/" target="_blank" rel="noopener">▶ Open the live dashboard</a>
         <a class="plink" href="https://github.com/egnaro9/eval-dashboard" target="_blank" rel="noopener">github.com/egnaro9/eval-dashboard <span>→</span></a>
+        </div>
       </div>
     </div>
 
@@ -396,21 +430,25 @@
       <span class="solo-label">Not part of that stack — on purpose</span>
       <span class="solo-rule"></span>
     </div>
-    <p class="compose-note" style="margin:0 auto 16px; text-align:center; max-width:60ch">
+    <p class="compose-note" style="max-width:64ch">
       The four above are AI infrastructure that calls itself. This one is different: it's the engine out of a
       <b>game I actually shipped</b>, pulled out and held to property-based invariants. It doesn't plug into the
       pipeline, and it shouldn't — that's the point of including it.
     </p>
-    <div class="projects-grid solo-grid">
-      <div class="proj p-solo">
+    <div class="projects-flow">
+<div class="proj p-solo">
+        <div class="pmain">
         <div class="ph">
           <span class="pname">match3-engine</span>
           <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>The <strong>real match-3 rules engine from my shipping game</strong>, extracted with zero dependencies outside the JDK and pinned by <strong>16 jqwik property invariants</strong>. Compiled to JS with TeaVM, so <strong>you can play a board the actual Java decides</strong>. Porting it caught a real bug the JVM hid: clock-derived gem ids that collide in a browser.</p>
+        <p>The match-3 rules engine from my <strong>shipping game</strong> — zero dependencies outside the JDK, pinned by <strong>16 jqwik property invariants</strong>, and playable in your browser via TeaVM. Porting it <strong>caught a real bug the JVM hid</strong>.</p>
         <div class="ptags"><span class="ptag">Java</span><span class="ptag">property-based testing</span><span class="ptag">jqwik</span><span class="ptag">TeaVM</span></div>
+        </div>
+        <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/match3-engine/" target="_blank" rel="noopener">▶ Play the real engine, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/match3-engine" target="_blank" rel="noopener">github.com/egnaro9/match3-engine <span>→</span></a>
+        </div>
       </div>
     </div>
   </section>
