@@ -248,7 +248,7 @@
   <section>
     <div class="label"><span class="tick">//</span> Selected Projects</div>
     <h2>Don't read them — run them</h2>
-    <p class="intro">Five focused repos, each built the same way as everything else here: with the harness, and checked. Four are <strong>live and interactive right now</strong> — no install, no signup, no API key. Three of those run their <em>actual Python</em> in your browser via WebAssembly, so what you're poking isn't a demo reimplementation, it's the same code that runs in CI. Try to fool the eval harness. Break the agent's guardrail. Flood the gateway until it rate-limits you. The fifth is the shipping game's own engine, pulled out and held to 16 property-based invariants.</p>
+    <p class="intro">Five focused repos, each built the same way as everything else here: with the harness, and checked. <strong>All five are live and interactive right now</strong> — no install, no signup, no API key. Every one runs its <em>real compiled code</em> in your browser, so what you're poking isn't a demo reimplementation: it's the same Python that runs in CI, and the same Java that ships on the phone. Try to fool the eval harness. Break the agent's guardrail. Flood the gateway until it rate-limits you. Play the game engine.</p>
 
     <div class="compose" role="img" aria-label="rag-eval-lab produces eval_run.json which eval-dashboard renders">
       <span class="cnode">rag-eval-lab</span>
@@ -296,10 +296,11 @@
       <div class="proj">
         <div class="ph">
           <span class="pname">match3-engine</span>
-          <span class="pci"><span class="v"></span>51 tests</span>
+          <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>The <strong>real match-3 rules engine from the shipping game</strong>, lifted out as a standalone library with zero dependencies outside the JDK. 522 lines of engine, <strong>1,078 lines of tests</strong> — 35 example plus <strong>16 jqwik property tests</strong> encoding invariants the engine must satisfy on <em>every</em> board.</p>
-        <div class="ptags"><span class="ptag">Java</span><span class="ptag">property-based testing</span><span class="ptag">jqwik</span><span class="ptag">Gradle</span></div>
+        <p>The <strong>real match-3 rules engine from my shipping game</strong>, extracted with zero dependencies outside the JDK and pinned by <strong>16 jqwik property invariants</strong>. Compiled to JS with TeaVM, so <strong>you can play a board the actual Java decides</strong>. Porting it caught a real bug the JVM hid: clock-derived gem ids that collide in a browser.</p>
+        <div class="ptags"><span class="ptag">Java</span><span class="ptag">property-based testing</span><span class="ptag">jqwik</span><span class="ptag">TeaVM</span></div>
+        <a class="plive" href="https://egnaro9.github.io/match3-engine/" target="_blank" rel="noopener">▶ Play the real engine, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/match3-engine" target="_blank" rel="noopener">github.com/egnaro9/match3-engine <span>→</span></a>
       </div>
 
