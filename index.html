@@ -239,7 +239,7 @@
   <section>
     <div class="label"><span class="tick">//</span> Selected Projects</div>
     <h2>Don't read them — run them</h2>
-    <p class="intro">Four focused repos, each built the same way as everything else here: with the harness, and checked. All four are <strong>live and interactive right now</strong> — no install, no signup, no API key. Three of them run their <em>actual Python</em> in your browser via WebAssembly, so what you're poking isn't a demo reimplementation, it's the same code that runs in CI. Try to fool the eval harness. Break the agent's guardrail. Flood the gateway until it rate-limits you.</p>
+    <p class="intro">Five focused repos, each built the same way as everything else here: with the harness, and checked. Four are <strong>live and interactive right now</strong> — no install, no signup, no API key. Three of those run their <em>actual Python</em> in your browser via WebAssembly, so what you're poking isn't a demo reimplementation, it's the same code that runs in CI. Try to fool the eval harness. Break the agent's guardrail. Flood the gateway until it rate-limits you. The fifth is the shipping game's own engine, pulled out and held to 16 property-based invariants.</p>
 
     <div class="projects-grid">
       <div class="proj">
@@ -273,6 +273,16 @@
         <div class="ptags"><span class="ptag">LangGraph</span><span class="ptag">tool-calling</span><span class="ptag">guardrails</span><span class="ptag">WebAssembly</span></div>
         <a class="plive" href="https://egnaro9.github.io/agent-graph/" target="_blank" rel="noopener">▶ Watch it think, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/agent-graph" target="_blank" rel="noopener">github.com/egnaro9/agent-graph <span>→</span></a>
+      </div>
+
+      <div class="proj">
+        <div class="ph">
+          <span class="pname">match3-engine</span>
+          <span class="pci"><span class="v"></span>51 tests</span>
+        </div>
+        <p>The <strong>real match-3 rules engine from the shipping game</strong>, lifted out as a standalone library with zero dependencies outside the JDK. 522 lines of engine, <strong>1,078 lines of tests</strong> — 35 example plus <strong>16 jqwik property tests</strong> encoding invariants the engine must satisfy on <em>every</em> board.</p>
+        <div class="ptags"><span class="ptag">Java</span><span class="ptag">property-based testing</span><span class="ptag">jqwik</span><span class="ptag">Gradle</span></div>
+        <a class="plink" href="https://github.com/egnaro9/match3-engine" target="_blank" rel="noopener">github.com/egnaro9/match3-engine <span>→</span></a>
       </div>
 
       <div class="proj">
