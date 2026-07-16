@@ -63,6 +63,17 @@
     border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft); transition:background .15s}
   button:hover:not(:disabled){background:var(--amber-ink); color:var(--ink)}
   button:disabled{opacity:.45; cursor:not-allowed}
+  button.ghost{border-color:var(--line); color:var(--fg-dim); background:transparent}
+  button.ghost:hover:not(:disabled){color:var(--fg); border-color:var(--fg-dim); background:transparent}
+  button.tiny{font-size:11px; padding:6px 10px; border-color:var(--line); color:var(--fg-faint); background:transparent}
+  button.tiny:hover:not(:disabled){color:var(--fg); border-color:var(--fg-dim); background:transparent}
+  .ask{margin-top:18px; padding:16px; border:1px solid var(--line); border-left:3px solid var(--amber-line); background:var(--panel); border-radius:3px}
+  .asklab{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-faint); text-align:center; margin-bottom:12px}
+  .askrow{display:flex; gap:8px}
+  .askrow input{flex:1; background:var(--raised); border:1px solid var(--line); border-radius:3px; color:var(--fg);
+    font-family:var(--sans); font-size:15px; padding:11px 12px}
+  .askrow input:focus{outline:none; border-color:var(--amber-line)}
+  .asksug{margin-top:8px}
 
   .corpus{font-family:var(--mono); font-size:11.5px; color:var(--fg-faint); background:#0a0e11; border:1px solid var(--line);
     border-radius:3px; padding:13px; margin-top:16px; line-height:1.7}
@@ -132,7 +143,21 @@
     </div>
 
     <button id="run" disabled>▶ Run the whole stack</button>
-    <p class="intro" style="margin-top:14px">Four questions go through all four projects. <b>Watch question 4</b> — it isn't in the corpus, and that's the interesting one.</p>
+    <p class="intro" style="margin-top:14px">Four questions go through all four projects, ending with an <code>eval_run.json</code> you can open in the dashboard. <b>Watch question 4</b> — it isn't in the corpus, and that's the interesting one.</p>
+
+    <div class="ask">
+      <div class="asklab">— or ask it your own —</div>
+      <div class="askrow">
+        <input type="text" id="myq" placeholder="Ask anything — the corpus only knows about planets…" aria-label="Your question">
+        <button id="runMine" class="ghost" disabled>Run my question</button>
+      </div>
+      <div class="asksug">
+        <button class="tiny" data-q="Which planet is the hottest?" disabled>in the corpus</button>
+        <button class="tiny" data-q="Who invented the telephone?" disabled>not in the corpus →</button>
+        <button class="tiny" data-q="What is 15% of 240?" disabled>pure math</button>
+        <button class="tiny" data-q="hello" disabled>no tool needed</button>
+      </div>
+    </div>
     <div class="corpus" id="corpus">Loading the corpus…</div>
 
     <div id="flow"></div>

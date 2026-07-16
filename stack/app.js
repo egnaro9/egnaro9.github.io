@@ -157,6 +157,41 @@ async def run_case(i):
         "in_corpus": bool(case["gold"]),
     })
 
+async def run_custom(q):
+    """One visitor-supplied question through all four projects.
+
+    No gold label exists for an arbitrary question, so precision/recall are
+    left out rather than invented — faithfulness and the retrieval are what
+    can be honestly reported.
+    """
+    state = agent_run(q, tools_registry=TOOLS)
+    search = TOOLS["search"]
+    contexts, retrieved = list(search.last_contexts), list(search.last_retrieved)
+    tools_used = [s["tool"] for s in state["steps"] if s["type"] == "action"]
+    obs = state.get("observations", [])
+    gw = {}
+    if obs:
+        gw = await _asgi("POST", "/v1/chat/completions", GW.build_request(q, obs))
+    f = faithfulness(state["answer"], contexts) if contexts else 0.0
+    # Did retrieval actually surface anything about the question? Cheap lexical
+    # check — the same content-word overlap the harness uses, applied to the
+    # QUESTION rather than the answer.
+    from ragevallab.evals import _content_tokens
+    q_tokens = set(_content_tokens(q))
+    ctx_tokens = set()
+    for c in contexts:
+        ctx_tokens |= set(_content_tokens(c))
+    overlap = len(q_tokens & ctx_tokens) / len(q_tokens) if q_tokens else 0.0
+    return json.dumps({
+        "q": q, "tools": tools_used, "retrieved": retrieved, "contexts": contexts,
+        "agent_answer": state["answer"],
+        "cached": bool(gw.get("cached")), "cost": float(gw.get("cost_usd", 0.0)),
+        "faithfulness": round(f, 3), "threshold": FAITHFULNESS_THRESHOLD,
+        "flagged": f < FAITHFULNESS_THRESHOLD,
+        "question_overlap": round(overlap, 2),
+        "off_corpus": overlap < 0.34,
+    })
+
 async def gateway_metrics():
     return json.dumps(await _asgi("GET", "/metrics"))
 
@@ -186,7 +221,7 @@ def build_eval_run(cases_json):
 `);
 
     setStatus("Ready — all four projects installed and wired in this tab", "ready");
-    $("run").disabled = false;
+    document.querySelectorAll("button").forEach((b) => (b.disabled = false));
     const docs = JSON.parse(await py.runPythonAsync("corpus_json()"));
     $("corpus").innerHTML =
       "<b>The corpus the agent retrieves from:</b><br>" +
@@ -272,5 +307,59 @@ async function runStack() {
   btn.textContent = "▶ Run it again";
 }
 
+async function runMine() {
+  const q = $("myq").value.trim();
+  if (!q) return;
+  document.querySelectorAll("button").forEach((b) => (b.disabled = true));
+  $("flow").innerHTML = "";
+  $("finale").innerHTML = "";
+  try {
+    const c = JSON.parse(await py.runPythonAsync(`await run_custom(${JSON.stringify(q)})`));
+
+    step(1, `<span class="proj a">agent-graph</span> gets your question`, `<div class="q">“${esc(c.q)}”</div>`, "a");
+    await sleep(280);
+
+    step(2, `<span class="proj a">agent-graph</span> → <span class="proj r">rag-eval-lab</span> · retrieve`,
+      `<div class="mono">tools: ${c.tools.join(" → ") || "none — no tool matched your question"}</div>
+       <div class="mono ids">${c.retrieved.join(", ") || "—"}</div>
+       <div class="ctx">${esc((c.contexts[0] || "").slice(0, 120))}${(c.contexts[0] || "").length > 120 ? "…" : ""}</div>
+       ${c.off_corpus && c.retrieved.length ? `<div class="warnline">Your question doesn't overlap the corpus much (${Math.round(c.question_overlap * 100)}% of its content words appear in what was retrieved). A real retriever still returns its closest chunk — watch step 4.</div>` : ""}`, "r");
+    await sleep(280);
+
+    step(3, `<span class="proj a">agent-graph</span> → <span class="proj g">llm-gateway</span> · compose`,
+      `<div class="mono">cached=<b class="${c.cached ? "good" : ""}">${c.cached}</b> · cost $${c.cost}</div>`, "g");
+    await sleep(280);
+
+    const groundedButWrong = c.off_corpus && c.faithfulness >= c.threshold && c.retrieved.length;
+    step(4, `<span class="proj r">rag-eval-lab</span> grades the answer`,
+      `<div class="mono">faithfulness <b class="${tone(c.faithfulness)}">${pct(c.faithfulness)}</b> · threshold ${c.threshold}</div>
+       <div class="verdictline ${groundedButWrong ? "warn" : c.flagged ? "bad" : "good"}">${
+         groundedButWrong ? "⚠ perfectly faithful — and probably answering the wrong question"
+         : c.flagged ? "🚩 flagged — not grounded in what was retrieved"
+         : "✓ grounded in the retrieved context"}</div>
+       ${groundedButWrong ? `<div class="warnline"><b>Faithfulness measures grounding, not correctness.</b> The agent answered from the chunk it was handed, so it scores high — but the corpus only knows about planets. Only precision against a gold label would catch this, and an arbitrary question has no gold label. That gap is the honest limit of this metric.</div>` : ""}
+       ${!c.retrieved.length ? `<div class="warnline">No tool fired — the planner saw nothing to retrieve or compute.</div>` : ""}`,
+      groundedButWrong || c.flagged ? "bad" : "r");
+
+    const m = await py.runPythonAsync("await gateway_metrics()").then(JSON.parse);
+    $("finale").innerHTML = `
+      <div class="cards">
+        <div class="card"><div class="k">Faithfulness</div><div class="v ${tone(c.faithfulness)}">${pct(c.faithfulness)}</div></div>
+        <div class="card"><div class="k">Gateway calls</div><div class="v">${m.requests}</div></div>
+        <div class="card"><div class="k">Cache hits</div><div class="v good">${m.cache_hits}</div></div>
+        <div class="card"><div class="k">Spend</div><div class="v">$${m.total_cost_usd}</div></div>
+      </div>
+      <div class="handoff-note">Ask the <b>same question again</b> and the gateway serves the agent's LLM call from cache. Or hit <b>Run the whole stack</b> for the full four-case run that produces an eval_run.json for the dashboard.</div>`;
+  } catch (err) {
+    $("flow").innerHTML = `<div class="hop bad"><div class="hopnum">!</div><div class="hopbody">Error: ${esc(err)}</div></div>`;
+  }
+  document.querySelectorAll("button").forEach((b) => (b.disabled = false));
+}
+
 $("run").addEventListener("click", runStack);
+$("runMine").addEventListener("click", runMine);
+$("myq").addEventListener("keydown", (e) => { if (e.key === "Enter") runMine(); });
+document.querySelectorAll("[data-q]").forEach((b) =>
+  b.addEventListener("click", () => { $("myq").value = b.dataset.q; runMine(); })
+);
 boot();
