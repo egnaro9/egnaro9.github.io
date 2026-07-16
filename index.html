@@ -107,6 +107,19 @@
   .verdict{color:var(--teal); border:1px solid var(--teal); background:var(--teal-soft); padding:9px 14px; border-radius:2px; display:inline-flex; gap:8px; align-items:center}
   .verdict .v{width:7px; height:7px; border-radius:50%; background:var(--teal)}
 
+  /* ---- projects ---- */
+  .projects-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(248px,1fr)); gap:16px; margin-top:26px}
+  .proj{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--amber-line); border-radius:3px; padding:20px; display:flex; flex-direction:column; gap:11px}
+  .proj .ph{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .proj .pname{font-family:var(--mono); font-size:14.5px; font-weight:600; color:var(--fg)}
+  .proj .pci{font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); border:1px solid var(--teal); background:var(--teal-soft); padding:2px 7px; border-radius:2px; white-space:nowrap; display:inline-flex; gap:6px; align-items:center}
+  .proj .pci .v{width:6px; height:6px; border-radius:50%; background:var(--teal)}
+  .proj p{margin:0; font-size:14px; color:var(--fg-dim); line-height:1.5}
+  .proj .ptags{display:flex; flex-wrap:wrap; gap:6px; margin-top:2px}
+  .proj .ptag{font-family:var(--mono); font-size:11px; color:var(--fg-faint); border:1px solid var(--line); padding:3px 7px; border-radius:2px}
+  .proj .plink{font-family:var(--mono); font-size:12.5px; color:var(--amber-ink); margin-top:auto; padding-top:4px}
+  .proj .plink span{color:var(--fg-faint)}
+
   /* ---- ladder ---- */
   .ladder{margin-top:24px; display:flex; flex-direction:column; gap:1px; border:1px solid var(--line); border-radius:3px; overflow:hidden}
   .rung{display:grid; grid-template-columns:64px 1fr auto; align-items:center; gap:16px; padding:14px 18px; background:var(--panel)}
@@ -213,6 +226,54 @@
         <span class="verdict"><span class="v"></span>~3 tests · ~0.05s</span>
       </div>
       <p class="intro" style="margin-top:16px">Clone it and run <strong>pytest</strong> — self-contained, no setup beyond <code>requirements.txt</code>. Repo: <a href="https://github.com/egnaro9/evals-differential-oracle" target="_blank" rel="noopener">github.com/egnaro9/evals-differential-oracle</a></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="label"><span class="tick">//</span> Selected Projects</div>
+    <h2>Small, self-contained, and green in CI</h2>
+    <p class="intro">Four focused repos, each built the same way as everything else here — with the harness, and checked. All run offline with deterministic mock backends, so the tests pass in CI without a single API key. Clone any of them and see for yourself.</p>
+
+    <div class="projects-grid">
+      <div class="proj">
+        <div class="ph">
+          <span class="pname">rag-eval-lab</span>
+          <span class="pci"><span class="v"></span>CI green</span>
+        </div>
+        <p>A dependency-free RAG pipeline — retrieve, answer, and a deterministic eval harness (precision, recall, faithfulness) that <strong>catches a planted hallucination</strong>, re-checked on every push.</p>
+        <div class="ptags"><span class="ptag">RAG</span><span class="ptag">pgvector</span><span class="ptag">evals</span><span class="ptag">Python</span></div>
+        <a class="plink" href="https://github.com/egnaro9/rag-eval-lab" target="_blank" rel="noopener">github.com/egnaro9/rag-eval-lab <span>→</span></a>
+      </div>
+
+      <div class="proj">
+        <div class="ph">
+          <span class="pname">llm-gateway</span>
+          <span class="pci"><span class="v"></span>CI green</span>
+        </div>
+        <p>A multi-provider LLM gateway on <strong>FastAPI</strong>: auth, per-key rate limiting, response caching, retries, and per-model token &amp; cost accounting behind one OpenAI-shaped endpoint.</p>
+        <div class="ptags"><span class="ptag">FastAPI</span><span class="ptag">rate-limit</span><span class="ptag">caching</span><span class="ptag">observability</span></div>
+        <a class="plink" href="https://github.com/egnaro9/llm-gateway" target="_blank" rel="noopener">github.com/egnaro9/llm-gateway <span>→</span></a>
+      </div>
+
+      <div class="proj">
+        <div class="ph">
+          <span class="pname">agent-graph</span>
+          <span class="pci"><span class="v"></span>CI green</span>
+        </div>
+        <p>A <strong>LangGraph</strong> ReAct agent with multi-step tool-calling and real guardrails — a safe expression evaluator and a step budget that stops runaway loops, both unit-tested.</p>
+        <div class="ptags"><span class="ptag">LangGraph</span><span class="ptag">tool-calling</span><span class="ptag">guardrails</span></div>
+        <a class="plink" href="https://github.com/egnaro9/agent-graph" target="_blank" rel="noopener">github.com/egnaro9/agent-graph <span>→</span></a>
+      </div>
+
+      <div class="proj">
+        <div class="ph">
+          <span class="pname">eval-dashboard</span>
+          <span class="pci"><span class="v"></span>CI green</span>
+        </div>
+        <p>A <strong>Next.js + TypeScript</strong> dashboard that turns an eval run into metric cards and a per-case table, flagging hallucinations in red. Strict TS, static export, zero vulnerabilities.</p>
+        <div class="ptags"><span class="ptag">Next.js</span><span class="ptag">TypeScript</span><span class="ptag">Vitest</span></div>
+        <a class="plink" href="https://github.com/egnaro9/eval-dashboard" target="_blank" rel="noopener">github.com/egnaro9/eval-dashboard <span>→</span></a>
+      </div>
     </div>
   </section>
 
