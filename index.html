@@ -238,8 +238,8 @@
 
   <section>
     <div class="label"><span class="tick">//</span> Selected Projects</div>
-    <h2>Small, self-contained, and green in CI</h2>
-    <p class="intro">Four focused repos, each built the same way as everything else here — with the harness, and checked. All run offline with deterministic mock backends, so the tests pass in CI without a single API key. <strong>One of them is live right now</strong> — open the dashboard below and you're looking at a real eval run, hallucination flagged in red. Clone any of the rest and see for yourself.</p>
+    <h2>Don't read them — run them</h2>
+    <p class="intro">Four focused repos, each built the same way as everything else here: with the harness, and checked. All four are <strong>live and interactive right now</strong> — no install, no signup, no API key. Three of them run their <em>actual Python</em> in your browser via WebAssembly, so what you're poking isn't a demo reimplementation, it's the same code that runs in CI. Try to fool the eval harness. Break the agent's guardrail. Flood the gateway until it rate-limits you.</p>
 
     <div class="projects-grid">
       <div class="proj">
@@ -256,20 +256,22 @@
       <div class="proj">
         <div class="ph">
           <span class="pname">llm-gateway</span>
-          <span class="pci"><span class="v"></span>CI green</span>
+          <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>A multi-provider LLM gateway on <strong>FastAPI</strong>: auth, per-key rate limiting, response caching, retries, and per-model token &amp; cost accounting behind one OpenAI-shaped endpoint.</p>
-        <div class="ptags"><span class="ptag">FastAPI</span><span class="ptag">rate-limit</span><span class="ptag">caching</span><span class="ptag">observability</span></div>
+        <p>A multi-provider LLM gateway on <strong>FastAPI</strong>: auth, per-key rate limiting, response caching, retries, and per-model token &amp; cost accounting behind one OpenAI-shaped endpoint. <strong>The real ASGI app answers requests in the demo tab</strong> — flood it for a 429, strip the key for a 401, send twice for a cache hit.</p>
+        <div class="ptags"><span class="ptag">FastAPI</span><span class="ptag">rate-limit</span><span class="ptag">caching</span><span class="ptag">observability</span><span class="ptag">WebAssembly</span></div>
+        <a class="plive" href="https://egnaro9.github.io/llm-gateway/" target="_blank" rel="noopener">▶ Poke the API, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/llm-gateway" target="_blank" rel="noopener">github.com/egnaro9/llm-gateway <span>→</span></a>
       </div>
 
       <div class="proj">
         <div class="ph">
           <span class="pname">agent-graph</span>
-          <span class="pci"><span class="v"></span>CI green</span>
+          <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>A <strong>LangGraph</strong> ReAct agent with multi-step tool-calling and real guardrails — a safe expression evaluator and a step budget that stops runaway loops, both unit-tested.</p>
-        <div class="ptags"><span class="ptag">LangGraph</span><span class="ptag">tool-calling</span><span class="ptag">guardrails</span></div>
+        <p>A <strong>LangGraph</strong> ReAct agent with multi-step tool-calling and real guardrails — a safe expression evaluator and a step budget that stops runaway loops, both unit-tested. <strong>Real LangGraph runs in the demo tab</strong>: watch the agent⇄tools loop, then try to break the calculator with <code>__import__('os')</code>.</p>
+        <div class="ptags"><span class="ptag">LangGraph</span><span class="ptag">tool-calling</span><span class="ptag">guardrails</span><span class="ptag">WebAssembly</span></div>
+        <a class="plive" href="https://egnaro9.github.io/agent-graph/" target="_blank" rel="noopener">▶ Watch it think, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/agent-graph" target="_blank" rel="noopener">github.com/egnaro9/agent-graph <span>→</span></a>
       </div>
 
