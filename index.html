@@ -156,10 +156,11 @@
     <div class="eye">Agentic Systems Engineer</div>
     <h1>Erik Hill</h1>
     <p class="thesis">I build agentic systems that <b>check their own work</b> — and keep a human on every step that can't be undone.</p>
-    <p class="lede">Self-taught in four months. I designed and built a full autonomous development harness: a multi-agent loop that plans, executes, critiques, and validates its own changes to a shipping React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it.</p>
+    <p class="lede">Self-taught in ~5 months. I designed and built a full autonomous development harness: a multi-agent loop that plans, executes, critiques, and validates its own changes to a shipping React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it.</p>
     <div class="meta">
       <span class="chip"><span class="dot"></span>Charleston, SC · Remote (US)</span>
       <span class="chip"><a href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a></span>
+      <span class="chip"><a href="https://github.com/egnaro9" target="_blank" rel="noopener">github.com/egnaro9</a></span>
       <span class="chip"><a href="https://www.linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">linkedin.com/in/erik-hill-98895575</a></span>
     </div>
   </header>
@@ -200,6 +201,18 @@
       </div>
     </div>
     <p class="intro" style="margin-top:20px">On top of the differential check: invariant enforcement on the core game rules, plus on-device validation driven by adb automation — so &quot;it passed&quot; means it passed on real hardware, not just in a mock.</p>
+    <p class="intro" style="margin-top:16px"><strong>Proof it catches real bugs:</strong> the oracle runs both implementations over <strong>~9,000 random boards</strong>. To test the test, I planted a deliberately-wrong implementation — <strong>both</strong> the differential check <strong>and</strong> the invariant checker flagged it.</p>
+
+    <div class="oracle" style="margin-top:22px; border-left-color:var(--teal)">
+      <p class="big" style="margin-bottom:2px">Don't take my word for it — the oracle is public and runnable.</p>
+      <div class="diff" style="margin-top:18px">
+        <span class="impl">git clone https://github.com/egnaro9/evals-differential-oracle</span>
+        <span class="eq">→</span>
+        <span class="impl">pytest</span>
+        <span class="verdict"><span class="v"></span>~3 tests · ~0.05s</span>
+      </div>
+      <p class="intro" style="margin-top:16px">Clone it and run <strong>pytest</strong> — self-contained, no setup beyond <code>requirements.txt</code>. Repo: <a href="https://github.com/egnaro9/evals-differential-oracle" target="_blank" rel="noopener">github.com/egnaro9/evals-differential-oracle</a></p>
+    </div>
   </section>
 
   <section>
@@ -245,7 +258,7 @@
   <section class="path">
     <div class="label"><span class="tick">//</span> The Path</div>
     <h2 style="margin-bottom:16px">Not the usual route</h2>
-    <p>I came to this from professional kitchens, not a CS program — six years of running high-volume lines, then four months of building agentic systems from first principles. <b>Judge me on the work, and I'll take that trade every time.</b></p>
+    <p>I came to this from professional kitchens, not a CS program — six years of running high-volume lines, then ~5 months of building agentic systems from first principles. <b>Judge me on the work, and I'll take that trade every time.</b></p>
   </section>
 
   <footer>
@@ -253,6 +266,8 @@
     <h2 style="margin-top:8px">Building trustworthy agents — on a team</h2>
     <div class="cta">
       <a class="btn" href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a>
+      <a class="btn ghost" href="https://github.com/egnaro9" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn ghost" href="https://github.com/egnaro9/evals-differential-oracle" target="_blank" rel="noopener">Oracle repo</a>
       <a class="btn ghost" href="https://www.linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">LinkedIn</a>
     </div>
     <div class="foot-note">Erik Hill · Agentic Systems Engineer · 2026</div>
