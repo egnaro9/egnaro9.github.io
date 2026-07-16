@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Four projects, one loop — an agent that retrieves, a gateway that governs its model calls, a harness that grades its answers, a dashboard that shows the grades. Running live in your browser.">
+<title>The whole stack — Erik Hill</title>
+<style>
+  :root {
+    --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
+    --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
+    --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12);
+    --red:#f87171; --red-soft:rgba(248,113,113,.12);
+    --blue:#60a5fa; --blue-soft:rgba(96,165,250,.12);
+    --violet:#a78bfa; --violet-soft:rgba(167,139,250,.12);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ink); color:var(--fg); font-family:var(--sans); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased; padding:0 20px 80px;
+    background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:34px 34px}
+  .col{max-width:900px; margin:0 auto}
+  a{color:var(--amber-ink); text-decoration:none}
+  code{font-family:var(--mono); color:var(--amber-ink); font-size:.92em}
+  header{padding:52px 0 26px; border-bottom:1px solid var(--line)}
+  .eye{font-family:var(--mono); font-size:12px; letter-spacing:.28em; text-transform:uppercase; color:var(--amber-ink); display:flex; align-items:center; gap:10px}
+  .eye::before{content:""; width:26px; height:1px; background:var(--amber-line)}
+  h1{font-family:var(--mono); font-weight:600; font-size:clamp(28px,5.5vw,44px); line-height:1.05; letter-spacing:-.02em; margin:14px 0 0}
+  .lede{color:var(--fg-dim); max-width:66ch; margin:16px 0 0}
+  .lede b{color:var(--fg)}
+  .status{display:flex; align-items:center; gap:10px; margin-top:20px; font-family:var(--mono); font-size:13px; color:var(--fg-dim);
+    border:1px solid var(--line); background:var(--panel); padding:10px 14px; border-radius:3px}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--amber-ink); animation:pulse 1.4s ease-in-out infinite; flex:none}
+  .status.ready .dot{background:var(--teal); animation:none}
+  .status.err .dot{background:var(--red); animation:none}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+  .chip{font-family:var(--mono); font-size:11.5px; color:var(--fg-faint); border:1px solid var(--line);
+    background:var(--panel); padding:6px 11px; border-radius:2px; opacity:.45; transition:opacity .3s}
+  .chip.lit{opacity:1; color:var(--teal); border-color:var(--teal)}
+  .chip.lit::before{content:"✓ "}
+
+  section{padding:32px 0; border-bottom:1px solid var(--line)}
+  h2{font-family:var(--mono); font-weight:600; font-size:clamp(19px,3vw,24px); margin:.5rem 0 0}
+  .label{font-family:var(--mono); font-size:11.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--amber-ink)}
+  p.intro{color:var(--fg-dim); max-width:66ch}
+
+  .map{display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin:20px 0; padding:16px;
+    border:1px solid var(--line); border-left:3px solid var(--teal); background:var(--panel); border-radius:3px; font-family:var(--mono); font-size:12.5px}
+  .proj{padding:4px 9px; border-radius:2px; font-family:var(--mono); font-size:12px; white-space:nowrap}
+  .proj.a{color:var(--amber-ink); background:var(--amber-soft); border:1px solid var(--amber-line)}
+  .proj.r{color:var(--teal); background:var(--teal-soft); border:1px solid var(--teal)}
+  .proj.g{color:var(--violet); background:var(--violet-soft); border:1px solid var(--violet)}
+  .proj.d{color:var(--blue); background:var(--blue-soft); border:1px solid var(--blue)}
+  .arr{color:var(--fg-faint); font-size:11px}
+
+  button{font-family:var(--mono); font-size:14px; padding:13px 22px; border-radius:2px; cursor:pointer;
+    border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft); transition:background .15s}
+  button:hover:not(:disabled){background:var(--amber-ink); color:var(--ink)}
+  button:disabled{opacity:.45; cursor:not-allowed}
+
+  .corpus{font-family:var(--mono); font-size:11.5px; color:var(--fg-faint); background:#0a0e11; border:1px solid var(--line);
+    border-radius:3px; padding:13px; margin-top:16px; line-height:1.7}
+  .cid{color:var(--amber-ink)}
+
+  #flow{margin-top:20px}
+  .hop{display:flex; gap:14px; padding:13px 0; border-left:2px solid var(--line); padding-left:16px; margin-left:8px; animation:slide .3s}
+  @keyframes slide{from{opacity:0; transform:translateX(-6px)}to{opacity:1; transform:none}}
+  .hop.a{border-left-color:var(--amber-line)} .hop.r{border-left-color:var(--teal)}
+  .hop.g{border-left-color:var(--violet)} .hop.d{border-left-color:var(--blue)}
+  .hop.bad{border-left-color:var(--red)}
+  .hopnum{font-family:var(--mono); font-size:10.5px; color:var(--fg-faint); border:1px solid var(--line);
+    width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; margin-top:2px}
+  .hopbody{flex:1; min-width:0}
+  .hoptitle{font-size:14px; display:flex; align-items:center; gap:7px; flex-wrap:wrap}
+  .q{font-size:15px; color:var(--fg); margin-top:5px}
+  .mono{font-family:var(--mono); font-size:12px; color:var(--fg-dim); margin-top:5px}
+  .ids{color:var(--amber-ink)}
+  .ctx{font-size:12.5px; color:var(--fg-faint); margin-top:4px; font-style:italic}
+  .warnline{font-size:12.5px; color:var(--amber-ink); margin-top:5px}
+  .verdictline{font-family:var(--mono); font-size:12.5px; margin-top:6px}
+  .verdictline.good,.good{color:var(--teal)} .verdictline.bad,.bad{color:var(--red)} .warn{color:var(--amber-ink)}
+  @media (prefers-reduced-motion:reduce){.hop{animation:none}}
+
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:8px; margin:18px 0}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:11px}
+  .card .k{font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-faint)}
+  .card .v{font-size:1.25rem; font-weight:650; margin-top:2px; font-family:var(--mono)}
+  .handoff-btn{display:inline-block; font-family:var(--mono); font-size:13.5px; padding:11px 17px; border-radius:2px;
+    border:1px solid var(--blue); color:var(--blue); background:var(--blue-soft); transition:background .15s}
+  @media (hover:hover){.handoff-btn:hover{background:var(--blue); color:var(--ink)}}
+  .handoff-note{color:var(--fg-dim); font-size:13.5px; margin-top:10px; max-width:64ch}
+  .note{border-left:2px solid var(--amber-line); padding-left:14px; margin-top:18px; color:var(--fg-faint); font-size:13.5px; max-width:68ch}
+  .note b{color:var(--fg-dim)}
+  footer{padding:30px 0 0; color:var(--fg-faint); font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="col">
+
+  <header>
+    <div class="eye">All four, one loop</div>
+    <h1>The whole stack</h1>
+    <p class="lede">Four separate repos that <b>actually call each other</b>: an agent that retrieves, a gateway governing its model calls, an eval harness grading its answers, a dashboard showing the grades. This page installs <b>each project's own published wheel</b> — the exact artifact its CI built — and runs them together in your browser. The arrows below are function calls, not a diagram.</p>
+    <div class="status" id="status"><span class="dot"></span><span id="statusText">Booting…</span></div>
+    <div class="chips">
+      <span class="chip" id="chip-rag-eval-lab">rag-eval-lab</span>
+      <span class="chip" id="chip-llm-gateway">llm-gateway</span>
+      <span class="chip" id="chip-agent-graph">agent-graph</span>
+      <span class="chip" id="chip-eval-dashboard" style="opacity:1">eval-dashboard <span style="color:var(--fg-faint)">— at the end</span></span>
+    </div>
+  </header>
+
+  <section>
+    <div class="map">
+      <span class="proj a">agent-graph</span>
+      <span class="arr">──retrieves via──►</span>
+      <span class="proj r">rag-eval-lab</span>
+      <span class="arr">·</span>
+      <span class="proj a">agent-graph</span>
+      <span class="arr">──its LLM calls──►</span>
+      <span class="proj g">llm-gateway</span>
+      <span class="arr">·</span>
+      <span class="proj r">rag-eval-lab</span>
+      <span class="arr">──grades──► eval_run.json ──►</span>
+      <span class="proj d">eval-dashboard</span>
+    </div>
+
+    <button id="run" disabled>▶ Run the whole stack</button>
+    <p class="intro" style="margin-top:14px">Four questions go through all four projects. <b>Watch question 4</b> — it isn't in the corpus, and that's the interesting one.</p>
+    <div class="corpus" id="corpus">Loading the corpus…</div>
+
+    <div id="flow"></div>
+    <div id="finale"></div>
+
+    <div class="note"><b>What's real and what isn't, plainly.</b> The retrieval, the grading, the gateway's auth/cache/cost accounting and the agent's graph are all genuinely executing — installed from each project's published wheel. The <b>provider</b> is llm-gateway's deterministic mock, which echoes its prompt rather than writing prose; that's what lets this run with no API key and no spend. So the grade is computed against the <b>agent's own composed answer</b>, not the mock's echo. Point the gateway at a real key and nothing about the wiring changes.</div>
+  </section>
+
+  <footer>
+    <p>Each project also stands alone — <a href="https://egnaro9.github.io/rag-eval-lab/">try to fool the eval harness</a> ·
+      <a href="https://egnaro9.github.io/agent-graph/">watch the agent think</a> ·
+      <a href="https://egnaro9.github.io/llm-gateway/">poke the gateway</a> ·
+      <a href="https://egnaro9.github.io/eval-dashboard/">open the dashboard</a>.</p>
+    <p><a href="https://egnaro9.github.io">← back to the portfolio</a> · Built by Erik Hill</p>
+  </footer>
+
+</div>
+<script src="https://cdn.jsdelivr.net/pyodide/v314.0.2/full/pyodide.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
