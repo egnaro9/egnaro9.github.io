@@ -279,14 +279,18 @@
     <p class="intro" style="margin-top:16px"><strong>Proof it catches real bugs:</strong> the oracle runs both implementations over <strong>~9,000 random boards</strong>. To test the test, I planted a deliberately-wrong implementation — <strong>both</strong> the differential check <strong>and</strong> the invariant checker flagged it.</p>
 
     <div class="oracle" style="margin-top:22px; border-left-color:var(--teal)">
-      <p class="big" style="margin-bottom:2px">Don't take my word for it — the oracle is public and runnable.</p>
+      <p class="big" style="margin-bottom:2px">Don't take my word for it — <em>run the oracle yourself</em>.</p>
+      <p class="intro" style="margin-top:14px">Edit a board and watch both nets judge it live. Tick one box to swap in a deliberately-wrong implementation and watch them catch it. Then fuzz <strong>thousands of random boards</strong> — the claim above, executed in your browser, on this repo's real Python.</p>
       <div class="diff" style="margin-top:18px">
-        <span class="impl">git clone https://github.com/egnaro9/evals-differential-oracle</span>
-        <span class="eq">→</span>
-        <span class="impl">pytest</span>
-        <span class="verdict"><span class="v"></span>~3 tests · ~0.05s</span>
+        <span class="impl">react impl</span>
+        <span class="eq">≟</span>
+        <span class="impl">native impl</span>
+        <span class="verdict"><span class="v"></span>5,000 boards · 0 disagreements</span>
+        <span class="eq">→ swap in the bug →</span>
+        <span class="verdict" style="color:var(--fg-dim); border-color:var(--line); background:transparent"><span class="v" style="background:#f87171"></span>2,624 caught, by both nets</span>
       </div>
-      <p class="intro" style="margin-top:16px">Clone it and run <strong>pytest</strong> — self-contained, no setup beyond <code>requirements.txt</code>. Repo: <a href="https://github.com/egnaro9/evals-differential-oracle" target="_blank" rel="noopener">github.com/egnaro9/evals-differential-oracle</a></p>
+      <a class="plive" style="margin-top:18px; display:inline-flex" href="https://egnaro9.github.io/evals-differential-oracle/" target="_blank" rel="noopener">▶ Run the oracle in your browser</a>
+      <p class="intro" style="margin-top:16px">Or clone it and run <strong>pytest</strong> — self-contained, no setup beyond <code>requirements.txt</code>. Repo: <a href="https://github.com/egnaro9/evals-differential-oracle" target="_blank" rel="noopener">github.com/egnaro9/evals-differential-oracle</a></p>
     </div>
   </section>
 
