@@ -97,6 +97,9 @@
   .pipe-note b{display:block; font-family:var(--mono); font-size:12.5px; color:var(--fg); margin-bottom:3px; letter-spacing:.02em}
   .pipe-note span{font-size:14px; color:var(--fg-dim)}
 
+  .subhead{font-family:var(--mono); font-weight:600; font-size:clamp(17px,2.6vw,20px); color:var(--fg);
+    margin:38px 0 0; padding-top:30px; border-top:1px solid var(--line); letter-spacing:-.01em}
+
   /* ---- oracle callout ---- */
   .oracle{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--amber-ink); border-radius:3px; padding:26px 26px 22px; margin-top:22px}
   .oracle .big{font-family:var(--sans); font-size:clamp(18px,2.6vw,21px); color:var(--fg); font-weight:500; margin:0; max-width:52ch; line-height:1.4}
@@ -122,9 +125,13 @@
   .proj .ptag{font-family:var(--mono); font-size:11px; color:var(--fg-faint); border:1px solid var(--line); padding:3px 7px; border-radius:2px}
   .proj .plink{font-family:var(--mono); font-size:12px; color:var(--amber-ink); text-align:center}
   .proj .plink span{color:var(--fg-faint)}
-  .proj .plive{display:inline-flex; align-items:center; justify-content:center; gap:8px; font-family:var(--mono); font-size:12.5px;
+  /* Unscoped on purpose. This was `.proj .plive`, so the three CTAs outside a
+     card — the oracle demo, the stack demo, the loop walkthrough — rendered as
+     bare amber text with no border, background or padding. The most important
+     buttons on the page were the ones that weren't buttons. */
+  .plive{display:inline-flex; align-items:center; justify-content:center; gap:8px; font-family:var(--mono); font-size:12.5px;
     padding:10px 15px; border-radius:2px; border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft); transition:background .15s}
-  @media (hover:hover){.proj .plive:hover{background:var(--amber-ink); color:var(--ink)}}
+  @media (hover:hover){.plive:hover{background:var(--amber-ink); color:var(--ink)}}
   .proj .pci.live{color:var(--amber-ink); border-color:var(--amber-line); background:var(--amber-soft)}
   .proj .pci.live .v{background:var(--amber-ink); animation:pulse 2s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -202,7 +209,10 @@
 
   /* ---- stack ---- */
   .stacknote{font-size:13.5px; color:var(--fg-faint); margin:2px 0 0; max-width:70ch}
-  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:22px 30px; margin-top:22px}
+  /* 330 not 220: at 220 four columns need 4*220+3*30 = 970 into an 880 container,
+     so auto-fit silently drops to 3 tracks and orphans the fourth. 330 resolves
+     to a clean 2x2 at 425px, collapsing to one column on mobile. */
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:22px 30px; margin-top:22px}
   .grid2 h3{font-family:var(--mono); font-size:12.5px; letter-spacing:.06em; color:var(--amber-ink); margin:0 0 8px; text-transform:uppercase}
   .grid2 ul{margin:0; padding:0; list-style:none}
   .grid2 li{font-size:14.5px; color:var(--fg-dim); padding:5px 0; border-bottom:1px solid var(--line-2)}
@@ -236,8 +246,12 @@
   <header>
     <div class="eye">Agentic Systems Engineer</div>
     <h1>Erik Hill</h1>
-    <p class="thesis">I build agentic systems that <b>check their own work</b> — and keep a human on every step that can't be undone.</p>
-    <p class="lede">Self-taught in ~5 months. I designed and built a full autonomous development harness: a multi-agent loop that plans, executes, critiques, and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it.</p>
+    <p class="thesis">I build agentic systems that check their own work — and keep <b>a human on every step that can't be undone</b>.</p>
+    <p class="lede">I designed and built an autonomous development harness: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it. The same discipline is public: <strong>seven repos</strong>, six running their real compiled code in your browser, and one a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, tagged with the commit that produced them. <strong>Self-taught, in ~5 months.</strong></p>
+    <div class="cta" style="margin-top:26px; justify-content:flex-start">
+      <a class="plive" href="https://egnaro9.github.io/evals-differential-oracle/" target="_blank" rel="noopener">▶ Watch it catch a planted bug — in your browser</a>
+      <a class="plive" style="border-color:var(--line); background:transparent; color:var(--fg-dim)" href="https://egnaro9.github.io/stack/">▶ Run four services together — one button</a>
+    </div>
     <div class="meta">
       <span class="chip"><span class="dot"></span>Charleston, SC · Remote (US)</span>
       <span class="chip"><a href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a></span>
@@ -248,8 +262,9 @@
   </header>
 
   <section>
-    <div class="label"><span class="tick">//</span> Pipeline</div>
+    <div class="label"><span class="tick">//</span> The Harness</div>
     <h2>A loop that reviews itself before it lands</h2>
+    <p class="intro">Agents that build unsupervised are easy. Agents you'd <em>let</em> build unsupervised are the problem — and the answer isn't a better model, it's knowing which steps a machine may never take alone. Here's the loop, how far it runs on its own, and exactly what stops it.</p>
     <p class="intro">Work moves through five stages. Each hands off to the next automatically — no manual relaunch — and judgment runs on a different, colder model than execution, so the critic isn't grading its own homework.</p>
 
     <div class="pipe-scroll">
@@ -268,6 +283,19 @@
       <div><b>Hook-based handoff</b><span>Stages arm the next leg on their own — the loop advances without a human babysitting it.</span></div>
       <div><b>Cold, independent critic</b><span>Review runs in fresh context so it catches what the builder rationalized away.</span></div>
     </div>
+
+
+    <h3 class="subhead">Automate the launches. Never the approval.</h3>
+    <p class="intro">Trust is earned in named steps. Higher rungs remove <em>clicks</em>, never <em>gates</em> — a human still approves anything irreversible or outward-facing (deploys, commits, anything a user would see).</p>
+
+    <div class="ladder" role="list">
+      <div class="rung" role="listitem"><span class="lv">L4</span><span class="rt"><b>Lights-out</b> — a doctrine amendment, not a default. Operator's call, never self-granted.</span><span class="tag">gated</span></div>
+      <div class="rung" role="listitem"><span class="lv">L3</span><span class="rt"><b>Auto-advance launches</b> — the safe clicks fire on their own; write-gates still stop for a human.</span><span class="tag">gated</span></div>
+      <div class="rung here" role="listitem"><span class="lv">L2</span><span class="rt"><b>Hands-off relay</b> — the loop chains itself end to end; every irreversible act still waits for approval.</span><span class="tag">◀ current</span></div>
+      <div class="rung" role="listitem"><span class="lv">L1</span><span class="rt"><b>Assisted</b> — humans drive; the harness proposes and prepares each step.</span><span class="tag">manual</span></div>
+      <div class="rung" role="listitem"><span class="lv">L0</span><span class="rt"><b>Manual</b> — every action is a human keystroke.</span><span class="tag">manual</span></div>
+    </div>
+    <p class="ladder-note"><b>Rule:</b> reliability earns launch-automation — it never earns gate-removal.</p>
 
     <div class="oracle" style="margin-top:26px; border-left-color:var(--teal)">
       <p class="big" style="margin-bottom:2px">Here's the loop catching <em>itself</em> — one real arc.</p>
@@ -311,7 +339,7 @@
   <section>
     <div class="label"><span class="tick">//</span> Selected Projects</div>
     <h2>Don't read them — run them</h2>
-    <p class="intro">Six repos, <strong>all six live right now</strong> — no install, no signup, no API key. Five run their <em>real compiled code</em> in your browser: the same Python that runs in CI, and the Java rules engine <strong>lifted out of my Android game</strong>. The sixth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And five of them aren't separate exercises — <strong>they're one system that calls itself</strong>.</p>
+    <p class="intro">Six of them here, <strong>all six live right now</strong> — no install, no signup, no API key. Five run their <em>real compiled code</em> in your browser: the same Python that runs in CI, and the Java rules engine <strong>lifted out of my Android game</strong>. The sixth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And five of them aren't separate exercises — <strong>they're one system that calls itself</strong>.</p>
 
     <div class="arch-wrap">
       <svg class="arch" viewBox="0 0 800 390" role="img" aria-label="Architecture: agent-graph retrieves via rag-eval-lab and routes its LLM calls through llm-gateway; rag-eval-lab grades the answers into eval_run.json, which eval-dashboard renders and eval-history stores in Postgres to compare against earlier runs.">
@@ -507,20 +535,7 @@
     </div>
   </section>
 
-  <section>
-    <div class="label"><span class="tick">//</span> Autonomy Ladder</div>
-    <h2>Automate the launches. Never the approval.</h2>
-    <p class="intro">Trust is earned in named steps. Higher rungs remove <em>clicks</em>, never <em>gates</em> — a human still approves anything irreversible or outward-facing (deploys, commits, anything a user would see).</p>
 
-    <div class="ladder" role="list">
-      <div class="rung" role="listitem"><span class="lv">L4</span><span class="rt"><b>Lights-out</b> — a doctrine amendment, not a default. Operator's call, never self-granted.</span><span class="tag">gated</span></div>
-      <div class="rung" role="listitem"><span class="lv">L3</span><span class="rt"><b>Auto-advance launches</b> — the safe clicks fire on their own; write-gates still stop for a human.</span><span class="tag">gated</span></div>
-      <div class="rung here" role="listitem"><span class="lv">L2</span><span class="rt"><b>Hands-off relay</b> — the loop chains itself end to end; every irreversible act still waits for approval.</span><span class="tag">◀ current</span></div>
-      <div class="rung" role="listitem"><span class="lv">L1</span><span class="rt"><b>Assisted</b> — humans drive; the harness proposes and prepares each step.</span><span class="tag">manual</span></div>
-      <div class="rung" role="listitem"><span class="lv">L0</span><span class="rt"><b>Manual</b> — every action is a human keystroke.</span><span class="tag">manual</span></div>
-    </div>
-    <p class="ladder-note"><b>Rule:</b> reliability earns launch-automation — it never earns gate-removal.</p>
-  </section>
 
   <section>
     <div class="label"><span class="tick">//</span> Stack &amp; Practice</div>
