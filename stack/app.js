@@ -1,4 +1,5 @@
-// One button, four projects, one loop.
+// One button, five projects, one loop.
+// Four run in this tab. The fifth is a real service, so this actually calls it.
 //
 // Nothing here reimplements any of them. This page installs each project's own
 // published wheel — the exact artifact its CI built — and calls them. The
@@ -73,7 +74,7 @@ async function boot() {
       lit(`chip-${name}`);
     }
 
-    setStatus("Wiring the four together…");
+    setStatus("Wiring them together…");
     await py.runPythonAsync(`
 import sys, types, json
 
@@ -104,7 +105,7 @@ import anyio.to_thread
 async def _inline(func, *a, **k): return func(*a)
 anyio.to_thread.run_sync = _inline          # WASM has no threads
 
-# ── the four projects, each from its own published wheel ──────────────────────
+# ── the four in-tab projects, each from its own published wheel ───────────────
 from ragevallab.data import SAMPLE_DOCS                 # rag-eval-lab
 from ragevallab.evals import faithfulness, FAITHFULNESS_THRESHOLD, precision_at_k, recall_at_k
 from llmgateway.app import Config as GwConfig, create_app as create_gateway   # llm-gateway
@@ -166,7 +167,7 @@ def reindex(docs_json):
     return json.dumps({"ok": True, "n": len(docs)})
 
 async def run_case(i):
-    """One question through all four projects."""
+    """One question through the four in-tab projects. eval-history is stage 6, in JS."""
     case = CASES[i]
     q = case["q"]
 
@@ -202,7 +203,7 @@ async def run_case(i):
     })
 
 async def run_custom(q):
-    """One visitor-supplied question through all four projects.
+    """One visitor-supplied question through the four in-tab projects.
 
     No gold label exists for an arbitrary question, so precision/recall are
     left out rather than invented — faithfulness and the retrieval are what
@@ -264,7 +265,12 @@ def build_eval_run(cases_json):
     })
 `);
 
-    setStatus("Ready — all four projects installed and wired in this tab", "ready");
+    // eval-history is the fifth project and the only one that isn't in this tab —
+    // it's a real service on a free tier that sleeps. Nudge it awake while the
+    // reader is still reading, so stage 6 doesn't stall on a 50s cold start.
+    wakeEvalHistory();
+
+    setStatus("Ready — four projects installed in this tab, and a fifth answering from a real database", "ready");
     document.querySelectorAll("button").forEach((b) => (b.disabled = false));
     const docs = JSON.parse(await py.runPythonAsync("corpus_json()"));
     $("corpusBox").value = Object.entries(docs).map(([k, v]) => `${k}: ${v}`).join("\n");
@@ -276,6 +282,77 @@ def build_eval_run(cases_json):
 
 const tone = (v) => (v >= 0.9 ? "good" : v >= 0.6 ? "warn" : "bad");
 const pct = (v) => (v * 100).toFixed(0) + "%";
+
+/* ── the fifth project ───────────────────────────────────────────────────────
+   Four of these run in your tab. eval-history doesn't — it's a FastAPI service
+   on Postgres, and the only honest way to include it in a browser demo is to
+   actually call it.
+
+   It can't be written to: writes need a key, and a key in a page is not a key.
+   So this reads. It pulls a run the service really has stored, fetches
+   eval-history's REAL compare.py from GitHub, and runs that exact code — the
+   comparer the server itself uses, pure and I/O-free by design — against the
+   run you just produced. Nothing is simulated; the comparison logic and the
+   baseline are both the genuine article.                                     */
+
+const EVAL_HISTORY = "https://eval-history.onrender.com";
+const COMPARE_SRC =
+  "https://raw.githubusercontent.com/egnaro9/eval-history/main/evalhistory/compare.py";
+
+let historyWoken = false;
+function wakeEvalHistory() {
+  if (historyWoken) return;
+  historyWoken = true;
+  fetch(`${EVAL_HISTORY}/health`).catch(() => {});   // best effort; failure is fine
+}
+
+/** A stored run in eval_run.json shape, plus how to describe it. */
+async function fetchStoredBaseline(signal) {
+  const list = await fetch(`${EVAL_HISTORY}/runs?limit=20`, { signal }).then((r) => {
+    if (!r.ok) throw new Error(`eval-history returned ${r.status}`);
+    return r.json();
+  });
+  // Prefer a real CI run: an ablation is a config sweep, not a baseline anyone
+  // pushed. The service knows the difference — that's what `source` is for.
+  const pick = list.find((r) => r.source === "ci") ?? list[0];
+  if (!pick) throw new Error("eval-history has no runs stored");
+  const body = await fetch(`${EVAL_HISTORY}/runs/${pick.id}/eval_run`, { signal })
+    .then((r) => {
+      if (!r.ok) throw new Error(`eval-history returned ${r.status}`);
+      return r.json();
+    });
+  return { meta: pick, run: body };
+}
+
+/** Load eval-history's real comparer into this tab. */
+async function loadComparer() {
+  const src = await fetch(COMPARE_SRC).then((r) => {
+    if (!r.ok) throw new Error(`couldn't fetch compare.py (${r.status})`);
+    return r.text();
+  });
+  py.FS.writeFile("/eh_compare.py", src);
+  await py.runPythonAsync(`
+import importlib.util, sys, json
+_spec = importlib.util.spec_from_file_location("eh_compare", "/eh_compare.py")
+eh_compare = importlib.util.module_from_spec(_spec)
+sys.modules["eh_compare"] = _spec.loader and "eh_compare" or "eh_compare"
+sys.modules["eh_compare"] = eh_compare      # dataclasses resolve __module__ via this
+_spec.loader.exec_module(eh_compare)
+
+def compare_with_stored(baseline_json, candidate_json):
+    c = eh_compare.compare_runs(json.loads(baseline_json), json.loads(candidate_json))
+    return json.dumps({
+        "verdict": c.verdict,
+        "is_regression": c.is_regression,
+        "regressions": [{"q": d.q, "metric": d.metric, "delta": d.delta} for d in c.regressions],
+        "improvements": [{"q": d.q, "metric": d.metric, "delta": d.delta} for d in c.improvements],
+        "newly_flagged": c.newly_flagged,
+        "added": c.added,
+        "removed": c.removed,
+        "metric_deltas": c.metric_deltas,
+    })
+`);
+}
 
 async function runStack() {
   const btn = $("run");
@@ -329,6 +406,9 @@ async function runStack() {
   step(5, `<span class="proj r">rag-eval-lab</span> → <span class="proj d">eval-dashboard</span> · the artifact`,
     `<div class="mono">wrote <b>eval_run.json</b> — ${evalRun.metrics.n_cases} cases ·
       ${evalRun.metrics.flagged_cases} flagged · mean faithfulness ${pct(evalRun.metrics.faithfulness)}</div>`, "d");
+  await sleep(420);
+
+  await stageEvalHistory(evalRun);
 
   $("finale").innerHTML = `
     <div class="cards">
@@ -341,12 +421,62 @@ async function runStack() {
     </div>
     <a class="handoff-btn" href="https://egnaro9.github.io/eval-dashboard/?from=rag-eval-lab" target="_blank" rel="noopener">
       Open this run in eval-dashboard →</a>
-    <div class="handoff-note">That button hands the <b>eval_run.json you just produced</b> to the fourth project. Four repos, one loop — and every arrow above was a function call, not a diagram.
+    <div class="handoff-note">That button hands the <b>eval_run.json you just produced</b> to the fourth project. Five repos, one loop — and every arrow above was a function call, not a diagram.
+      <br><br>Four of them ran <b>in this tab</b>, from their own published wheels. Step 6 didn't: that one left your browser and asked <b>eval-history</b> — a FastAPI service on Postgres — what changed against a run it really has stored, and judged it with <b>the server's own <code>compare.py</code></b>, fetched from GitHub and run here. Nothing on this page is a mock.
       ${m.cache_hits > 0 ? `<br><br>Note the <b>${m.cache_hits} cache hits</b>: you ran it twice, so the gateway served the agent's LLM calls without touching the provider.` : `<br><br>Run it again — the gateway will serve every one of those LLM calls from cache the second time.`}</div>`;
   $("finale").scrollIntoView({ block: "nearest", behavior: "smooth" });
 
   btn.disabled = false;
   btn.textContent = "▶ Run it again";
+}
+
+/**
+ * Stage 6 — the only stage that leaves the tab.
+ *
+ * Failure here must not break the demo: it's a free-tier service, and the other
+ * five stages already ran. A missing sixth stage that says why is honest; a
+ * spinner that never resolves is not.
+ */
+async function stageEvalHistory(evalRun) {
+  wakeEvalHistory();
+  const id = "s6";
+  step(6, `<span class="proj r">rag-eval-lab</span> → <span class="proj h">eval-history</span> · what changed?`,
+    `<div class="mono" id="${id}">asking a real Postgres what it remembers…
+       <span class="dim">(free tier — if it's been idle this takes ~30-50s to wake)</span></div>`, "h");
+
+  const ctrl = new AbortController();
+  const bail = setTimeout(() => ctrl.abort(), 75000);
+  try {
+    const [{ meta, run: baseline }] = await Promise.all([
+      fetchStoredBaseline(ctrl.signal),
+      loadComparer(),
+    ]);
+    clearTimeout(bail);
+
+    const cmp = JSON.parse(await py.runPythonAsync(
+      `compare_with_stored(${JSON.stringify(JSON.stringify(baseline))}, ${JSON.stringify(JSON.stringify(evalRun))})`,
+    ));
+
+    const when = new Date(meta.created_at).toLocaleDateString();
+    const sha = meta.git_sha ? `<code>${esc(meta.git_sha)}</code>` : "—";
+    const verdictTone = cmp.is_regression ? "bad" : cmp.verdict === "improved" ? "good" : "";
+
+    $(id).innerHTML = `
+      <div>baseline: <b>${esc(meta.label ?? meta.name)}</b> · ${sha} · stored ${when}
+        <span class="dim">— a real row in Postgres, not a fixture</span></div>
+      <div style="margin-top:8px">verdict: <b class="${verdictTone}">${esc(cmp.verdict)}</b>
+        · ${cmp.regressions.length} regression(s) · ${cmp.improvements.length} improvement(s)</div>
+      ${(cmp.added.length || cmp.removed.length) ? `
+      <div style="margin-top:8px" class="dim">${cmp.added.length} question(s) added, ${cmp.removed.length} removed —
+        reported separately, <b>never scored</b>. A suite that changed isn't a system that regressed.</div>` : ""}
+      <div style="margin-top:8px" class="dim">Compared by eval-history's own <b>compare.py</b>, fetched from GitHub
+        and executed here — the same code the server runs.</div>`;
+  } catch (err) {
+    clearTimeout(bail);
+    $(id).innerHTML = `<span class="dim">eval-history didn't answer
+      (${esc(String(err.message || err))}). It's a free service that sleeps — the five stages above
+      still ran entirely in this tab, which is rather the point of them being here.</span>`;
+  }
 }
 
 async function runMine() {

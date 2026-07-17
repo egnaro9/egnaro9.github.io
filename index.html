@@ -266,7 +266,7 @@
     <p class="lede">I designed and built an autonomous development harness: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it. The same discipline is public: <strong>seven repos</strong>, six running their real compiled code in your browser, and one a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, tagged with the commit that produced them. <strong>Self-taught, in ~5 months.</strong></p>
     <div class="cta" style="margin-top:26px; justify-content:flex-start">
       <a class="plive" href="https://egnaro9.github.io/evals-differential-oracle/" target="_blank" rel="noopener">▶ Watch it catch a planted bug — in your browser</a>
-      <a class="plive" style="border-color:var(--line); background:transparent; color:var(--fg-dim)" href="https://egnaro9.github.io/stack/">▶ Run four services together — one button</a>
+      <a class="plive" style="border-color:var(--line); background:transparent; color:var(--fg-dim)" href="https://egnaro9.github.io/stack/">▶ Run five services together — one button</a>
     </div>
     <div class="meta">
       <span class="chip"><span class="dot"></span>Charleston, SC · Remote (US)</span>
@@ -434,8 +434,8 @@
       <div class="arch-legend">Every box is live — click one. Every arrow is a function call, not a diagram. Everything above the last row runs in your tab; <b>eval-history is a real server</b>.</div>
     </div>
 
-    <p class="compose-note">An agent that retrieves, a gateway governing its model calls, a harness grading its answers, a dashboard showing what failed. One button runs a question through <b>all four</b> and hands you the result — including the case that's <b>perfectly faithful and completely wrong</b>, which is the most useful thing on this whole site.</p>
-    <a class="plive" style="margin-top:14px" href="https://egnaro9.github.io/stack/">▶ Run all four together — one button</a>
+    <p class="compose-note">An agent that retrieves, a gateway governing its model calls, a harness grading its answers, a dashboard showing what failed, and a database that remembers every run. One button runs a question through <b>all five</b> and hands you the result — including the case that's <b>perfectly faithful and completely wrong</b>, which is the most useful thing on this whole site. The last stage leaves your tab: it asks the <b>live Postgres service</b> what changed versus a run it really has stored, using <b>the same <code>compare.py</code> the server runs</b>, fetched from GitHub and executed in front of you.</p>
+    <a class="plive" style="margin-top:14px" href="https://egnaro9.github.io/stack/">▶ Run all five together — one button</a>
     <p class="compose-note" style="margin-top:12px">Or try each stage on its own — the five below are numbered in the order they run. That button runs stages 1–4 in your tab; stage 5 is the deployed one, so it answers from a database instead.</p>
 
     <div class="projects-flow">

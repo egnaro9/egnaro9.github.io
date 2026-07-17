@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Four projects, one loop — an agent that retrieves, a gateway that governs its model calls, a harness that grades its answers, a dashboard that shows the grades. Running live in your browser.">
+<meta name="description" content="Five projects, one loop — an agent that retrieves, a gateway that governs its model calls, a harness that grades its answers, a dashboard that shows the grades, and a Postgres service that remembers every run. Four run live in your browser; the fifth is a real API.">
 <title>The whole stack — Erik Hill</title>
 <style>
   :root {
@@ -16,6 +16,7 @@
     --red:#f87171; --red-soft:rgba(248,113,113,.12);
     --blue:#60a5fa; --blue-soft:rgba(96,165,250,.12);
     --violet:#a78bfa; --violet-soft:rgba(167,139,250,.12);
+    --pink:#f472b6; --pink-soft:rgba(244,114,182,.12);
     --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
@@ -58,6 +59,8 @@
   .proj.r{color:var(--teal); background:var(--teal-soft); border:1px solid var(--teal)}
   .proj.g{color:var(--violet); background:var(--violet-soft); border:1px solid var(--violet)}
   .proj.d{color:var(--blue); background:var(--blue-soft); border:1px solid var(--blue)}
+  /* eval-history — the one that isn't in this tab */
+  .proj.h{color:var(--pink); background:var(--pink-soft); border:1px solid var(--pink)}
   .arr{color:var(--fg-faint); font-size:11px}
 
   button{font-family:var(--mono); font-size:14px; padding:13px 22px; border-radius:2px; cursor:pointer;
@@ -90,6 +93,7 @@
   @keyframes slide{from{opacity:0; transform:translateX(-6px)}to{opacity:1; transform:none}}
   .hop.a{border-left-color:var(--amber-line)} .hop.r{border-left-color:var(--teal)}
   .hop.g{border-left-color:var(--violet)} .hop.d{border-left-color:var(--blue)}
+  .hop.h{border-left-color:var(--pink)}
   .hop.bad{border-left-color:var(--red)}
   .hopnum{font-family:var(--mono); font-size:10.5px; color:var(--fg-faint); border:1px solid var(--line);
     width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; margin-top:2px}
@@ -121,15 +125,16 @@
 <div class="col">
 
   <header>
-    <div class="eye">All four, one loop</div>
+    <div class="eye">All five, one loop</div>
     <h1>The whole stack</h1>
-    <p class="lede">Four separate repos that <b>actually call each other</b>: an agent that retrieves, a gateway governing its model calls, an eval harness grading its answers, a dashboard showing the grades. This page installs <b>each project's own published wheel</b> — the exact artifact its CI built — and runs them together in your browser. The arrows below are function calls, not a diagram.</p>
+    <p class="lede">Five separate repos that <b>actually call each other</b>: an agent that retrieves, a gateway governing its model calls, an eval harness grading its answers, a dashboard showing the grades, and a database that remembers every run. This page installs <b>each project's own published wheel</b> — the exact artifact its CI built — and runs them together in your browser. The last one isn't in your browser at all: it's a <b>live FastAPI + Postgres service</b>, and this page really calls it. The arrows below are function calls, not a diagram.</p>
     <div class="status" id="status"><span class="dot"></span><span id="statusText">Booting…</span></div>
     <div class="chips">
       <span class="chip" id="chip-rag-eval-lab">rag-eval-lab</span>
       <span class="chip" id="chip-llm-gateway">llm-gateway</span>
       <span class="chip" id="chip-agent-graph">agent-graph</span>
       <span class="chip" id="chip-eval-dashboard" style="opacity:1">eval-dashboard <span style="color:var(--fg-faint)">— at the end</span></span>
+      <span class="chip" id="chip-eval-history" style="opacity:1; border-color:var(--pink); color:var(--pink)">eval-history <span style="color:var(--fg-faint)">— a real server</span></span>
     </div>
   </header>
 
@@ -149,7 +154,7 @@
     </div>
 
     <button id="run" disabled>▶ Run the whole stack</button>
-    <p class="intro" style="margin-top:14px">Four questions go through all four projects, ending with an <code>eval_run.json</code> you can open in the dashboard. <b>Watch question 4</b> — it isn't in the corpus, and that's the interesting one.</p>
+    <p class="intro" style="margin-top:14px">Four questions go through all five projects, ending with an <code>eval_run.json</code> you can open in the dashboard — and a verdict from a real database. <b>Watch question 4</b> — it isn't in the corpus, and that's the interesting one.</p>
 
     <div class="ask">
       <div class="asklab">— or ask it your own —</div>
