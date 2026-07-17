@@ -75,7 +75,7 @@
   .thesis b{color:var(--amber-ink); font-weight:600}
   .lede{margin:20px 0 0; max-width:60ch}
   .meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:26px}
-  .chip{font-family:var(--mono); font-size:12.5px; color:var(--fg-dim); border:1px solid var(--line); background:var(--panel); padding:7px 12px; border-radius:2px; display:inline-flex; align-items:center; gap:7px}
+  .chip{font-family:var(--mono); font-size:13.5px; color:var(--fg-dim); border:1px solid var(--line); background:var(--panel); padding:7px 12px; border-radius:2px; display:inline-flex; align-items:center; gap:7px}
   .chip a{color:var(--fg)}
   .chip .dot{width:6px; height:6px; border-radius:50%; background:var(--teal)}
 
@@ -100,9 +100,9 @@
   .pipe-note{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px 26px; margin-top:30px}
   .pipe-note div{border-left:2px solid var(--amber-line); padding-left:14px}
   .pipe-note b{display:block; font-family:var(--mono); font-size:12.5px; color:var(--fg); margin-bottom:3px; letter-spacing:.02em}
-  .pipe-note span{font-size:14px; color:var(--fg-dim)}
+  .pipe-note span{font-size:15px; color:var(--fg-dim)}
 
-  .subhead{font-family:var(--mono); font-weight:600; font-size:clamp(17px,2.6vw,20px); color:var(--fg);
+  .subhead{font-family:var(--mono); font-weight:600; font-size:clamp(20px,3.2vw,26px); color:var(--fg);
     margin:38px 0 0; padding-top:30px; border-top:1px solid var(--line); letter-spacing:-.01em}
 
   /* ---- oracle callout ---- */
@@ -125,10 +125,10 @@
   .proj .pname{font-family:var(--mono); font-size:14.5px; font-weight:600; color:var(--fg)}
   .proj .pci{font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); border:1px solid var(--teal); background:var(--teal-soft); padding:2px 7px; border-radius:2px; white-space:nowrap; display:inline-flex; gap:6px; align-items:center}
   .proj .pci .v{width:6px; height:6px; border-radius:50%; background:var(--teal)}
-  .proj p{margin:8px 0 0; font-size:14px; color:var(--fg-dim); line-height:1.5; max-width:70ch}
+  .proj p{margin:9px 0 0; font-size:15.5px; color:var(--fg-dim); line-height:1.55; max-width:70ch}
   .proj .ptags{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
-  .proj .ptag{font-family:var(--mono); font-size:11px; color:var(--fg-faint); border:1px solid var(--line); padding:3px 7px; border-radius:2px}
-  .proj .plink{font-family:var(--mono); font-size:12px; color:var(--amber-ink); text-align:center}
+  .proj .ptag{font-family:var(--mono); font-size:12px; color:var(--fg-faint); border:1px solid var(--line); padding:3px 7px; border-radius:2px}
+  .proj .plink{font-family:var(--mono); font-size:13px; color:var(--amber-ink); text-align:center}
   .proj .plink span{color:var(--fg-faint)}
   /* Unscoped on purpose. This was `.proj .plive`, so the three CTAs outside a
      card — the oracle demo, the stack demo, the loop walkthrough — rendered as
@@ -153,7 +153,7 @@
   .proj .pci.api{color:#f472b6; border-color:#f472b6; background:rgba(244,114,182,.09)}
   .proj .pci.api .v{background:#f472b6; animation:pulse 2s ease-in-out infinite}
   @media (prefers-reduced-motion:reduce){.proj .pci.api .v{animation:none}}
-  .proj .pnote{font-family:var(--mono); font-size:10px; color:var(--fg-faint); text-align:center; line-height:1.45; white-space:normal; margin-top:-3px}
+  .proj .pnote{font-family:var(--mono); font-size:11px; color:var(--fg-faint); text-align:center; line-height:1.45; white-space:normal; margin-top:-3px}
   .proj .pstep{font-family:var(--mono); font-size:10px; color:var(--fg-faint); border:1px solid var(--line);
     width:19px; height:19px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; flex:none}
 
@@ -203,14 +203,14 @@
   .compose .cnode{font-family:var(--mono); font-size:13px; color:var(--fg); border:1px solid var(--line); background:var(--raised); padding:8px 12px; border-radius:2px}
   .compose .cfile{font-family:var(--mono); font-size:12.5px; color:var(--teal); border:1px dashed var(--teal); background:var(--teal-soft); padding:8px 12px; border-radius:2px}
   .compose .carr{font-family:var(--mono); font-size:11.5px; color:var(--fg-faint); letter-spacing:.04em}
-  .compose-note{color:var(--fg-dim); font-size:14px; margin-top:12px; max-width:62ch}
+  .compose-note{color:var(--fg-dim); font-size:15.5px; margin-top:12px; max-width:62ch}
   .compose-note b{color:var(--fg)}
 
   /* ---- ladder ---- */
   .ladder{margin-top:24px; display:flex; flex-direction:column; gap:1px; border:1px solid var(--line); border-radius:3px; overflow:hidden}
   .rung{display:grid; grid-template-columns:64px 1fr auto; align-items:center; gap:16px; padding:14px 18px; background:var(--panel)}
   .rung .lv{font-family:var(--mono); font-size:14px; font-weight:600; color:var(--fg-faint)}
-  .rung .rt{font-size:14.5px; color:var(--fg-dim)}
+  .rung .rt{font-size:15.5px; color:var(--fg-dim)}
   .rung .rt b{color:var(--fg)}
   .rung .tag{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-faint); border:1px solid var(--line); padding:3px 8px; border-radius:2px; white-space:nowrap}
   .rung.here{background:var(--amber-soft)}
