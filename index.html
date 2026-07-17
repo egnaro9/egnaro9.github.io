@@ -249,7 +249,7 @@
 
   <section>
     <div class="label"><span class="tick">//</span> Pipeline</div>
-    <h2>A loop that reviews itself before it ships</h2>
+    <h2>A loop that reviews itself before it lands</h2>
     <p class="intro">Work moves through five stages. Each hands off to the next automatically — no manual relaunch — and judgment runs on a different, colder model than execution, so the critic isn't grading its own homework.</p>
 
     <div class="pipe-scroll">
@@ -259,7 +259,7 @@
         <div class="node"><span class="bead"></span><span class="nlab">Execution</span><span class="nsub">build</span></div>
         <div class="node"><span class="bead"></span><span class="nlab">Critic</span><span class="nsub">review</span></div>
         <div class="node"><span class="bead"></span><span class="nlab">Evaluation</span><span class="nsub">verify</span></div>
-        <div class="node"><span class="bead"></span><span class="nlab">Ops</span><span class="nsub">ship</span></div>
+        <div class="node"><span class="bead"></span><span class="nlab">Ops</span><span class="nsub">commit</span></div>
       </div>
     </div>
 
@@ -271,7 +271,7 @@
 
     <div class="oracle" style="margin-top:26px; border-left-color:var(--teal)">
       <p class="big" style="margin-bottom:2px">Here's the loop catching <em>itself</em> — one real arc.</p>
-      <p class="intro" style="margin-top:14px">The builder reported a number and called it the minimum achievable. The cold critic refused the claim, re-derived the truth from source, proved the real floor was <strong>36% lower</strong>, and blocked the work. Then it ran the check the arc had just installed and watched the arc's own output trip it. Five stages, click through what actually happened.</p>
+      <p class="intro" style="margin-top:14px">The builder reported a number and called it the minimum achievable. The cold critic refused the claim, re-derived the truth from source, proved the real floor was <strong>38% lower</strong>, and blocked the work. Then it ran the check the arc had just installed and watched the arc's own output trip it. Five stages, click through what actually happened.</p>
       <a class="plive" style="margin-top:16px; display:inline-flex" href="https://egnaro9.github.io/loop/">▶ Walk through a real arc</a>
     </div>
   </section>
@@ -280,20 +280,21 @@
     <div class="label"><span class="tick">//</span> The Oracle</div>
     <h2>Correctness it can prove — not vibe-check</h2>
     <div class="oracle">
-      <p class="big">The same game logic runs in <em>two independent implementations</em> — a React build and a native engine. Logic-invariant tests hold both to the same rules, so a regression in one is caught by the other <em>before it ships</em>.</p>
+      <p class="big">Cascading match-3 rules have no obvious right answer to assert against — the expected output is as hard to work out as the code. So write the logic <em>twice</em>, by different algorithms, and make the two argue. Where they disagree, one of them is wrong, and <em>no one had to know which answer was correct</em> to find out.</p>
       <div class="diff">
-        <span class="impl">React implementation</span>
+        <span class="impl">implementation A</span>
         <span class="eq">≟ must agree ≟</span>
-        <span class="impl">Native engine</span>
-        <span class="verdict"><span class="v"></span>differential oracle</span>
+        <span class="impl">implementation B</span>
+        <span class="verdict"><span class="v"></span>3,000 boards · 0 disagreements</span>
       </div>
     </div>
-    <p class="intro" style="margin-top:20px">On top of the differential check: invariant enforcement on the core game rules, plus on-device validation driven by adb automation — so &quot;it passed&quot; means it passed on real hardware, not just in a mock.</p>
-    <p class="intro" style="margin-top:16px"><strong>Proof it catches real bugs:</strong> the oracle runs both implementations over <strong>~9,000 random boards</strong>. To test the test, I planted a deliberately-wrong implementation — <strong>both</strong> the differential check <strong>and</strong> the invariant checker flagged it.</p>
+    <p class="intro" style="margin-top:20px"><strong>Proof the test can fail:</strong> a check that has never caught anything isn't evidence. So I planted a deliberately-wrong implementation — special gems on runs of 3 instead of 4 — and <strong>both</strong> nets caught it: the differential check <strong>and</strong> an independent invariant checker, over <strong>3,000 more boards</strong>. Neither missed a board the other found.</p>
+    <p class="intro" style="margin-top:16px">This is the technique, running end-to-end and clickable. <strong>Where it's headed is the real thing:</strong> my Android game's rules already exist twice — a React build, and the Java engine hand-ported from it that's authoritative on device — which makes each one the other's oracle. <strong>Wiring those two into an automated gate is pre-launch work, not something I'm claiming runs today.</strong> What does run today is the invariant suite on that engine, plus on-device validation driven by adb, so &quot;it passed&quot; means it passed on real hardware.</p>
 
     <div class="oracle" style="margin-top:22px; border-left-color:var(--teal)">
       <p class="big" style="margin-bottom:2px">Don't take my word for it — <em>run the oracle yourself</em>.</p>
-      <p class="intro" style="margin-top:14px">Edit a board and watch both nets judge it live. Tick one box to swap in a deliberately-wrong implementation and watch them catch it. Then fuzz <strong>thousands of random boards</strong> — the claim above, executed in your browser, on this repo's real Python.</p>
+      <p class="intro" style="margin-top:14px">Edit a board and watch both nets judge it live. Tick one box to swap in a deliberately-wrong implementation and watch them catch it. Then fuzz <strong>5,000 random boards</strong> — the claim above, executed in your browser, on this repo's real Python.</p>
+      <p class="intro" style="margin-top:14px">The seed is fixed, so the two numbers below aren't a sample of what usually happens — they're a <strong>prediction</strong>, and the button either confirms it or makes a liar of me.</p>
       <div class="diff" style="margin-top:18px">
         <span class="impl">react impl</span>
         <span class="eq">≟</span>
@@ -310,7 +311,7 @@
   <section>
     <div class="label"><span class="tick">//</span> Selected Projects</div>
     <h2>Don't read them — run them</h2>
-    <p class="intro">Six repos, <strong>all six live right now</strong> — no install, no signup, no API key. Five run their <em>real compiled code</em> in your browser: the same Python that runs in CI, and the same Java that runs on my phone. The sixth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And five of them aren't separate exercises — <strong>they're one system that calls itself</strong>.</p>
+    <p class="intro">Six repos, <strong>all six live right now</strong> — no install, no signup, no API key. Five run their <em>real compiled code</em> in your browser: the same Python that runs in CI, and the Java rules engine <strong>lifted out of my Android game</strong>. The sixth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And five of them aren't separate exercises — <strong>they're one system that calls itself</strong>.</p>
 
     <div class="arch-wrap">
       <svg class="arch" viewBox="0 0 800 390" role="img" aria-label="Architecture: agent-graph retrieves via rag-eval-lab and routes its LLM calls through llm-gateway; rag-eval-lab grades the answers into eval_run.json, which eval-dashboard renders and eval-history stores in Postgres to compare against earlier runs.">
@@ -434,7 +435,7 @@
           <span class="pci live"><span class="v"></span>live</span>
         </div>
         <p>A dependency-free RAG pipeline with a deterministic eval harness that <strong>catches a planted hallucination</strong>, re-checked on every push. The demo <strong>pip-installs the real wheel into your browser</strong> — write a false answer and watch it get caught, word by word.</p>
-        <div class="ptags"><span class="ptag">RAG</span><span class="ptag">pgvector</span><span class="ptag">evals</span><span class="ptag">Python</span><span class="ptag">WebAssembly</span></div>
+        <div class="ptags"><span class="ptag">RAG</span><span class="ptag">evals</span><span class="ptag">Python</span><span class="ptag">WebAssembly</span></div>
         </div>
         <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/rag-eval-lab/" target="_blank" rel="noopener">▶ Try to fool it, in your browser</a>
@@ -449,7 +450,7 @@
           <span class="pname">eval-dashboard</span>
           <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>Turns an eval run into metric cards and a per-case table, flagging hallucinations in red. Strict TypeScript, runtime schema validation, static export, <strong>zero vulnerabilities</strong>.</p>
+        <p>Turns an eval run into metric cards and a per-case table, flagging hallucinations in red. Strict TypeScript, runtime schema validation, static export, <strong>20 tests</strong>.</p>
         <div class="ptags"><span class="ptag">Next.js</span><span class="ptag">TypeScript</span><span class="ptag">Vitest</span></div>
         </div>
         <div class="pside">
@@ -465,13 +466,13 @@
           <span class="pname">eval-history</span>
           <span class="pci api"><span class="v"></span>live api</span>
         </div>
-        <p>The only thing on this page that <strong>isn't running in your tab</strong>: a <strong>FastAPI</strong> service on Render against <strong>Postgres</strong> on Neon. It stores rag-eval-lab's runs and answers what a score can't — <em>what got worse?</em> Click it and a real database answers: dropping retrieval to <code>k=2</code> lifted precision on five cases and cost faithfulness on one. <strong>Five improvements, one regression, verdict <code>regressed</code></strong> — it won't let a better average bury a case that broke. And this isn't a demo dataset: <strong>rag-eval-lab's CI posts its run here on every push to main</strong>, so the history keeps score against real commits whether I'm at the keyboard or not.</p>
+        <p>Ask it what regressed and a real database answers — same commit, retrieval <code>k=3</code> vs <code>k=2</code>: <strong>five cases better, one worse, verdict <code>regressed</code></strong>. It won't let a better average bury the case that broke. Behind it, the only thing on this page <strong>not running in your tab</strong>: a <strong>FastAPI</strong> + <strong>SQLAlchemy 2.0</strong> service on Render against <strong>Postgres</strong> on Neon, with <strong>rag-eval-lab's CI posting its eval runs here automatically</strong>, tagged with the commit that produced them — non-blocking, so the bookkeeping can never redden the suite it books.</p>
         <div class="ptags"><span class="ptag">FastAPI</span><span class="ptag">SQLAlchemy 2.0</span><span class="ptag">Postgres</span><span class="ptag">Neon</span><span class="ptag">Render</span><span class="ptag">CI on PG 16 + 18</span></div>
         </div>
         <div class="pside">
         <a class="plive" href="https://eval-history.onrender.com/runs/d800b9a8d3284240bd536bb63fa5f2da/compare/2a95eaada39c453d9920f2ab4fd50391" target="_blank" rel="noopener">▶ Ask it what regressed</a>
         <span class="pnote">free tier — first click takes ~50s to wake it</span>
-        <a class="plink" href="https://eval-history.onrender.com/runs" target="_blank" rel="noopener">every run CI has stored <span>→</span></a>
+        <a class="plink" href="https://eval-history.onrender.com/runs" target="_blank" rel="noopener">the runs it's stored <span>→</span></a>
         <a class="plink" href="https://eval-history.onrender.com/docs" target="_blank" rel="noopener">interactive API docs <span>→</span></a>
         <a class="plink" href="https://github.com/egnaro9/eval-history" target="_blank" rel="noopener">github.com/egnaro9/eval-history <span>→</span></a>
         </div>
