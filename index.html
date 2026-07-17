@@ -134,7 +134,13 @@
   .proj.p-gw{border-left-color:#a78bfa}
   .proj.p-rag{border-left-color:var(--teal)}
   .proj.p-dash{border-left-color:#60a5fa}
+  .proj.p-hist{border-left-color:#f472b6}
   .proj.p-solo{border-left-color:var(--fg-faint)}
+  /* every other demo is WASM in the reader's tab; this one is a real server. */
+  .proj .pci.api{color:#f472b6; border-color:#f472b6; background:rgba(244,114,182,.09)}
+  .proj .pci.api .v{background:#f472b6; animation:pulse 2s ease-in-out infinite}
+  @media (prefers-reduced-motion:reduce){.proj .pci.api .v{animation:none}}
+  .proj .pnote{font-family:var(--mono); font-size:10px; color:var(--fg-faint); text-align:center; line-height:1.45; white-space:normal; margin-top:-3px}
   .proj .pstep{font-family:var(--mono); font-size:10px; color:var(--fg-faint); border:1px solid var(--line);
     width:19px; height:19px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; flex:none}
 
@@ -158,7 +164,7 @@
   .arch{width:100%; height:auto; display:block; overflow:visible}
   .arch .n{fill:var(--raised); stroke:var(--line); stroke-width:1}
   .arch .n.a{stroke:var(--amber-line)} .arch .n.r{stroke:var(--teal)}
-  .arch .n.g{stroke:#a78bfa} .arch .n.d{stroke:#60a5fa}
+  .arch .n.g{stroke:#a78bfa} .arch .n.d{stroke:#60a5fa} .arch .n.h{stroke:#f472b6}
   .arch .n.ghost{stroke-dasharray:3 3; fill:transparent}
   .arch .n.file{fill:var(--teal-soft); stroke:var(--teal); stroke-dasharray:3 3}
   .arch a{cursor:pointer}
@@ -303,10 +309,10 @@
   <section>
     <div class="label"><span class="tick">//</span> Selected Projects</div>
     <h2>Don't read them — run them</h2>
-    <p class="intro">Five repos, <strong>all five live and interactive right now</strong> — no install, no signup, no API key. Every one runs its <em>real compiled code</em> in your browser: the same Python that runs in CI, and the same Java that runs on my phone. And four of them aren't separate exercises — <strong>they're one system that calls itself</strong>.</p>
+    <p class="intro">Six repos, <strong>all six live right now</strong> — no install, no signup, no API key. Five run their <em>real compiled code</em> in your browser: the same Python that runs in CI, and the same Java that runs on my phone. The sixth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And five of them aren't separate exercises — <strong>they're one system that calls itself</strong>.</p>
 
     <div class="arch-wrap">
-      <svg class="arch" viewBox="0 0 800 300" role="img" aria-label="Architecture: agent-graph retrieves via rag-eval-lab and routes its LLM calls through llm-gateway; rag-eval-lab grades the answers into eval_run.json, which eval-dashboard renders.">
+      <svg class="arch" viewBox="0 0 800 390" role="img" aria-label="Architecture: agent-graph retrieves via rag-eval-lab and routes its LLM calls through llm-gateway; rag-eval-lab grades the answers into eval_run.json, which eval-dashboard renders and eval-history stores in Postgres to compare against earlier runs.">
         <defs>
           <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="var(--fg-faint)"/>
@@ -361,13 +367,30 @@
           <text class="nm" x="646" y="246" text-anchor="middle">eval-dashboard</text>
           <text class="ns" x="646" y="264" text-anchor="middle">shows what failed</text>
         </a>
+
+        <!-- the same file the dashboard renders is what the API ingests, verbatim -->
+        <path d="M404,270 L404,310" fill="none" stroke="var(--fg-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
+        <text class="edge" x="414" y="296">POST /runs</text>
+
+        <path d="M500,339 L556,339" fill="none" stroke="var(--fg-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
+        <text class="edge" x="528" y="330" text-anchor="middle">Neon</text>
+
+        <a href="https://eval-history.onrender.com/suites/rag-eval-lab/latest-comparison" target="_blank" rel="noopener">
+          <rect class="n h" x="310" y="310" width="190" height="58" rx="3"/>
+          <text class="nm" x="405" y="334" text-anchor="middle">eval-history</text>
+          <text class="ns" x="405" y="352" text-anchor="middle">remembers · what regressed?</text>
+        </a>
+
+        <rect class="n ghost" x="556" y="310" width="150" height="58" rx="3"/>
+        <text class="nm dim" x="631" y="334" text-anchor="middle">Postgres</text>
+        <text class="ns" x="631" y="352" text-anchor="middle">every run, kept</text>
       </svg>
-      <div class="arch-legend">Every box is live — click one. Every arrow is a function call, not a diagram.</div>
+      <div class="arch-legend">Every box is live — click one. Every arrow is a function call, not a diagram. Everything above the last row runs in your tab; <b>eval-history is a real server</b>.</div>
     </div>
 
     <p class="compose-note">An agent that retrieves, a gateway governing its model calls, a harness grading its answers, a dashboard showing what failed. One button runs a question through <b>all four</b> and hands you the result — including the case that's <b>perfectly faithful and completely wrong</b>, which is the most useful thing on this whole site.</p>
     <a class="plive" style="margin-top:14px" href="https://egnaro9.github.io/stack/">▶ Run all four together — one button</a>
-    <p class="compose-note" style="margin-top:12px">Or try each stage on its own — the four below are numbered in the order they run.</p>
+    <p class="compose-note" style="margin-top:12px">Or try each stage on its own — the five below are numbered in the order they run. That button runs stages 1–4 in your tab; stage 5 is the deployed one, so it answers from a database instead.</p>
 
     <div class="projects-flow">
 <div class="proj p-agent">
@@ -433,6 +456,24 @@
         <a class="plink" href="https://github.com/egnaro9/eval-dashboard" target="_blank" rel="noopener">github.com/egnaro9/eval-dashboard <span>→</span></a>
         </div>
       </div>
+      <div class="flowlink"><span class="fl-a">one run is a snapshot. keep every run and you can see what broke ↓</span></div>
+<div class="proj p-hist">
+        <div class="pmain">
+        <div class="ph">
+          <span class="pstep">5</span>
+          <span class="pname">eval-history</span>
+          <span class="pci api"><span class="v"></span>live api</span>
+        </div>
+        <p>The only thing on this page that <strong>isn't running in your tab</strong>: a <strong>FastAPI</strong> service on Render against <strong>Postgres</strong> on Neon. It stores rag-eval-lab's runs and answers what a score can't — <em>what got worse?</em> Click it and a real database answers: dropping retrieval to <code>k=2</code> lifted precision on five cases and cost faithfulness on one. <strong>Five improvements, one regression, verdict <code>regressed</code></strong> — it won't let a better average bury a case that broke.</p>
+        <div class="ptags"><span class="ptag">FastAPI</span><span class="ptag">SQLAlchemy 2.0</span><span class="ptag">Postgres</span><span class="ptag">Neon</span><span class="ptag">Render</span><span class="ptag">CI on PG 16 + 18</span></div>
+        </div>
+        <div class="pside">
+        <a class="plive" href="https://eval-history.onrender.com/suites/rag-eval-lab/latest-comparison" target="_blank" rel="noopener">▶ Ask it what regressed</a>
+        <span class="pnote">free tier — first click takes ~50s to wake it</span>
+        <a class="plink" href="https://eval-history.onrender.com/docs" target="_blank" rel="noopener">interactive API docs <span>→</span></a>
+        <a class="plink" href="https://github.com/egnaro9/eval-history" target="_blank" rel="noopener">github.com/egnaro9/eval-history <span>→</span></a>
+        </div>
+      </div>
     </div>
 
     <div class="solo-head">
@@ -441,7 +482,7 @@
       <span class="solo-rule"></span>
     </div>
     <p class="compose-note" style="max-width:64ch">
-      The four above are AI infrastructure that calls itself. This one is different: it's the engine out of a
+      The five above are AI infrastructure that calls itself. This one is different: it's the engine out of a
       <b>real Android game I built</b> (pre-launch), pulled out and held to property-based invariants. It doesn't plug into the
       pipeline, and it shouldn't — that's the point of including it.
     </p>
