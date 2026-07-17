@@ -3,10 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Erik Hill - agentic systems engineer. An autonomous development harness: a self-reviewing loop, a differential oracle, and a human-in-the-loop autonomy ladder.">
-<title>Erik Hill — Agentic Systems Engineer</title>
+<meta name="description" content="Erik Hill — agentic AI engineer. Seven live, runnable repos, including a deployed FastAPI + Postgres service my CI posts eval runs to. Agents that check their own work.">
+<title>Erik Hill — Agentic AI Engineer | Python, FastAPI, Postgres</title>
+<meta property="og:title" content="Erik Hill — Agentic AI Engineer">
+<meta property="og:description" content="Seven live repos you can run yourself. Six in your browser; one's a deployed FastAPI + Postgres service.">
+<meta property="og:url" content="https://egnaro9.github.io">
+<meta property="og:type" content="website">
 <style>
   :root {
+    color-scheme: dark light;
     --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
     --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
     --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
@@ -41,7 +46,7 @@
   }
 
   *{box-sizing:border-box}
-  body{margin:0}
+  body{margin:0; background:var(--ink)}
   .wrap{
     background:var(--ink); color:var(--fg); font-family:var(--sans);
     font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
@@ -183,7 +188,18 @@
   .arch .edge{font-family:var(--mono); font-size:10.5px; fill:var(--fg-dim)}
   .arch .edge.dim, .arch .dim{fill:var(--fg-faint)}
   .arch-legend{font-family:var(--mono); font-size:11.5px; color:var(--fg-faint); margin-top:12px; text-align:center}
-  @media (max-width:560px){ .arch-wrap{padding:12px 8px} .arch .ns{display:none} }
+  /* On a phone the SVG scaled to ~0.39, so 13px node labels rendered at ~5px and
+     the whole diagram was unreadable — and `.ns{display:none}` hid the subtitles
+     that do the explaining, which treated the symptom. Let it keep its real width
+     and scroll instead; the labels come back at a legible size. */
+  @media (max-width:600px){
+    .arch-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch; padding:12px}
+    .arch{width:800px; min-width:800px}
+    .arch .nm{font-size:14px}
+    .arch .edge{font-size:12px}
+    .arch .nf{font-size:12px}
+    .arch .ns{display:block; font-size:11px}
+  }
 
   /* ---- compose strip ---- */
   .compose{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:22px; padding:18px;
@@ -244,7 +260,7 @@
 <div class="col">
 
   <header>
-    <div class="eye">Agentic Systems Engineer</div>
+    <div class="eye">Agentic AI Engineer</div>
     <h1>Erik Hill</h1>
     <p class="thesis">I build agentic systems that check their own work — and keep <b>a human on every step that can't be undone</b>.</p>
     <p class="lede">I designed and built an autonomous development harness: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it. The same discipline is public: <strong>seven repos</strong>, six running their real compiled code in your browser, and one a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, tagged with the commit that produced them. <strong>Self-taught, in ~5 months.</strong></p>
@@ -540,35 +556,34 @@
   <section>
     <div class="label"><span class="tick">//</span> Stack &amp; Practice</div>
     <h2>What I actually work in</h2>
-    <p class="stacknote">Every line below is running in a public repo above — not a list of things I've read about.</p>
+    <p class="intro">Front end to Postgres, plus the agentic layer on top. The projects above are the receipts.</p>
     <div class="grid2">
       <div><h3>Agentic</h3><ul>
         <li>Multi-agent orchestration</li>
-        <li>LangGraph · tool-calling agents</li>
-        <li>Evals &amp; oracle design</li>
+        <li>LangGraph · tool-calling · RAG</li>
         <li>Prompt &amp; context engineering</li>
+        <li>Evals &amp; oracle design</li>
         <li>Human-in-the-loop safety</li>
       </ul></div>
       <div><h3>Backend &amp; data</h3><ul>
-        <li>Python · FastAPI</li>
-        <li>REST API design</li>
-        <li>Postgres · SQL · SQLAlchemy&nbsp;2.0</li>
-        <li>Schema design · Alembic migrations</li>
-        <li>Auth · rate limiting · caching</li>
+        <li>Python · FastAPI · Pydantic&nbsp;2</li>
+        <li>SQLAlchemy&nbsp;2.0 · psycopg&nbsp;3</li>
+        <li>PostgreSQL · Alembic migrations</li>
+        <li>REST API design · OpenAPI</li>
+        <li>pytest</li>
       </ul></div>
-      <div><h3>Frontend &amp; mobile</h3><ul>
+      <div><h3>Frontend &amp; JVM</h3><ul>
         <li>TypeScript (strict) · React</li>
-        <li>Next.js</li>
-        <li>Java</li>
-        <li>Capacitor · Android (adb)</li>
+        <li>Next.js 15 · Vitest</li>
+        <li>Java · Gradle · jqwik</li>
         <li>WebAssembly (Pyodide · TeaVM)</li>
       </ul></div>
-      <div><h3>Testing, CI &amp; deploy</h3><ul>
-        <li>pytest · Vitest · JUnit</li>
-        <li>Property-based testing (jqwik)</li>
-        <li>Differential-oracle testing</li>
-        <li>GitHub Actions · Docker</li>
+      <div><h3>Ship &amp; verify</h3><ul>
+        <li>GitHub Actions — matrix CI, Postgres 16 + 18 service containers</li>
         <li>Render · Neon · GitHub Pages</li>
+        <li>Differential oracles · property-based invariants</li>
+        <li>Validation pipelines · device-test automation (Android · adb)</li>
+        <li>Governance: a gate on every irreversible step</li>
       </ul></div>
     </div>
   </section>
@@ -589,7 +604,7 @@
       <a class="btn ghost" href="https://github.com/egnaro9/evals-differential-oracle" target="_blank" rel="noopener">Oracle repo</a>
       <a class="btn ghost" href="https://www.linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">LinkedIn</a>
     </div>
-    <div class="foot-note">Erik Hill · Agentic Systems Engineer · 2026</div>
+    <div class="foot-note">Erik Hill · Agentic AI Engineer · 2026</div>
   </footer>
 
 </div>
