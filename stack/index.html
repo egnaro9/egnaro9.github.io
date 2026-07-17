@@ -62,6 +62,9 @@
   /* eval-history — the one that isn't in this tab */
   .proj.h{color:var(--pink); background:var(--pink-soft); border:1px solid var(--pink)}
   .arr{color:var(--fg-faint); font-size:11px}
+  /* The terminus of the map: the only box in it that isn't running in this tab. */
+  .verdict-chip{padding:4px 9px; border-radius:2px; font-family:var(--mono); font-size:12px;
+    white-space:nowrap; color:var(--fg-faint); border:1px dashed var(--pink); background:transparent}
 
   button{font-family:var(--mono); font-size:14px; padding:13px 22px; border-radius:2px; cursor:pointer;
     border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft); transition:background .15s}
@@ -151,6 +154,11 @@
       <span class="proj r">rag-eval-lab</span>
       <span class="arr">──grades──► eval_run.json ──►</span>
       <span class="proj d">eval-dashboard</span>
+      <span class="arr">·</span>
+      <span class="arr">eval_run.json ──►</span>
+      <span class="proj h">eval-history</span>
+      <span class="arr">──what changed?──►</span>
+      <span class="verdict-chip">a real Postgres</span>
     </div>
 
     <button id="run" disabled>▶ Run the whole stack</button>
