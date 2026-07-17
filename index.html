@@ -464,12 +464,13 @@
           <span class="pname">eval-history</span>
           <span class="pci api"><span class="v"></span>live api</span>
         </div>
-        <p>The only thing on this page that <strong>isn't running in your tab</strong>: a <strong>FastAPI</strong> service on Render against <strong>Postgres</strong> on Neon. It stores rag-eval-lab's runs and answers what a score can't — <em>what got worse?</em> Click it and a real database answers: dropping retrieval to <code>k=2</code> lifted precision on five cases and cost faithfulness on one. <strong>Five improvements, one regression, verdict <code>regressed</code></strong> — it won't let a better average bury a case that broke.</p>
+        <p>The only thing on this page that <strong>isn't running in your tab</strong>: a <strong>FastAPI</strong> service on Render against <strong>Postgres</strong> on Neon. It stores rag-eval-lab's runs and answers what a score can't — <em>what got worse?</em> Click it and a real database answers: dropping retrieval to <code>k=2</code> lifted precision on five cases and cost faithfulness on one. <strong>Five improvements, one regression, verdict <code>regressed</code></strong> — it won't let a better average bury a case that broke. And this isn't a demo dataset: <strong>rag-eval-lab's CI posts its run here on every push to main</strong>, so the history keeps score against real commits whether I'm at the keyboard or not.</p>
         <div class="ptags"><span class="ptag">FastAPI</span><span class="ptag">SQLAlchemy 2.0</span><span class="ptag">Postgres</span><span class="ptag">Neon</span><span class="ptag">Render</span><span class="ptag">CI on PG 16 + 18</span></div>
         </div>
         <div class="pside">
-        <a class="plive" href="https://eval-history.onrender.com/suites/rag-eval-lab/latest-comparison" target="_blank" rel="noopener">▶ Ask it what regressed</a>
+        <a class="plive" href="https://eval-history.onrender.com/runs/d800b9a8d3284240bd536bb63fa5f2da/compare/2a95eaada39c453d9920f2ab4fd50391" target="_blank" rel="noopener">▶ Ask it what regressed</a>
         <span class="pnote">free tier — first click takes ~50s to wake it</span>
+        <a class="plink" href="https://eval-history.onrender.com/runs" target="_blank" rel="noopener">every run CI has stored <span>→</span></a>
         <a class="plink" href="https://eval-history.onrender.com/docs" target="_blank" rel="noopener">interactive API docs <span>→</span></a>
         <a class="plink" href="https://github.com/egnaro9/eval-history" target="_blank" rel="noopener">github.com/egnaro9/eval-history <span>→</span></a>
         </div>
