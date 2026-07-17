@@ -147,7 +147,8 @@
   .proj.p-rag{border-left-color:var(--teal)}
   .proj.p-dash{border-left-color:#60a5fa}
   .proj.p-hist{border-left-color:#f472b6}
-  .proj.p-solo{border-left-color:var(--fg-faint)}
+  .proj
+  .proj.p-m3{border-left-color:#c084fc}
   /* every other demo is WASM in the reader's tab; this one is a real server. */
   .proj .pci.api{color:#f472b6; border-color:#f472b6; background:rgba(244,114,182,.09)}
   .proj .pci.api .v{background:#f472b6; animation:pulse 2s ease-in-out infinite}
@@ -160,11 +161,6 @@
   .flowlink{position:relative; padding:11px 0 11px 30px; font-family:var(--mono); font-size:11px; color:var(--fg-faint)}
   .flowlink::before{content:""; position:absolute; left:12px; top:0; bottom:0; width:1px; background:var(--line)}
   .flowlink .fl-a{color:var(--fg-dim)}
-
-  .solo-head{display:flex; align-items:center; gap:14px; margin:44px 0 14px}
-  .solo-rule{flex:1; height:1px; background:var(--line)}
-  .solo-label{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--fg-faint); white-space:nowrap}
-
   @media (max-width:640px){
     .proj{grid-template-columns:1fr; gap:14px}
     .proj .pside{align-items:flex-start}
@@ -320,7 +316,7 @@
     </div>
   </section>
 
-  <section>
+  <section id="oracle">
     <div class="label"><span class="tick">//</span> The Oracle</div>
     <h2>Correctness it can prove — not vibe-check</h2>
     <div class="oracle">
@@ -350,12 +346,48 @@
       <a class="plive" style="margin-top:18px; display:inline-flex" href="https://egnaro9.github.io/evals-differential-oracle/" target="_blank" rel="noopener">▶ Run the oracle in your browser</a>
       <p class="intro" style="margin-top:16px">Or clone it and run <strong>pytest</strong> — self-contained, no setup beyond <code>requirements.txt</code>. Repo: <a href="https://github.com/egnaro9/evals-differential-oracle" target="_blank" rel="noopener">github.com/egnaro9/evals-differential-oracle</a></p>
     </div>
+
+    <h3 class="subhead">The same trick, on my own code</h3>
+    <p class="intro">A demo can be arranged to work. So here's the technique against something that had no idea it was being tested: the match-3 engine out of my Android game, compiled to JavaScript with <strong>TeaVM</strong> and dropped in a browser.</p>
+    <p class="intro" style="margin-top:14px"><strong>The port found a bug the JVM could not.</strong> Gem ids came from <code>System.nanoTime()</code>. On the JVM: 128,000 gems, zero collisions, forever. Browsers clamp the clock to ~100µs — a Spectre mitigation — so the same code produced <strong>301 duplicate ids per 128,000</strong>, and those ids are renderer identity keys. The JVM tests passed either way. <em>Only a second environment could see it.</em></p>
+    <div class="projects-flow">
+<div class="proj p-m3">
+        <div class="pmain">
+        <div class="ph">
+          <span class="pname">match3-engine</span>
+          <span class="pci live"><span class="v"></span>live</span>
+        </div>
+        <p>The rules engine out of my second Android game — <strong>my first is <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener">live on Google Play</a></strong>. Zero dependencies outside the JDK, pinned by <strong>16 jqwik property invariants</strong> over thousands of generated boards, and playable here because TeaVM compiles it to JavaScript. It isn't part of the AI stack, and it shouldn't be — it's what the oracle is <em>for</em>.</p>
+        <div class="ptags"><span class="ptag">Java</span><span class="ptag">property-based testing</span><span class="ptag">jqwik</span><span class="ptag">TeaVM</span></div>
+        </div>
+        <div class="pside">
+        <a class="plive" href="https://egnaro9.github.io/match3-engine/" target="_blank" rel="noopener">▶ Play the real engine, in your browser</a>
+        <a class="plink" href="https://github.com/egnaro9/match3-engine" target="_blank" rel="noopener">github.com/egnaro9/match3-engine <span>→</span></a>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="subhead">The same trick, on someone else's</h3>
+    <p class="intro">Then the obvious question: <em>if porting my code to a second environment finds bugs, what about the thing doing the porting?</em> TeaVM is a Java-to-JavaScript compiler I didn't write — 12 years old, and the tool that caught the bug above.</p>
+    <div class="oracle" style="margin-top:20px; border-left-color:#c084fc">
+      <p class="big">Its <code>Calendar</code> disagreed with the JVM's by <em>six days</em>, and had for seven and a half years.</p>
+      <div class="diff">
+        <span class="impl">JVM &nbsp;→&nbsp; Sun Jan 06 2002</span>
+        <span class="eq">≠</span>
+        <span class="impl">TeaVM in Chrome &nbsp;→&nbsp; Sat Jan 12 2002</span>
+      </div>
+      <p class="intro" style="margin-top:18px">Same test, two environments, one wrong. The cause was <strong>one character</strong>: <code>days - 2</code> where every neighbouring branch — including the line directly above it — uses <code>days - 3</code>. Apache Harmony, which TeaVM's calendar was ported <em>from</em>, has <code>days - 3</code>. It's a transcription slip from joining a two-line expression, and it had been sitting in a compiler thousands of people depend on since 2018.</p>
+      <p class="intro" style="margin-top:14px">Four assertions that reach that line had been <strong>commented out since 2015</strong> — by the person who later hit the bug in production and filed the issue. Nothing live reached it, so the suite couldn't catch it. I re-enabled his four, changed the character, and they pass. <strong>No new tests.</strong></p>
+      <a class="plive" style="margin-top:18px; display:inline-flex; border-color:#c084fc; color:#c084fc; background:rgba(192,132,252,.1)" href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">▶ Read the pull request</a>
+      <p class="intro" style="margin-top:16px"><strong>Open, not merged</strong> — <a href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">konsoletyper/teavm#1213</a>, against <a href="https://github.com/konsoletyper/teavm/issues/371" target="_blank" rel="noopener">issue #371</a> (filed 2018, zero comments since). Whether it lands is the maintainer's call. The finding doesn't depend on that.</p>
+    </div>
+    <p class="intro" style="margin-top:20px">That's the whole argument, three times: <strong>write it twice, run it in two places, and let the disagreement tell you which one lied.</strong> It works on a demo, on my own shipped code, and on a stranger's compiler that had been quietly wrong since before I could program.</p>
   </section>
 
   <section>
     <div class="label"><span class="tick">//</span> Selected Projects</div>
     <h2>Don't read them — run them</h2>
-    <p class="intro">Six of them here, <strong>all six live right now</strong> — no install, no signup, no API key. Five run their <em>real compiled code</em> in your browser: the same Python that runs in CI, and the Java rules engine <strong>lifted out of my Android game</strong>. The sixth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And five of them aren't separate exercises — <strong>they're one system that calls itself</strong>.</p>
+    <p class="intro">Five of them here, <strong>all five live right now</strong> — no install, no signup, no API key. Four run their <em>real compiled code</em> in your browser: the same Python that runs in CI, installed from the wheel that CI built. The fifth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And they aren't five separate exercises — <strong>they're one system that calls itself</strong>. (The other two are up in <a href="#oracle">The Oracle</a>.)</p>
 
     <div class="arch-wrap">
       <svg class="arch" viewBox="0 0 800 390" role="img" aria-label="Architecture: agent-graph retrieves via rag-eval-lab and routes its LLM calls through llm-gateway; rag-eval-lab grades the answers into eval_run.json, which eval-dashboard renders and eval-history stores in Postgres to compare against earlier runs.">
@@ -523,34 +555,6 @@
       </div>
     </div>
 
-    <div class="solo-head">
-      <span class="solo-rule"></span>
-      <span class="solo-label">Not part of that stack — on purpose</span>
-      <span class="solo-rule"></span>
-    </div>
-    <p class="compose-note" style="max-width:64ch">
-      The five above are AI infrastructure that calls itself. This one is different: it's the engine out of
-      <b>my second Android game</b> — pre-launch, and the reason my harness exists. (The
-      <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener">first one shipped</a>:
-      two weeks of closed testing with 12+ testers, then Google Play review, and it's live.) Pulled out and held to
-      property-based invariants. It doesn't plug into the pipeline, and it shouldn't — that's the point of including it.
-    </p>
-    <div class="projects-flow">
-<div class="proj p-solo">
-        <div class="pmain">
-        <div class="ph">
-          <span class="pname">match3-engine</span>
-          <span class="pci live"><span class="v"></span>live</span>
-        </div>
-        <p>The match-3 rules engine from my <strong>Android game</strong> (built, pre-launch) — zero dependencies outside the JDK, pinned by <strong>16 jqwik property invariants</strong>, and playable in your browser via TeaVM. Porting it <strong>caught a real bug the JVM hid</strong>.</p>
-        <div class="ptags"><span class="ptag">Java</span><span class="ptag">property-based testing</span><span class="ptag">jqwik</span><span class="ptag">TeaVM</span></div>
-        </div>
-        <div class="pside">
-        <a class="plive" href="https://egnaro9.github.io/match3-engine/" target="_blank" rel="noopener">▶ Play the real engine, in your browser</a>
-        <a class="plink" href="https://github.com/egnaro9/match3-engine" target="_blank" rel="noopener">github.com/egnaro9/match3-engine <span>→</span></a>
-        </div>
-      </div>
-    </div>
   </section>
 
 
