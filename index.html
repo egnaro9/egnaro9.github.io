@@ -150,12 +150,22 @@
   .proj
   .proj.p-m3{border-left-color:#c084fc}
   .proj.p-drift{border-left-color:#48c1ac}
-  .shortcuts{display:flex; flex-wrap:wrap; align-items:center; gap:7px; margin-top:16px}
-  .shortcuts .slabel{font-family:var(--mono); font-size:11px; color:var(--fg-faint); margin-right:2px}
-  .shortcuts a{display:inline-flex; align-items:center; gap:5px; font-family:var(--mono); font-size:11.5px;
-    color:var(--fg-dim); text-decoration:none; border:1px solid var(--line); border-radius:20px;
-    padding:4px 11px; transition:border-color .12s, color .12s, background .12s}
-  .shortcuts a:hover{border-color:var(--teal); color:var(--fg); background:rgba(72,193,172,.07)}
+  /* launcher panel — one tidy grid instead of ragged pills */
+  .launch{margin-top:24px; border:1px solid var(--line); background:var(--panel); border-radius:4px; padding:16px 18px}
+  .launch .ltitle{font-family:var(--mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--fg-faint); margin-bottom:12px}
+  .launch .lgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:8px}
+  .launch a{display:flex; align-items:center; gap:9px; font-family:var(--mono); font-size:13px;
+    color:var(--fg-dim); border:1px solid var(--line); background:var(--raised); border-radius:3px;
+    padding:10px 13px; transition:border-color .12s,color .12s,background .12s}
+  .launch a:hover{border-color:var(--teal); color:var(--fg); background:var(--teal-soft)}
+  .launch a .arrow{color:var(--teal); font-size:11px; flex:none}
+
+  /* location — deliberately separate from contact/social */
+  .loc{display:inline-flex; align-items:center; gap:10px; margin-top:30px; padding-left:13px;
+    border-left:2px solid var(--teal); font-family:var(--mono); font-size:14.5px; color:var(--fg)}
+  .loc .sep{color:var(--fg-faint)}
+  .contact{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
   /* every other demo is WASM in the reader's tab; this one is a real server. */
   .proj .pci.api{color:#f472b6; border-color:#f472b6; background:rgba(244,114,182,.09)}
   .proj .pci.api .v{background:#f472b6; animation:pulse 2s ease-in-out infinite}
@@ -267,23 +277,28 @@
     <h1>Erik Hill</h1>
     <p class="thesis">I build agentic systems that check their own work — and keep <b>a human on every step that can't be undone</b>.</p>
     <p class="lede">I designed and built an autonomous development harness: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it. The same discipline is public: <strong>ten repos</strong> — six run their real compiled code in your browser, one is a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, and the rest turn that into a <strong>merge gate</strong> that blocks regressions, an <strong>MCP</strong> tool server, and a <a href="#board"><strong>live public board tracking 16 LLMs</strong></a> for drift. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
-    <div class="cta" style="margin-top:26px; justify-content:flex-start">
+    <div class="cta" style="margin-top:28px; justify-content:flex-start">
       <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board — 16 LLMs, 5 metrics</a>
-      <a class="plive" style="border-color:var(--line); background:transparent; color:var(--fg-dim)" href="https://egnaro9.github.io/evals-differential-oracle/" target="_blank" rel="noopener">▶ Watch it catch a planted bug</a>
     </div>
-    <div class="shortcuts">
-      <span class="slabel">or jump straight in:</span>
-      <a href="https://egnaro9.github.io/stack/">▶ five-service stack</a>
-      <a href="https://egnaro9.github.io/agent-graph/">▶ agent-graph</a>
-      <a href="https://egnaro9.github.io/llm-gateway/">▶ llm-gateway</a>
-      <a href="https://egnaro9.github.io/rag-eval-lab/">▶ rag-eval-lab</a>
-      <a href="https://egnaro9.github.io/eval-dashboard/">▶ eval-dashboard</a>
-      <a href="https://eval-history.onrender.com/runs/d800b9a8d3284240bd536bb63fa5f2da/compare/2a95eaada39c453d9920f2ab4fd50391" target="_blank" rel="noopener">▶ eval-history (live API)</a>
-      <a href="https://egnaro9.github.io/match3-engine/">▶ match3-engine</a>
-      <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener">▶ Tap Dodge Rush (Play Store)</a>
+
+    <div class="launch">
+      <div class="ltitle">Or run any of it yourself</div>
+      <div class="lgrid">
+        <a href="https://egnaro9.github.io/evals-differential-oracle/" target="_blank" rel="noopener"><span class="arrow">▶</span>differential oracle</a>
+        <a href="https://egnaro9.github.io/stack/"><span class="arrow">▶</span>five-service stack</a>
+        <a href="https://egnaro9.github.io/agent-graph/"><span class="arrow">▶</span>agent-graph</a>
+        <a href="https://egnaro9.github.io/llm-gateway/"><span class="arrow">▶</span>llm-gateway</a>
+        <a href="https://egnaro9.github.io/rag-eval-lab/"><span class="arrow">▶</span>rag-eval-lab</a>
+        <a href="https://egnaro9.github.io/eval-dashboard/"><span class="arrow">▶</span>eval-dashboard</a>
+        <a href="https://eval-history.onrender.com/runs/d800b9a8d3284240bd536bb63fa5f2da/compare/2a95eaada39c453d9920f2ab4fd50391" target="_blank" rel="noopener"><span class="arrow">▶</span>eval-history API</a>
+        <a href="https://egnaro9.github.io/match3-engine/"><span class="arrow">▶</span>match3-engine</a>
+        <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><span class="arrow">▶</span>Tap Dodge Rush</a>
+      </div>
     </div>
-    <div class="meta">
-      <span class="chip"><span class="dot"></span>Charleston, SC · Remote (US)</span>
+
+    <div class="loc">Charleston, SC <span class="sep">·</span> Open to remote (US)</div>
+
+    <div class="contact">
       <span class="chip"><a href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a></span>
       <span class="chip"><a href="https://github.com/egnaro9" target="_blank" rel="noopener">github.com/egnaro9</a></span>
       <span class="chip"><a href="https://dev.to/egnaro9" target="_blank" rel="noopener">dev.to/egnaro9</a></span>
