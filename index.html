@@ -291,6 +291,7 @@
         <a href="https://egnaro9.github.io/rag-eval-lab/"><span class="arrow">▶</span>rag-eval-lab</a>
         <a href="https://egnaro9.github.io/eval-dashboard/"><span class="arrow">▶</span>eval-dashboard</a>
         <a href="https://eval-history.onrender.com/runs/d800b9a8d3284240bd536bb63fa5f2da/compare/2a95eaada39c453d9920f2ab4fd50391" target="_blank" rel="noopener"><span class="arrow">▶</span>eval-history API</a>
+        <a href="https://github.com/egnaro9/mcp-tools" target="_blank" rel="noopener"><span class="arrow">▶</span>mcp-tools (grade_answer)</a>
         <a href="https://egnaro9.github.io/match3-engine/"><span class="arrow">▶</span>match3-engine</a>
         <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><span class="arrow">▶</span>Tap Dodge Rush</a>
       </div>
@@ -527,6 +528,7 @@
     <a class="plive" style="margin-top:14px" href="https://egnaro9.github.io/stack/">▶ Run all five together — one button</a>
     <p class="compose-note" style="margin-top:12px">Or try each stage on its own — the five below are numbered in the order they run. That button runs stages 1–4 in your tab; stage 5 is the deployed one, so it answers from a database instead.</p>
     <p class="compose-note" style="margin-top:18px; border-left:3px solid var(--amber-line); padding-left:14px">And it isn't only a demo of itself. The same eval stack powers <a href="https://github.com/egnaro9/prompt-regress" target="_blank" rel="noopener"><b>prompt-regress</b></a> — a merge gate that runs your evals on every pull request, compares them to the main-branch baseline, and <b>blocks the merge if the answers got worse</b>. It fills a gap the popular eval runner leaves open (no history, no cross-run comparison), ships as a GitHub Action, and gates these very repos. The demo is the machine; this is what it's <em>for</em>.</p>
+    <p class="compose-note" style="margin-top:14px; border-left:3px solid var(--teal); padding-left:14px">And an agent can now <strong>call it directly</strong>. The grading half is exposed as an <a href="https://github.com/egnaro9/mcp-tools" target="_blank" rel="noopener"><strong>MCP tool</strong></a> — hand <code>grade_answer</code> a draft answer plus its sources and it names the sentences those sources <em>don't</em> support: a figure appearing nowhere in the sources fails outright (invented statistics being the strongest tell), low content-word coverage catches claims the sources never make. <strong>No LLM judge</strong> — a model grading hallucination is just another model output you can't reproduce. Wire it into Claude Desktop and it becomes what this whole page is about: <strong>an agent that checks its own work before it answers.</strong></p>
 
     <div class="projects-flow">
 <div class="proj p-agent">
