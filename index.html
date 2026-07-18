@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Erik Hill — agentic AI engineer. Seven live, runnable repos, including a deployed FastAPI + Postgres service my CI posts eval runs to. Agents that check their own work.">
+<meta name="description" content="Erik Hill — agentic AI engineer. Ten live, runnable repos, including a public board tracking 16 LLMs for drift and a deployed FastAPI + Postgres service my CI posts eval runs to. Agents that check their own work.">
 <title>Erik Hill — Agentic AI Engineer | Python, FastAPI, Postgres</title>
 <meta property="og:title" content="Erik Hill — Agentic AI Engineer">
-<meta property="og:description" content="Seven live repos you can run yourself. Six in your browser; one's a deployed FastAPI + Postgres service.">
+<meta property="og:description" content="Ten live repos you can run yourself — including a public board tracking 16 LLMs for drift. Six run in your browser; one's a deployed FastAPI + Postgres service.">
 <meta property="og:url" content="https://egnaro9.github.io">
 <meta property="og:type" content="website">
 <style>
@@ -150,6 +150,12 @@
   .proj
   .proj.p-m3{border-left-color:#c084fc}
   .proj.p-drift{border-left-color:#48c1ac}
+  .shortcuts{display:flex; flex-wrap:wrap; align-items:center; gap:7px; margin-top:16px}
+  .shortcuts .slabel{font-family:var(--mono); font-size:11px; color:var(--fg-faint); margin-right:2px}
+  .shortcuts a{display:inline-flex; align-items:center; gap:5px; font-family:var(--mono); font-size:11.5px;
+    color:var(--fg-dim); text-decoration:none; border:1px solid var(--line); border-radius:20px;
+    padding:4px 11px; transition:border-color .12s, color .12s, background .12s}
+  .shortcuts a:hover{border-color:var(--teal); color:var(--fg); background:rgba(72,193,172,.07)}
   /* every other demo is WASM in the reader's tab; this one is a real server. */
   .proj .pci.api{color:#f472b6; border-color:#f472b6; background:rgba(244,114,182,.09)}
   .proj .pci.api .v{background:#f472b6; animation:pulse 2s ease-in-out infinite}
@@ -262,8 +268,19 @@
     <p class="thesis">I build agentic systems that check their own work — and keep <b>a human on every step that can't be undone</b>.</p>
     <p class="lede">I designed and built an autonomous development harness: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it. The same discipline is public: <strong>ten repos</strong> — six run their real compiled code in your browser, one is a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, and the rest turn that into a <strong>merge gate</strong> that blocks regressions, an <strong>MCP</strong> tool server, and a <a href="#board"><strong>live public board tracking 16 LLMs</strong></a> for drift. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
     <div class="cta" style="margin-top:26px; justify-content:flex-start">
-      <a class="plive" href="https://egnaro9.github.io/evals-differential-oracle/" target="_blank" rel="noopener">▶ Watch it catch a planted bug — in your browser</a>
-      <a class="plive" style="border-color:var(--line); background:transparent; color:var(--fg-dim)" href="https://egnaro9.github.io/stack/">▶ Run five services together — one button</a>
+      <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board — 16 LLMs, 5 metrics</a>
+      <a class="plive" style="border-color:var(--line); background:transparent; color:var(--fg-dim)" href="https://egnaro9.github.io/evals-differential-oracle/" target="_blank" rel="noopener">▶ Watch it catch a planted bug</a>
+    </div>
+    <div class="shortcuts">
+      <span class="slabel">or jump straight in:</span>
+      <a href="https://egnaro9.github.io/stack/">▶ five-service stack</a>
+      <a href="https://egnaro9.github.io/agent-graph/">▶ agent-graph</a>
+      <a href="https://egnaro9.github.io/llm-gateway/">▶ llm-gateway</a>
+      <a href="https://egnaro9.github.io/rag-eval-lab/">▶ rag-eval-lab</a>
+      <a href="https://egnaro9.github.io/eval-dashboard/">▶ eval-dashboard</a>
+      <a href="https://eval-history.onrender.com/runs/d800b9a8d3284240bd536bb63fa5f2da/compare/2a95eaada39c453d9920f2ab4fd50391" target="_blank" rel="noopener">▶ eval-history (live API)</a>
+      <a href="https://egnaro9.github.io/match3-engine/">▶ match3-engine</a>
+      <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener">▶ Tap Dodge Rush (Play Store)</a>
     </div>
     <div class="meta">
       <span class="chip"><span class="dot"></span>Charleston, SC · Remote (US)</span>
@@ -273,6 +290,30 @@
       <span class="chip"><a href="https://www.linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">linkedin.com/in/erik-hill-98895575</a></span>
     </div>
   </header>
+
+  <section id="board">
+    <div class="label"><span class="tick">//</span> In the Wild</div>
+    <h2>A public board watching 16 models for drift</h2>
+    <p class="intro">The stack above isn't only a demo of itself — it runs a <strong>live public tracker</strong>. A frozen, deterministically-graded suite hits <strong>16 models across 5 labs</strong> — OpenAI, Anthropic, Google, xAI, Meta — on a weekly cron, and every result is kept: <strong>accuracy, speed, verbosity, reliability, refusal rate</strong>. No LLM-as-judge; the grader is exact-match, so a score change means the <em>model</em> moved, not the test. When one regresses week-over-week it opens a GitHub issue by itself — the post about it stays a human decision.</p>
+
+    <div class="projects-flow">
+<div class="proj p-drift">
+        <div class="pmain">
+        <div class="ph">
+          <span class="pname">model-drift</span>
+          <span class="pci api"><span class="v"></span>live</span>
+        </div>
+        <p>The first run already earned its keep. <strong>Gemini 3.5 Flash is the only 100% on the board that isn't a flagship.</strong> <strong>Grok 4.3 is both the slowest and 20× the chattiest</strong> — it explains instead of answering, which is exactly why it falls to 77% on strict-format tasks. Meta's two Llamas are <strong>3–4× the fastest models here and the least accurate</strong> — a speed/quality tradeoff you can see rather than argue about. Some suite tasks are deliberate failure modes for strong models (counting letters in "strawberry", numeric-vs-lexical sorting, 9.9 vs 9.11), so a flagship has room to slip instead of flatlining at 100%; the suite is versioned and hash-fingerprinted so the questions can't change under the chart.</p>
+        <div class="ptags"><span class="ptag">16 models</span><span class="ptag">5 labs</span><span class="ptag">5 metrics</span><span class="ptag">weekly cron</span><span class="ptag">deterministic grading</span><span class="ptag">GitHub Actions</span></div>
+        </div>
+        <div class="pside">
+        <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board</a>
+        <span class="pnote">toggle the metric, filter by tier or lab</span>
+        <a class="plink" href="https://github.com/egnaro9/model-drift" target="_blank" rel="noopener">github.com/egnaro9/model-drift <span>→</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section>
     <div class="label"><span class="tick">//</span> The Harness</div>
@@ -561,29 +602,6 @@
 
 
 
-  <section id="board">
-    <div class="label"><span class="tick">//</span> In the Wild</div>
-    <h2>A public board watching 16 models for drift</h2>
-    <p class="intro">The stack above isn't only a demo of itself — it runs a <strong>live public tracker</strong>. A frozen, deterministically-graded suite hits <strong>16 models across 5 labs</strong> — OpenAI, Anthropic, Google, xAI, Meta — on a weekly cron, and every result is kept: <strong>accuracy, speed, verbosity, reliability, refusal rate</strong>. No LLM-as-judge; the grader is exact-match, so a score change means the <em>model</em> moved, not the test. When one regresses week-over-week it opens a GitHub issue by itself — the post about it stays a human decision.</p>
-
-    <div class="projects-flow">
-<div class="proj p-drift">
-        <div class="pmain">
-        <div class="ph">
-          <span class="pname">model-drift</span>
-          <span class="pci api"><span class="v"></span>live</span>
-        </div>
-        <p>The first run already earned its keep. <strong>Gemini 3.5 Flash is the only 100% on the board that isn't a flagship.</strong> <strong>Grok 4.3 is both the slowest and 20× the chattiest</strong> — it explains instead of answering, which is exactly why it falls to 77% on strict-format tasks. Meta's two Llamas are <strong>3–4× the fastest models here and the least accurate</strong> — a speed/quality tradeoff you can see rather than argue about. Some suite tasks are deliberate failure modes for strong models (counting letters in "strawberry", numeric-vs-lexical sorting, 9.9 vs 9.11), so a flagship has room to slip instead of flatlining at 100%; the suite is versioned and hash-fingerprinted so the questions can't change under the chart.</p>
-        <div class="ptags"><span class="ptag">16 models</span><span class="ptag">5 labs</span><span class="ptag">5 metrics</span><span class="ptag">weekly cron</span><span class="ptag">deterministic grading</span><span class="ptag">GitHub Actions</span></div>
-        </div>
-        <div class="pside">
-        <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board</a>
-        <span class="pnote">toggle the metric, filter by tier or lab</span>
-        <a class="plink" href="https://github.com/egnaro9/model-drift" target="_blank" rel="noopener">github.com/egnaro9/model-drift <span>→</span></a>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <section>
     <div class="label"><span class="tick">//</span> The Toolkit</div>
