@@ -320,7 +320,7 @@
           <span class="pname">model-drift</span>
           <span class="pci api"><span class="v"></span>live</span>
         </div>
-        <p>The first run already earned its keep. <strong>Gemini 3.5 Flash is the only 100% on the board that isn't a flagship.</strong> <strong>Grok 4.3 is both the slowest and 20× the chattiest</strong> — it explains instead of answering, which is exactly why it falls to 77% on strict-format tasks. Meta's two Llamas are <strong>3–4× the fastest models here and the least accurate</strong> — a speed/quality tradeoff you can see rather than argue about. Some suite tasks are deliberate failure modes for strong models (counting letters in "strawberry", numeric-vs-lexical sorting, 9.9 vs 9.11), so a flagship has room to slip instead of flatlining at 100%; the suite is versioned and hash-fingerprinted so the questions can't change under the chart.</p>
+        <p>The first run already earned its keep. <strong>OpenAI's mini and nano tie their own flagship at 100%</strong> — on this suite the cheap tier gives up nothing, and four other models join them. <strong>Grok 4.3 answers with roughly 20× the words of the tersest models</strong> — it explains instead of answering, and lands at 77%. Meta's two Llamas are <strong>the fastest on the board and include its lowest score</strong> (131 ms at 59%) — a speed/quality tradeoff you can see rather than argue about. <em>Figures from the run of 18 Jul 2026; the live board above is what's current.</em> Some suite tasks are deliberate failure modes for strong models (counting letters in "strawberry", numeric-vs-lexical sorting, 9.9 vs 9.11), so a flagship has room to slip instead of flatlining at 100%; the suite is versioned and hash-fingerprinted so the questions can't change under the chart.</p>
         <div class="ptags"><span class="ptag">16 models</span><span class="ptag">5 labs</span><span class="ptag">5 metrics</span><span class="ptag">weekly cron</span><span class="ptag">deterministic grading</span><span class="ptag">GitHub Actions</span></div>
         </div>
         <div class="pside">
@@ -438,7 +438,7 @@
       <p class="intro" style="margin-top:18px">Same test, two environments, one wrong. The cause was <strong>one character</strong>: <code>days - 2</code> where every neighbouring branch — including the line directly above it — uses <code>days - 3</code>. Apache Harmony, which TeaVM's calendar was ported <em>from</em>, has <code>days - 3</code>. It's a transcription slip from joining a two-line expression, and it had been sitting in a compiler thousands of people depend on since 2018.</p>
       <p class="intro" style="margin-top:14px">Four assertions that reach that line had been <strong>commented out since 2015</strong> — by the person who later hit the bug in production and filed the issue. Nothing live reached it, so the suite couldn't catch it. I re-enabled his four, changed the character, and they pass. <strong>No new tests.</strong></p>
       <a class="plive" style="margin-top:18px; display:inline-flex; border-color:#c084fc; color:#c084fc; background:rgba(192,132,252,.1)" href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">▶ Read the pull request</a>
-      <p class="intro" style="margin-top:16px"><strong>Open, not merged</strong> — <a href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">konsoletyper/teavm#1213</a>, against <a href="https://github.com/konsoletyper/teavm/issues/371" target="_blank" rel="noopener">issue #371</a> (filed 2018, zero comments since). Whether it lands is the maintainer's call. The finding doesn't depend on that.</p>
+      <p class="intro" style="margin-top:16px"><strong>Merged</strong> — <a href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">konsoletyper/teavm#1213</a>, against <a href="https://github.com/konsoletyper/teavm/issues/371" target="_blank" rel="noopener">issue #371</a> (filed 2018, zero comments in the seven years between) — merged by the project lead on 17 July 2026. Nine lines changed, one of them the character that mattered. The finding never depended on it landing; it's just better that it did.</p>
     </div>
     <p class="intro" style="margin-top:20px">That's the whole argument, three times: <strong>write it twice, run it in two places, and let the disagreement tell you which one lied.</strong> It works on a demo, on my own shipped code, and on a stranger's compiler that had been quietly wrong since before I could program.</p>
   </section>
@@ -587,7 +587,7 @@
           <span class="pname">eval-dashboard</span>
           <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>Turns an eval run into metric cards and a per-case table, flagging hallucinations in red. Strict TypeScript, runtime schema validation, static export, <strong>20 tests</strong>.</p>
+        <p>Turns an eval run into metric cards and a per-case table, flagging hallucinations in red. Strict TypeScript, runtime schema validation, static export, <strong>29 tests</strong>.</p>
         <div class="ptags"><span class="ptag">Next.js</span><span class="ptag">TypeScript</span><span class="ptag">Vitest</span></div>
         </div>
         <div class="pside">
