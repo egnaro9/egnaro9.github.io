@@ -150,6 +150,7 @@
   .proj
   .proj.p-m3{border-left-color:#c084fc}
   .proj.p-drift{border-left-color:#48c1ac}
+  .ptag.mcp{color:var(--teal); border-color:var(--teal); background:var(--teal-soft)}
   /* launcher panel — one tidy grid instead of ragged pills */
   .launch{margin-top:24px; border:1px solid var(--line); background:var(--panel); border-radius:4px; padding:16px 18px}
   .launch .ltitle{font-family:var(--mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase;
@@ -528,7 +529,7 @@
     <a class="plive" style="margin-top:14px" href="https://egnaro9.github.io/stack/">▶ Run all five together — one button</a>
     <p class="compose-note" style="margin-top:12px">Or try each stage on its own — the five below are numbered in the order they run. That button runs stages 1–4 in your tab; stage 5 is the deployed one, so it answers from a database instead.</p>
     <p class="compose-note" style="margin-top:18px; border-left:3px solid var(--amber-line); padding-left:14px">And it isn't only a demo of itself. The same eval stack powers <a href="https://github.com/egnaro9/prompt-regress" target="_blank" rel="noopener"><b>prompt-regress</b></a> — a merge gate that runs your evals on every pull request, compares them to the main-branch baseline, and <b>blocks the merge if the answers got worse</b>. It fills a gap the popular eval runner leaves open (no history, no cross-run comparison), ships as a GitHub Action, and gates these very repos. The demo is the machine; this is what it's <em>for</em>.</p>
-    <p class="compose-note" style="margin-top:14px; border-left:3px solid var(--teal); padding-left:14px">And an agent can now <strong>call it directly</strong>. The grading half is exposed as an <a href="https://github.com/egnaro9/mcp-tools" target="_blank" rel="noopener"><strong>MCP tool</strong></a> — hand <code>grade_answer</code> a draft answer plus its sources and it names the sentences those sources <em>don't</em> support: a figure appearing nowhere in the sources fails outright (invented statistics being the strongest tell), low content-word coverage catches claims the sources never make. <strong>No LLM judge</strong> — a model grading hallucination is just another model output you can't reproduce. Wire it into Claude Desktop and it becomes what this whole page is about: <strong>an agent that checks its own work before it answers.</strong></p>
+    <p class="compose-note" style="margin-top:14px; border-left:3px solid var(--teal); padding-left:14px">And an agent can now <strong>call this stack directly</strong>. Three of the five are exposed by an <a href="https://github.com/egnaro9/mcp-tools" target="_blank" rel="noopener"><strong>MCP server</strong></a>, each doing the job it was built for: <strong>agent-graph's</strong> AST-sandboxed evaluator is the <code>calc</code> tool — arithmetic and nothing else; <strong>rag-eval-lab</strong> supplies <code>search</code> (its BM25) and <code>grade_answer</code>, which takes a draft answer plus its sources and names the sentences those sources <em>don't</em> support; <strong>eval-history</strong> answers <code>compare_runs</code> — did the latest eval run regress, per case. A fifth tool, <code>model_drift</code>, reads the <a href="#board">live board</a>. <strong>No LLM judge anywhere</strong> — a model grading hallucination is just another model output you can't reproduce. The other two aren't agent-shaped and shouldn't pretend to be: <strong>llm-gateway</strong> governs the model calls themselves (auth, rate limits, cost accounting) — an agent already has a model, so it has nothing to call there; <strong>eval-dashboard</strong> is for the human, turning a run into cards a person reads. Wire the server into Claude Desktop and the page's opening line stops being a claim: <strong>an agent that checks its own work before it answers.</strong></p>
 
     <div class="projects-flow">
 <div class="proj p-agent">
@@ -539,7 +540,7 @@
           <span class="pci live"><span class="v"></span>live</span>
         </div>
         <p>A <strong>LangGraph</strong> ReAct agent: multi-step tool-calling with guardrails that bite — a safe evaluator and a step budget, both tested. The demo runs <strong>real LangGraph in your tab</strong>; try breaking the calculator with <code>__import__('os')</code>.</p>
-        <div class="ptags"><span class="ptag">LangGraph</span><span class="ptag">tool-calling</span><span class="ptag">guardrails</span><span class="ptag">WebAssembly</span></div>
+        <div class="ptags"><span class="ptag mcp">MCP tool · calc</span><span class="ptag">LangGraph</span><span class="ptag">tool-calling</span><span class="ptag">guardrails</span><span class="ptag">WebAssembly</span></div>
         </div>
         <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/agent-graph/" target="_blank" rel="noopener">▶ Watch it think, in your browser</a>
@@ -571,7 +572,7 @@
           <span class="pci live"><span class="v"></span>live</span>
         </div>
         <p>A dependency-free RAG pipeline with a deterministic eval harness that <strong>catches a planted hallucination</strong>, re-checked on every push. The demo <strong>pip-installs the real wheel into your browser</strong> — write a false answer and watch it get caught, word by word. And it's <strong>measured</strong>: a from-scratch <strong>BM25 that matches the published SciFact baseline</strong> (nDCG@10 <strong>0.664</strong> vs 0.665) — plus <strong>hybrid retrieval and a reranker</strong> it benchmarks honestly and shows <em>don't</em> beat BM25 here, with the mechanism. Knowing when a technique doesn't help is the point.</p>
-        <div class="ptags"><span class="ptag">RAG</span><span class="ptag">evals · nDCG</span><span class="ptag">BM25 · hybrid · reranker</span><span class="ptag">SciFact</span><span class="ptag">WebAssembly</span></div>
+        <div class="ptags"><span class="ptag mcp">MCP tools · search + grade_answer</span><span class="ptag">RAG</span><span class="ptag">evals · nDCG</span><span class="ptag">BM25 · hybrid · reranker</span><span class="ptag">SciFact</span><span class="ptag">WebAssembly</span></div>
         </div>
         <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/rag-eval-lab/" target="_blank" rel="noopener">▶ Try to fool it, in your browser</a>
@@ -603,7 +604,7 @@
           <span class="pci api"><span class="v"></span>live api</span>
         </div>
         <p>Ask it what regressed and a real database answers — same commit, retrieval <code>k=3</code> vs <code>k=2</code>: <strong>five cases better, one worse, verdict <code>regressed</code></strong>. It won't let a better average bury the case that broke. Behind it, the only thing on this page <strong>not running in your tab</strong>: a <strong>FastAPI</strong> + <strong>SQLAlchemy 2.0</strong> service on Render against <strong>Postgres</strong> on Neon, with <strong>rag-eval-lab's CI posting its eval runs here automatically</strong>, tagged with the commit that produced them — non-blocking, so the bookkeeping can never redden the suite it books.</p>
-        <div class="ptags"><span class="ptag">FastAPI</span><span class="ptag">SQLAlchemy 2.0</span><span class="ptag">Postgres</span><span class="ptag">Neon</span><span class="ptag">Render</span><span class="ptag">CI on PG 16 + 18</span></div>
+        <div class="ptags"><span class="ptag mcp">MCP tool · compare_runs</span><span class="ptag">FastAPI</span><span class="ptag">SQLAlchemy 2.0</span><span class="ptag">Postgres</span><span class="ptag">Neon</span><span class="ptag">Render</span><span class="ptag">CI on PG 16 + 18</span></div>
         </div>
         <div class="pside">
         <a class="plive" href="https://eval-history.onrender.com/runs/d800b9a8d3284240bd536bb63fa5f2da/compare/2a95eaada39c453d9920f2ab4fd50391" target="_blank" rel="noopener">▶ Ask it what regressed</a>
