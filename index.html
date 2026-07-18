@@ -510,8 +510,8 @@
           <span class="pname">rag-eval-lab</span>
           <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>A dependency-free RAG pipeline with a deterministic eval harness that <strong>catches a planted hallucination</strong>, re-checked on every push. The demo <strong>pip-installs the real wheel into your browser</strong> — write a false answer and watch it get caught, word by word. And it doesn't only grade itself: on <strong>SciFact</strong> (5,183 abstracts, 300 judged claims) it scores <strong>nDCG@10 0.581</strong> against BM25's published 0.665 — <em>losing, on purpose, in public</em>. recall@10 is 0.728, so it finds the right paper and misranks it: the exact gap BM25's term saturation closes.</p>
-        <div class="ptags"><span class="ptag">RAG</span><span class="ptag">evals</span><span class="ptag">nDCG · SciFact</span><span class="ptag">Python</span><span class="ptag">WebAssembly</span></div>
+        <p>A dependency-free RAG pipeline with a deterministic eval harness that <strong>catches a planted hallucination</strong>, re-checked on every push. The demo <strong>pip-installs the real wheel into your browser</strong> — write a false answer and watch it get caught, word by word. And it's <strong>measured</strong>: a from-scratch <strong>BM25 that matches the published SciFact baseline</strong> (nDCG@10 <strong>0.664</strong> vs 0.665) — plus <strong>hybrid retrieval and a reranker</strong> it benchmarks honestly and shows <em>don't</em> beat BM25 here, with the mechanism. Knowing when a technique doesn't help is the point.</p>
+        <div class="ptags"><span class="ptag">RAG</span><span class="ptag">evals · nDCG</span><span class="ptag">BM25 · hybrid · reranker</span><span class="ptag">SciFact</span><span class="ptag">WebAssembly</span></div>
         </div>
         <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/rag-eval-lab/" target="_blank" rel="noopener">▶ Try to fool it, in your browser</a>
