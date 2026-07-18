@@ -259,7 +259,7 @@
     <div class="eye">Agentic AI Engineer</div>
     <h1>Erik Hill</h1>
     <p class="thesis">I build agentic systems that check their own work — and keep <b>a human on every step that can't be undone</b>.</p>
-    <p class="lede">I designed and built an autonomous development harness: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it. The same discipline is public: <strong>seven repos</strong>, six running their real compiled code in your browser, and one a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, tagged with the commit that produced them. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
+    <p class="lede">I designed and built an autonomous development harness: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it. The same discipline is public: <strong>nine repos</strong> — six run their real compiled code in your browser, one is a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, and the rest turn that into a <strong>merge gate</strong> that blocks regressions and an <strong>MCP</strong> tool server. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
     <div class="cta" style="margin-top:26px; justify-content:flex-start">
       <a class="plive" href="https://egnaro9.github.io/evals-differential-oracle/" target="_blank" rel="noopener">▶ Watch it catch a planted bug — in your browser</a>
       <a class="plive" style="border-color:var(--line); background:transparent; color:var(--fg-dim)" href="https://egnaro9.github.io/stack/">▶ Run five services together — one button</a>
@@ -469,6 +469,7 @@
     <p class="compose-note">An agent that retrieves, a gateway governing its model calls, a harness grading its answers, a dashboard showing what failed, and a database that remembers every run. One button runs a question through <b>all five</b> and hands you the result — including the case that's <b>perfectly faithful and completely wrong</b>, which is the most useful thing on this whole site. The last stage leaves your tab: it asks the <b>live Postgres service</b> what changed versus a run it really has stored, using <b>the same <code>compare.py</code> the server runs</b>, fetched from GitHub and executed in front of you.</p>
     <a class="plive" style="margin-top:14px" href="https://egnaro9.github.io/stack/">▶ Run all five together — one button</a>
     <p class="compose-note" style="margin-top:12px">Or try each stage on its own — the five below are numbered in the order they run. That button runs stages 1–4 in your tab; stage 5 is the deployed one, so it answers from a database instead.</p>
+    <p class="compose-note" style="margin-top:18px; border-left:3px solid var(--amber-line); padding-left:14px">And it isn't only a demo of itself. The same eval stack powers <a href="https://github.com/egnaro9/prompt-regress" target="_blank" rel="noopener"><b>prompt-regress</b></a> — a merge gate that runs your evals on every pull request, compares them to the main-branch baseline, and <b>blocks the merge if the answers got worse</b>. It fills a gap the popular eval runner leaves open (no history, no cross-run comparison), ships as a GitHub Action, and gates these very repos. The demo is the machine; this is what it's <em>for</em>.</p>
 
     <div class="projects-flow">
 <div class="proj p-agent">
@@ -567,9 +568,10 @@
       <div><h3>Agentic</h3><ul>
         <li>Multi-agent orchestration</li>
         <li>LangGraph · tool-calling · RAG</li>
+        <li>Model Context Protocol (MCP)</li>
         <li>Prompt &amp; context engineering</li>
-        <li>Evals &amp; oracle design</li>
-        <li>Human-in-the-loop safety</li>
+        <li>Evals · regression gating · oracle design</li>
+        <li>Safety: OWASP LLM Top 10 · human-in-the-loop</li>
       </ul></div>
       <div><h3>Backend &amp; data</h3><ul>
         <li>Python · FastAPI · Pydantic&nbsp;2</li>
