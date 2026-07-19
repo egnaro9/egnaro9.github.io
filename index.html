@@ -431,14 +431,14 @@
     <h3 class="subhead">The same trick, on someone else's</h3>
     <p class="intro">Then the obvious question: <em>if porting my code to a second environment finds bugs, what about the thing doing the porting?</em> TeaVM is a Java-to-JavaScript compiler I didn't write — 12 years old, and the tool that caught the bug above.</p>
     <div class="oracle" style="margin-top:20px; border-left-color:#c084fc">
-      <p class="big">Its <code>Calendar</code> disagreed with the JVM's by <em>six days</em>, and had for seven and a half years.</p>
+      <p class="big">Its <code>Calendar</code> disagreed with the JVM's by <em>six days</em>, and had for twelve years.</p>
       <div class="diff">
         <span class="impl">JVM &nbsp;→&nbsp; Sun Jan 06 2002</span>
         <span class="eq">≠</span>
         <span class="impl">TeaVM in Chrome &nbsp;→&nbsp; Sat Jan 12 2002</span>
       </div>
-      <p class="intro" style="margin-top:18px">Same test, two environments, one wrong. The cause was <strong>one character</strong>: <code>days - 2</code> where every neighbouring branch — including the line directly above it — uses <code>days - 3</code>. Apache Harmony, which TeaVM's calendar was ported <em>from</em>, has <code>days - 3</code>. It's a transcription slip from joining a two-line expression, and it had been sitting in a compiler thousands of people depend on since 2018.</p>
-      <p class="intro" style="margin-top:14px">Four assertions that reach that line had been <strong>commented out since 2015</strong> — by the person who later hit the bug in production and filed the issue. Nothing live reached it, so the suite couldn't catch it. I re-enabled his four, changed the character, and they pass. <strong>No new tests.</strong></p>
+      <p class="intro" style="margin-top:18px">Same test, two environments, one wrong. The cause was <strong>one character</strong>: <code>days - 2</code> where every neighbouring branch — including the line directly above it — uses <code>days - 3</code>. Apache Harmony, which TeaVM's calendar was ported <em>from</em>, has <code>days - 3</code>. Git blame puts it at a commit from June 2014 — one about <code>SimpleDateFormat</code> tests, which is not where you look for it.</p>
+      <p class="intro" style="margin-top:14px">Four assertions that reach that line had been <strong>commented out since 2015</strong> — one by the developer who later hit the bug and filed the issue, and <strong>three by the maintainer who eventually merged the fix</strong>. Nothing live reached the line, so the suite couldn't catch it. I re-enabled the four, changed the character, and they pass. <strong>No new tests.</strong></p>
       <a class="plive" style="margin-top:18px; display:inline-flex; border-color:#c084fc; color:#c084fc; background:rgba(192,132,252,.1)" href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">▶ Read the pull request</a>
       <p class="intro" style="margin-top:16px"><strong>Merged</strong> — <a href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">konsoletyper/teavm#1213</a>, against <a href="https://github.com/konsoletyper/teavm/issues/371" target="_blank" rel="noopener">issue #371</a> (filed 2018, zero comments in the seven years between) — merged by the project lead on 17 July 2026. Nine lines changed, one of them the character that mattered. The finding never depended on it landing; it's just better that it did.</p>
     </div>
