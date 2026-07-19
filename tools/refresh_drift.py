@@ -87,11 +87,19 @@ def main(argv=None) -> int:
         print(f"generated paragraph is {len(paragraph)} chars — refusing to "
               f"splice something that short", file=sys.stderr)
         return 1
-    # The paragraph is inline content — it opens with a word, not a tag — so
-    # "starts with '<'" is the wrong test. What matters is that nothing
-    # executable rides in with it.
-    if re.search(r"<\s*script|javascript:|\son\w+\s*=|<\s*iframe", paragraph, re.I):
-        print("generated paragraph contains executable markup — refusing",
+    # An allow-list, not a block-list. The block-list version banned `<script`
+    # and ` on*=` and was walked straight past by `<img/onerror=...>` — a slash
+    # is a valid attribute separator, so the space the pattern required was
+    # never there. Enumerating attacks is a losing game; enumerating the five
+    # tags this paragraph is allowed to contain is not.
+    tags = {t.lower() for t in re.findall(r"<\s*/?\s*([a-zA-Z][\w-]*)", paragraph)}
+    allowed = {"strong", "em", "code", "a", "p"}
+    if tags - allowed:
+        print(f"generated paragraph contains unexpected tags {sorted(tags - allowed)} "
+              f"— refusing", file=sys.stderr)
+        return 1
+    if re.search(r"javascript:|\bon\w+\s*=", paragraph, re.I):
+        print("generated paragraph contains an event handler — refusing",
               file=sys.stderr)
         return 1
     if "drift:start" in paragraph or "drift:end" in paragraph:
