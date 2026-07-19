@@ -21,6 +21,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write          # the fallback path, for when PR creation is disallowed
 
 jobs:
   refresh:
