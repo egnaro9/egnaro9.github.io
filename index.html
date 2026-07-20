@@ -390,7 +390,7 @@
       </div>
     </div>
     <p class="intro" style="margin-top:20px"><strong>Proof the test can fail:</strong> a check that has never caught anything isn't evidence. So I planted a deliberately-wrong implementation — special gems on runs of 3 instead of 4 — and <strong>both</strong> nets caught it: the differential check <strong>and</strong> an independent invariant checker, over <strong>3,000 more boards</strong>. Neither missed a board the other found.</p>
-    <p class="intro" style="margin-top:16px">This is the technique, running end-to-end and clickable. <strong>Where it's headed is the real thing:</strong> my Android game's rules already exist twice — a React build, and the Java engine hand-ported from it that's authoritative on device — which makes each one the other's oracle. <strong>Wiring those two into an automated gate is pre-launch work, not something I'm claiming runs today.</strong> What does run today is the invariant suite on that engine, plus on-device validation driven by adb, so &quot;it passed&quot; means it passed on real hardware.</p>
+    <p class="intro" style="margin-top:16px">This is the technique, running end-to-end and clickable. <strong>Where it's headed is the real thing:</strong> when a system's core logic exists in two independent implementations — a reference build and a performance-critical port — each becomes the other's oracle. <strong>Wiring two such implementations into an automated gate is the next step, not something I'm claiming runs today.</strong> What does run today is a property-based invariant suite on the authoritative implementation, plus on-device validation driven by adb, so &quot;it passed&quot; means it passed on real hardware.</p>
 
     <div class="oracle" style="margin-top:22px; border-left-color:var(--teal)">
       <p class="big" style="margin-bottom:2px">Don't take my word for it — <em>run the oracle yourself</em>.</p>
@@ -409,7 +409,7 @@
     </div>
 
     <h3 class="subhead">The same trick, on my own code</h3>
-    <p class="intro">A demo can be arranged to work. So here's the technique against something that had no idea it was being tested: the match-3 engine out of my Android game, compiled to JavaScript with <strong>TeaVM</strong> and dropped in a browser.</p>
+    <p class="intro">A demo can be arranged to work. So here's the technique against something that had no idea it was being tested: a match-3 rules engine I built from scratch, compiled to JavaScript with <strong>TeaVM</strong> and dropped in a browser.</p>
     <p class="intro" style="margin-top:14px"><strong>The port found a bug the JVM could not.</strong> Gem ids came from <code>System.nanoTime()</code>. On the JVM: 128,000 gems, zero collisions, forever. Browsers clamp the clock to ~100µs — a Spectre mitigation — so the same code produced <strong>301 duplicate ids per 128,000</strong>, and those ids are renderer identity keys. The JVM tests passed either way. <em>Only a second environment could see it.</em></p>
     <div class="projects-flow">
 <div class="proj p-m3">
@@ -418,7 +418,7 @@
           <span class="pname">match3-engine</span>
           <span class="pci live"><span class="v"></span>live</span>
         </div>
-        <p>The rules engine out of my second Android game — <strong>my first is <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener">live on Google Play</a></strong>. Zero dependencies outside the JDK, pinned by <strong>16 jqwik property invariants</strong> over thousands of generated boards, and playable here because TeaVM compiles it to JavaScript. It isn't part of the AI stack, and it shouldn't be — it's what the oracle is <em>for</em>.</p>
+        <p>A match-3 rules engine I built from scratch. Zero dependencies outside the JDK, pinned by <strong>16 jqwik property invariants</strong> over thousands of generated boards, and playable here because TeaVM compiles it to JavaScript. It isn't part of the AI stack — it's a clean, self-contained target for property-based and differential testing.</p>
         <div class="ptags"><span class="ptag">Java</span><span class="ptag">property-based testing</span><span class="ptag">jqwik</span><span class="ptag">TeaVM</span></div>
         </div>
         <div class="pside">
