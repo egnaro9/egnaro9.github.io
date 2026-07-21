@@ -1,0 +1,62 @@
+WEBVTT
+
+00:00:00.300 --> 00:00:01.884
+Hi, I'm Erik Hill.
+
+00:00:01.884 --> 00:00:05.844
+I build agentic AI systems that check their own work
+
+00:00:05.844 --> 00:00:10.200
+and keep a human on every step that can't be undone.
+
+00:00:10.200 --> 00:00:15.619
+Self-taught, in under a year, I built an autonomous development harness:
+
+00:00:15.619 --> 00:00:23.500
+a multi-agent loop that plans, builds, reviews, and validates its own changes to a real product.
+
+00:00:23.500 --> 00:00:25.571
+Work moves through five stages:
+
+00:00:25.571 --> 00:00:27.643
+Strategy, Execution, Critic, Evaluation, Ops.
+
+00:00:27.643 --> 00:00:31.786
+The critic runs on a colder model in fresh context
+
+00:00:31.786 --> 00:00:38.000
+so it isn't grading its own homework, and every irreversible step still waits for me.
+
+00:00:38.000 --> 00:00:40.073
+The same discipline is public.
+
+00:00:40.073 --> 00:00:45.049
+This board grades sixteen models across five labs on a frozen suite.
+
+00:00:45.049 --> 00:00:49.610
+No LLM-as-judge, exact-match, so a score change means the model moved
+
+00:00:49.610 --> 00:00:50.854
+not the test.
+
+00:00:50.854 --> 00:00:55.000
+When one regresses, it opens a GitHub issue by itself.
+
+00:00:55.000 --> 00:00:56.514
+Ten public repos.
+
+00:00:56.514 --> 00:01:01.559
+Six run their real compiled code right in your browser:
+
+00:01:01.559 --> 00:01:06.605
+a RAG eval harness, a merge gate that blocks regressions
+
+00:01:06.605 --> 00:01:08.623
+an MCP tool server.
+
+00:01:08.623 --> 00:01:17.200
+Plus a game live on Google Play, and a one-character fix I merged into a twelve-year-old compiler.
+
+00:01:17.200 --> 00:01:21.900
+It's all verifiable, and one click away. egnaro9.github.io.
+
