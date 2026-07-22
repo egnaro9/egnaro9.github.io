@@ -155,7 +155,7 @@
   .launch{margin-top:24px; border:1px solid var(--line); background:var(--panel); border-radius:4px; padding:16px 18px}
   .launch .ltitle{font-family:var(--mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase;
     color:var(--fg-faint); margin-bottom:12px}
-  .launch .lgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:8px}
+  .launch .lgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px}
   .launch a{display:flex; align-items:center; gap:9px; font-family:var(--mono); font-size:13px;
     color:var(--fg-dim); border:1px solid var(--line); background:var(--raised); border-radius:3px;
     padding:10px 13px; transition:border-color .12s,color .12s,background .12s}
@@ -166,7 +166,8 @@
   .loc{display:inline-flex; align-items:center; gap:10px; margin-top:30px; padding-left:13px;
     border-left:2px solid var(--teal); font-family:var(--mono); font-size:14.5px; color:var(--fg)}
   .loc .sep{color:var(--fg-faint)}
-  .contact{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+  .contact{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; max-width:760px}
+  @media (max-width:560px){ .launch .lgrid{grid-template-columns:1fr} }
   /* every other demo is WASM in the reader's tab; this one is a real server. */
   .proj .pci.api{color:#f472b6; border-color:#f472b6; background:rgba(244,114,182,.09)}
   .proj .pci.api .v{background:#f472b6; animation:pulse 2s ease-in-out infinite}
@@ -303,7 +304,7 @@
     <div class="contact">
       <span class="chip"><a href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a></span>
       <span class="chip"><a href="https://github.com/egnaro9" target="_blank" rel="noopener">github.com/egnaro9</a></span>
-      <span class="chip"><a href="https://dev.to/egnaro9" target="_blank" rel="noopener">dev.to/egnaro9</a></span>
+      <span class="chip"><a href="https://dev.to/AgentDev9" target="_blank" rel="noopener">dev.to/AgentDev9</a></span>
       <span class="chip"><a href="https://www.linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">linkedin.com/in/erik-hill-98895575</a></span>
       <span class="chip"><a href="https://x.com/AgentDev9" target="_blank" rel="noopener">x.com/AgentDev9</a></span>
       <span class="chip"><a href="https://www.reddit.com/user/AgentDev9" target="_blank" rel="noopener">reddit.com/user/AgentDev9</a></span>
@@ -690,7 +691,7 @@
     <div class="cta">
       <a class="btn" href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a>
       <a class="btn ghost" href="https://github.com/egnaro9" target="_blank" rel="noopener">GitHub</a>
-      <a class="btn ghost" href="https://dev.to/egnaro9" target="_blank" rel="noopener">dev.to</a>
+      <a class="btn ghost" href="https://dev.to/AgentDev9" target="_blank" rel="noopener">dev.to</a>
       <a class="btn ghost" href="https://www.linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">LinkedIn</a>
       <a class="btn ghost" href="https://x.com/AgentDev9" target="_blank" rel="noopener">X</a>
       <a class="btn ghost" href="https://www.reddit.com/user/AgentDev9" target="_blank" rel="noopener">Reddit</a>
