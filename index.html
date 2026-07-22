@@ -223,6 +223,7 @@
   .compose .cfile{font-family:var(--mono); font-size:12.5px; color:var(--teal); border:1px dashed var(--teal); background:var(--teal-soft); padding:8px 12px; border-radius:2px}
   .compose .carr{font-family:var(--mono); font-size:11.5px; color:var(--fg-faint); letter-spacing:.04em}
   .compose-note{color:var(--fg-dim); font-size:15.5px; margin-top:12px; max-width:62ch}
+  .lens-kicker{margin-top:6px; color:var(--teal); font-size:.82rem; letter-spacing:.02em}
   .compose-note b{color:var(--fg)}
 
   /* ---- ladder ---- */
@@ -277,8 +278,8 @@
   <header>
     <div class="eye">Agentic AI Engineer</div>
     <h1>Erik Hill</h1>
-    <p class="thesis">I build agentic systems that check their own work — and keep <b>a human on every step that can't be undone</b>.</p>
-    <p class="lede">I designed and built an autonomous development harness: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it. The same discipline is public: <strong>ten repos</strong> — six run their real compiled code in your browser, one is a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, and the rest turn that into a <strong>merge gate</strong> that blocks regressions, an <strong>MCP</strong> tool server, and a <a href="#board"><strong>live public board tracking 16 LLMs</strong></a> for drift. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
+    <p class="thesis">I build agentic systems that check their own work — with code, not a model grading itself — and keep <b>a human on every step that can't be undone</b>.</p>
+    <p class="lede">I designed and built an autonomous development harness: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it. The same discipline is public: <strong>ten repos</strong> — five run their real compiled code in your browser, one is a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, and the rest turn that into a <strong>dashboard</strong> that shows what failed, a <strong>merge gate</strong> that blocks regressions, an <strong>MCP</strong> tool server, and a <a href="#board"><strong>live public board tracking 16 LLMs</strong></a> for drift. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
     <div class="cta" style="margin-top:28px; justify-content:flex-start">
       <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board — 16 LLMs, 5 metrics</a>
     </div>
@@ -314,7 +315,7 @@
   <section id="tour">
     <div class="label"><span class="tick">//</span> The Tour</div>
     <h2>Ninety seconds through all of it</h2>
-    <p class="intro">A narrated walk through the harness, the live board, and the ten repos — everything on this page, running.</p>
+    <p class="intro">A narrated walk through the harness, the live board, and the ten repos — everything on this page, running. The same discipline runs under all of it — the checks are code, never a model grading itself — and you'll see it turned <strong>four ways</strong> below.</p>
     <video controls preload="metadata" playsinline poster="media/portfolio-tour-poster.jpg"
       style="width:100%; margin-top:24px; display:block; background:#000; border:1px solid var(--line); border-radius:3px">
       <source src="media/portfolio-tour.mp4" type="video/mp4">
@@ -326,7 +327,8 @@
   <section id="board">
     <div class="label"><span class="tick">//</span> In the Wild</div>
     <h2>A public board watching 16 models for drift</h2>
-    <p class="intro">The stack above isn't only a demo of itself — it runs a <strong>live public tracker</strong>. A frozen, deterministically-graded suite hits <strong>16 models across 5 labs</strong> — OpenAI, Anthropic, Google, xAI, Meta — on a weekly cron, and every result is kept: <strong>accuracy, speed, verbosity, reliability, refusal rate</strong>. No LLM-as-judge; the grader is exact-match, so a score change means the <em>model</em> moved, not the test. When one regresses week-over-week it opens a GitHub issue by itself — the post about it stays a human decision.</p>
+    <p class="lens-kicker">The same discipline, turned on time — a frozen suite, run week after week.</p>
+    <p class="intro">The stack you'll see below isn't only a demo of itself — it runs a <strong>live public tracker</strong>. A frozen, deterministically-graded suite hits <strong>16 models across 5 labs</strong> — OpenAI, Anthropic, Google, xAI, Meta — on a weekly cron, and every result is kept: <strong>accuracy, speed, verbosity, reliability, refusal rate</strong>. No LLM-as-judge — every task is scored by a fixed deterministic check (exact match, substring, regex, or numeric compare), so a score change means the <em>model</em> moved, not the test. When one regresses week-over-week it opens a GitHub issue by itself — the post about it stays a human decision.</p>
 
     <div class="projects-flow">
 <div class="proj p-drift">
@@ -353,7 +355,7 @@
     <div class="label"><span class="tick">//</span> The Harness</div>
     <h2>A loop that reviews itself before it lands</h2>
     <p class="intro">Agents that build unsupervised are easy. Agents you'd <em>let</em> build unsupervised are the problem — and the answer isn't a better model, it's knowing which steps a machine may never take alone. Here's the loop, how far it runs on its own, and exactly what stops it.</p>
-    <p class="intro">Work moves through five stages. Each hands off to the next automatically — no manual relaunch — and judgment runs on a different, colder model than execution, so the critic isn't grading its own homework.</p>
+    <p class="intro">Work moves through five stages, and each leg arms the next through a hook rather than a hand-run command — judgment runs on a different, colder model than execution, so the critic isn't grading its own homework.</p>
 
     <div class="pipe-scroll">
       <div class="pipe" role="img" aria-label="Pipeline: Strategy to Execution to Critic to Evaluation to Ops">
@@ -368,7 +370,7 @@
 
     <div class="pipe-note">
       <div><b>Per-role model routing</b><span>Reasoning-heavy judgment and routine execution run on different models, matched to the job.</span></div>
-      <div><b>Hook-based handoff</b><span>Stages arm the next leg on their own — the loop advances without a human babysitting it.</span></div>
+      <div><b>Hook-based handoff</b><span>Each stage arms the next leg through a Stop hook — wiring, not a human, carries the work between stages.</span></div>
       <div><b>Cold, independent critic</b><span>Review runs in fresh context so it catches what the builder rationalized away.</span></div>
     </div>
 
@@ -379,7 +381,7 @@
     <div class="ladder" role="list">
       <div class="rung" role="listitem"><span class="lv">L4</span><span class="rt"><b>Lights-out</b> — a doctrine amendment, not a default. Operator's call, never self-granted.</span><span class="tag">gated</span></div>
       <div class="rung" role="listitem"><span class="lv">L3</span><span class="rt"><b>Auto-advance launches</b> — the safe clicks fire on their own; write-gates still stop for a human.</span><span class="tag">gated</span></div>
-      <div class="rung here" role="listitem"><span class="lv">L2</span><span class="rt"><b>Hands-off relay</b> — the loop chains itself end to end; every irreversible act still waits for approval.</span><span class="tag">◀ current</span></div>
+      <div class="rung here" role="listitem"><span class="lv">L2</span><span class="rt"><b>Hands-off relay</b> — each leg arms the next on its own; every irreversible act still waits for approval.</span><span class="tag">◀ current</span></div>
       <div class="rung" role="listitem"><span class="lv">L1</span><span class="rt"><b>Assisted</b> — humans drive; the harness proposes and prepares each step.</span><span class="tag">manual</span></div>
       <div class="rung" role="listitem"><span class="lv">L0</span><span class="rt"><b>Manual</b> — every action is a human keystroke.</span><span class="tag">manual</span></div>
     </div>
@@ -390,11 +392,13 @@
       <p class="intro" style="margin-top:14px">The builder reported a number and called it the minimum achievable. The cold critic refused the claim, re-derived the truth from source, proved the real floor was <strong>38% lower</strong>, and blocked the work. Then it ran the check the arc had just installed and watched the arc's own output trip it. Five stages, click through what actually happened.</p>
       <a class="plive" style="margin-top:16px; display:inline-flex" href="https://egnaro9.github.io/loop/">▶ Walk through a real arc</a>
     </div>
+    <p class="intro" style="margin-top:20px">This is the loop behind everything else on this page — and even its critic doesn't get the last word: it re-derives the number from source, then hands the verdict to a <strong>deterministic check</strong> the arc just installed — the same no-LLM-judge discipline the board and the oracle run on.</p>
   </section>
 
   <section id="oracle">
     <div class="label"><span class="tick">//</span> The Oracle</div>
     <h2>Correctness it can prove — not vibe-check</h2>
+    <p class="lens-kicker">The same discipline, turned on itself — the logic written twice, and the disagreement names the liar.</p>
     <div class="oracle">
       <p class="big">Cascading match-3 rules have no obvious right answer to assert against — the expected output is as hard to work out as the code. So write the logic <em>twice</em>, by different algorithms, and make the two argue. Where they disagree, one of them is wrong, and <em>no one had to know which answer was correct</em> to find out.</p>
       <div class="diff">
@@ -457,27 +461,29 @@
       <a class="plive" style="margin-top:18px; display:inline-flex; border-color:#c084fc; color:#c084fc; background:rgba(192,132,252,.1)" href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">▶ Read the pull request</a>
       <p class="intro" style="margin-top:16px"><strong>Merged</strong> — <a href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">konsoletyper/teavm#1213</a>, against <a href="https://github.com/konsoletyper/teavm/issues/371" target="_blank" rel="noopener">issue #371</a> (filed 2018, zero comments in the eight years since) — merged by the project lead on 17 July 2026. Nine lines changed, one of them the character that mattered. The finding never depended on it landing; it's just better that it did.</p>
     </div>
-    <p class="intro" style="margin-top:20px">That's the whole argument, three times: <strong>write it twice, run it in two places, and let the disagreement tell you which one lied.</strong> It works on a demo, on my own shipped code, and on a stranger's compiler that had been quietly wrong since before I could program.</p>
+    <p class="intro" style="margin-top:20px">That's the whole argument, three times: <strong>write it twice, run it in two places, and let the disagreement tell you which one lied.</strong> It works on a demo, on my own shipped code, and on a stranger's compiler that had been quietly wrong since before I could program — and it's the same move one section down, where a deterministic grader catches its own lie about a real model.</p>
   </section>
 
   <section>
     <div class="label"><span class="tick">//</span> The Crash Test</div>
     <h2>The grader caught its own bug</h2>
-    <p class="intro">Point your own model at an adversarial battery — <strong>eight tasks, prompt-injection through must-refuse</strong> — with your own API key, and get back a severity-weighted vulnerability report. On a live run against a real model it read ~29% vulnerable. But the graders are deterministic and every failure shows its work — prompt, expected, actual — so the fail cards gave it away: that 29% was the grader's <em>own</em> bug, not the model's. The real number was <strong>0%</strong> — caught before it could publish a false claim about a real model. An auditable grader has bugs you can catch; a vibes arena just hands you a number.</p>
-    <p class="intro">Red-teaming LLMs is crowded, mature ground — garak, PyRIT, and promptfoo cover far more. What's checkable here: the grader is <code>gradecore</code>, extracted from the monitor behind <a href="#board">the live board</a> above — <strong>its <code>suite_hash</code> is byte-identical to the board's</strong> — one engine turned two ways: longitudinal drift, and on-demand attack. No LLM-as-judge, so every grade reproduces. And your key <strong>never touches my server</strong> — the browser calls the provider directly, the grade request carries no key field at all; watch it in the Network tab.</p>
+    <p class="lens-kicker">The same discipline, turned on a live model — a fixed predicate names the failure, every fail card shows its work.</p>
+    <p class="intro">Point your own model at an adversarial battery — <strong>eight tasks across seven kinds</strong>: injection, tool-abuse, hallucination-bait, refusal — with your own API key, and get back a severity-weighted vulnerability report. On a live run against a real model it read ~29% vulnerable. But the graders are deterministic and every failure shows its work — prompt, expected, actual — so the fail cards gave it away: that 29% was the grader's <em>own</em> bug, not the model's. The real number was <strong>0%</strong> — caught before it could publish a false claim about a real model. An auditable grader has bugs you can catch; a vibes arena just hands you a number.</p>
+    <p class="intro">Red-teaming LLMs is crowded, mature ground — garak, PyRIT, and promptfoo cover far more. What's checkable here: the grader is <code>gradecore</code>, lifted straight from the engine behind <a href="#board">the live board</a> above — not a reimplementation, <strong>run the board's own frozen suite through it and the <code>suite_hash</code> comes out byte-for-byte identical</strong>. One engine turned two ways: longitudinal drift on the board, on-demand attack here. No LLM-as-judge, so every grade reproduces. And your key <strong>never touches my server</strong> — the browser calls the provider directly, the grade request carries no key field at all; watch it in the Network tab.</p>
     <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px">
       <a class="plive" href="https://crashkit.onrender.com" target="_blank" rel="noopener">▶ Crash-test a model — your key, your browser</a>
       <a class="plink" href="https://github.com/egnaro9/crashkit" target="_blank" rel="noopener">crashkit — the source <span>→</span></a>
       <a class="plink" href="https://github.com/egnaro9/gradecore" target="_blank" rel="noopener">gradecore — the grader <span>→</span></a>
     </div>
     <p class="compose-note" style="margin-top:10px">Free tier — the first click takes ~50s to wake it. Deterministic grading, a severity-weighted score, and a fail card for every miss; <b>BYOK</b> for Anthropic, Gemini, xAI, Groq, OpenAI, or any OpenAI-compatible endpoint.</p>
-    <p class="compose-note" style="margin-top:16px; border-left:3px solid var(--teal); padding-left:14px">That grader didn't come from nowhere. Below is the same deterministic, no-LLM-judge discipline wired into a whole system — five live pieces that check their own work.</p>
+    <p class="compose-note" style="margin-top:16px; border-left:3px solid var(--teal); padding-left:14px">That grader didn't come from nowhere. It writes the very <code>eval_run.json</code> the board and the fabric below speak — then keeps its <em>own</em> store, so a public, key-in-the-browser crash test can never scribble on the drift history. Below is that same discipline wired into a whole system — five live pieces that check their own work.</p>
   </section>
 
   <section>
     <div class="label"><span class="tick">//</span> One System</div>
     <h2>Don't read them — run them</h2>
-    <p class="intro">Five of them here, <strong>all five live right now</strong> — no install, no signup, no API key. Four run their <em>real compiled code</em> in your browser: the same Python that runs in CI, installed from the wheel that CI built. The fifth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And they aren't five separate exercises — <strong>they're one system that calls itself</strong>. (The other two are up in <a href="#oracle">The Oracle</a>.)</p>
+    <p class="lens-kicker">The same discipline, turned inward — a pipeline that grades its own answer before it speaks.</p>
+    <p class="intro">Five of them here, <strong>all five live right now</strong> — no install, no signup, no API key. Four run in your browser — three are the <em>real compiled Python</em> that runs in CI, installed from the wheel CI built; the fourth is the dashboard's own static build. The fifth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And they aren't five separate exercises — <strong>they're one system that calls itself</strong>. (The other two are up in <a href="#oracle">The Oracle</a>.)</p>
 
     <div class="arch-wrap">
       <svg class="arch" viewBox="0 0 800 390" role="img" aria-label="Architecture: agent-graph retrieves via rag-eval-lab and routes its LLM calls through llm-gateway; rag-eval-lab grades the answers into eval_run.json, which eval-dashboard renders and eval-history stores in Postgres to compare against earlier runs.">
@@ -553,10 +559,10 @@
         <text class="nm dim" x="631" y="334" text-anchor="middle">Postgres</text>
         <text class="ns" x="631" y="352" text-anchor="middle">every run, kept</text>
       </svg>
-      <div class="arch-legend">Every box is live — click one. Every arrow is a function call, not a diagram. Everything above the last row runs in your tab; <b>eval-history is a real server</b>.</div>
+      <div class="arch-legend">Every box is live — click one. Every arrow is a real call, not a decoration — most in-process, the last two over the wire. Everything above the last row runs in your tab; <b>eval-history is a real server</b>.</div>
     </div>
 
-    <p class="compose-note">An agent that retrieves, a gateway governing its model calls, a harness grading its answers, a dashboard showing what failed, and a database that remembers every run. One button runs a question through <b>all five</b> and hands you the result — including the case that's <b>perfectly faithful and completely wrong</b>, which is the most useful thing on this whole site. The last stage leaves your tab: it asks the <b>live Postgres service</b> what changed versus a run it really has stored, using <b>the same <code>compare.py</code> the server runs</b>, fetched from GitHub and executed in front of you.</p>
+    <p class="compose-note">An agent that retrieves, a gateway governing its model calls, a harness grading its answers, a dashboard showing what failed, and a database that remembers every run. One button runs a question through <b>all five</b> and hands you the result — including the case that's <b>perfectly faithful and completely wrong</b>, which is the case that matters most. The last stage leaves your tab: it asks the <b>live Postgres service</b> what changed versus a run it really has stored, using <b>the same <code>compare.py</code> the server runs</b>, fetched from GitHub and executed in front of you.</p>
     <a class="plive" style="margin-top:14px" href="https://egnaro9.github.io/stack/">▶ Run all five together — one button</a>
     <p class="compose-note" style="margin-top:12px">Or try each stage on its own — the five below are numbered in the order they run. That button runs stages 1–4 in your tab; stage 5 is the deployed one, so it answers from a database instead.</p>
     <p class="compose-note" style="margin-top:18px; border-left:3px solid var(--amber-line); padding-left:14px">And it isn't only a demo of itself. The same eval stack powers <a href="https://github.com/egnaro9/prompt-regress" target="_blank" rel="noopener"><b>prompt-regress</b></a> — a merge gate that runs your evals on every pull request, compares them to the main-branch baseline, and <b>blocks the merge if the answers got worse</b>. It fills a gap the popular eval runner leaves open (no history, no cross-run comparison), ships as a GitHub Action, and gates these very repos. The demo is the machine; this is what it's <em>for</em>.</p>
@@ -636,7 +642,7 @@
           <span class="pname">eval-history</span>
           <span class="pci api"><span class="v"></span>live api</span>
         </div>
-        <p>Ask it what regressed and a real database answers — same commit, retrieval <code>k=3</code> vs <code>k=2</code>: <strong>five cases better, one worse, verdict <code>regressed</code></strong>. It won't let a better average bury the case that broke. Behind it, the only thing on this page <strong>not running in your tab</strong>: a <strong>FastAPI</strong> + <strong>SQLAlchemy 2.0</strong> service on Render against <strong>Postgres</strong> on Neon, with <strong>rag-eval-lab's CI posting its eval runs here automatically</strong>, tagged with the commit that produced them — non-blocking, so the bookkeeping can never redden the suite it books.</p>
+        <p>Ask it what regressed and a real database answers — same commit, retrieval <code>k=3</code> vs <code>k=2</code>: <strong>five cases better, one worse, verdict <code>regressed</code></strong>. It won't let a better average bury the case that broke. Behind it, the only one of these five <strong>not running in your tab</strong>: a <strong>FastAPI</strong> + <strong>SQLAlchemy 2.0</strong> service on Render against <strong>Postgres</strong> on Neon, with <strong>rag-eval-lab's CI posting its eval runs here automatically</strong>, tagged with the commit that produced them — non-blocking, so the bookkeeping can never redden the suite it books.</p>
         <div class="ptags"><span class="ptag mcp">MCP tool · compare_runs</span><span class="ptag">FastAPI</span><span class="ptag">SQLAlchemy 2.0</span><span class="ptag">Postgres</span><span class="ptag">Neon</span><span class="ptag">Render</span><span class="ptag">CI on PG 16 + 18</span><span class="ptag">Alembic drift test</span><span class="ptag">/health · /readyz</span></div>
         </div>
         <div class="pside">
@@ -698,12 +704,12 @@
   <section class="path">
     <div class="label"><span class="tick">//</span> The Path</div>
     <h2 style="margin-bottom:16px">Not the usual route</h2>
-    <p>I came to this from professional kitchens, not a CS program — six years of running high-volume lines, then under a year of building agentic systems from first principles — my first Android game went up in November 2025 and shipped to Google Play in April. <b>Judge me on the work, and I'll take that trade every time.</b></p>
+    <p>I came to this from professional kitchens, not a CS program — six years of running high-volume lines, then under a year of building agentic systems from first principles — my first Android game went up in November 2025 and shipped to Google Play in April. <b>Judge me on the work</b> — the same bet every system up the page makes: prove it, don't ask you to believe it — <b>and I'll take that trade every time.</b></p>
   </section>
 
   <footer>
     <div class="label" style="justify-content:center"><span class="tick">//</span> Open to work</div>
-    <h2 style="margin-top:8px">Building trustworthy agents — on a team</h2>
+    <h2 style="margin-top:8px">Building trustworthy agents — the kind that prove it before they speak — on a team</h2>
     <div class="cta">
       <a class="btn" href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a>
       <a class="btn ghost" href="https://github.com/egnaro9" target="_blank" rel="noopener">GitHub</a>
