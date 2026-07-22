@@ -46,7 +46,6 @@ jobs:
             --max-retries 3
             --retry-wait-time 2
             --timeout 20
-            --exclude-mail
             "**/*.html"
           fail: true
         env:
