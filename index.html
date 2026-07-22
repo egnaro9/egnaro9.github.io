@@ -461,6 +461,20 @@
   </section>
 
   <section>
+    <div class="label"><span class="tick">//</span> The Crash Test</div>
+    <h2>The grader caught its own bug</h2>
+    <p class="intro">Point your own model at an adversarial battery — <strong>eight tasks, prompt-injection through must-refuse</strong> — with your own API key, and get back a severity-weighted vulnerability report. On a live run against a real model it read ~29% vulnerable. But the graders are deterministic and every failure shows its work — prompt, expected, actual — so the fail cards gave it away: that 29% was the grader's <em>own</em> bug, not the model's. The real number was <strong>0%</strong> — caught before it could publish a false claim about a real model. An auditable grader has bugs you can catch; a vibes arena just hands you a number.</p>
+    <p class="intro">Red-teaming LLMs is crowded, mature ground — garak, PyRIT, and promptfoo cover far more. What's checkable here: the grader is <code>gradecore</code>, extracted from the monitor behind <a href="#board">the live board</a> above — <strong>its <code>suite_hash</code> is byte-identical to the board's</strong> — one engine turned two ways: longitudinal drift, and on-demand attack. No LLM-as-judge, so every grade reproduces. And your key <strong>never touches my server</strong> — the browser calls the provider directly, the grade request carries no key field at all; watch it in the Network tab.</p>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px">
+      <a class="plive" href="https://crashkit.onrender.com" target="_blank" rel="noopener">▶ Crash-test a model — your key, your browser</a>
+      <a class="plink" href="https://github.com/egnaro9/crashkit" target="_blank" rel="noopener">crashkit — the source <span>→</span></a>
+      <a class="plink" href="https://github.com/egnaro9/gradecore" target="_blank" rel="noopener">gradecore — the grader <span>→</span></a>
+    </div>
+    <p class="compose-note" style="margin-top:10px">Free tier — the first click takes ~50s to wake it. Deterministic grading, a severity-weighted score, and a fail card for every miss; <b>BYOK</b> for Anthropic, Gemini, xAI, Groq, OpenAI, or any OpenAI-compatible endpoint.</p>
+    <p class="compose-note" style="margin-top:16px; border-left:3px solid var(--teal); padding-left:14px">That grader didn't come from nowhere. Below is the same deterministic, no-LLM-judge discipline wired into a whole system — five live pieces that check their own work.</p>
+  </section>
+
+  <section>
     <div class="label"><span class="tick">//</span> One System</div>
     <h2>Don't read them — run them</h2>
     <p class="intro">Five of them here, <strong>all five live right now</strong> — no install, no signup, no API key. Four run their <em>real compiled code</em> in your browser: the same Python that runs in CI, installed from the wheel that CI built. The fifth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And they aren't five separate exercises — <strong>they're one system that calls itself</strong>. (The other two are up in <a href="#oracle">The Oracle</a>.)</p>
