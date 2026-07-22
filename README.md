@@ -36,7 +36,7 @@ flowchart TD
     REL -->|eval_run.json| DASH
 
     classDef svc fill:#0d3b66,stroke:#0d3b66,color:#fff;
-    class EH,GW svc;
+    class EH,GW,REL svc;
 ```
 
 `llm-gateway` and `agent-graph` stand alone (a service and an agent you run
@@ -53,6 +53,10 @@ and is easy to miss, so, plainly:
   without restart-looping), **Alembic migrations** with a model↔migration
   **drift test**, and **CI that runs the suite against SQLite *and* real
   Postgres 16 & 18**. IaC via `render.yaml`; secrets generated, never committed.
+- **`rag-eval-lab` is a second live service** — a FastAPI wrapper over the RAG
+  pipeline on **Render** ([live](https://rag-eval-lab.onrender.com/healthz)):
+  `POST /query`, `POST /eval`, `GET /healthz`, structured logging, and a pgvector
+  path exercised in CI against a real pgvector Postgres.
 - **`llm-gateway`** is production-shaped API discipline: versioned `/v1` routes,
   correct status semantics (401/429 with integer `Retry-After`/502/422), DI
   bearer auth, token-bucket rate limiting, retry, per-model cost accounting, and
