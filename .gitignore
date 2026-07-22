@@ -1,0 +1,6 @@
+# Python bytecode / caches — the tools/ scripts are the source, not these.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/

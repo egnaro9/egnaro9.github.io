@@ -1,0 +1,53 @@
+# The site is hand-written and has no build, so there's little to compile — but
+# two things here can still silently go false: the refresh-drift script that
+# rewrites the homepage, and the outbound links that make the portfolio a hub.
+# This job guards both.
+#
+#   - tools/  runs the refresh_drift unit tests. That script edits the page a
+#     hiring manager reads, so its refuse-or-write policy is worth pinning down.
+#   - links   walks every href in the HTML. A rotted link on a portfolio reads
+#     as neglect; better CI catches it than a reviewer does.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test the refresh-drift script
+        run: |
+          python -m pip install --quiet pytest
+          python -m pytest tools/ -q
+
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # A rate-limited host (429) or a slow one is not a dead link, so those are
+      # accepted; only genuine 4xx/5xx and unresolved hosts fail the build.
+      - name: Check outbound links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --no-progress
+            --accept 200,206,429
+            --max-retries 3
+            --retry-wait-time 2
+            --timeout 20
+            --exclude-mail
+            "**/*.html"
+          fail: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
