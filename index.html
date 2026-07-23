@@ -470,12 +470,12 @@
     <p class="lens-kicker">The same discipline, turned on a live model — a fixed predicate names the failure, every fail card shows its work.</p>
     <p class="intro">Point your own model at an adversarial battery — <strong>eight tasks across seven kinds</strong>: injection, tool-abuse, hallucination-bait, refusal — with your own API key, and get back a severity-weighted vulnerability report. On a live run against a real model it read ~29% vulnerable. But the graders are deterministic and every failure shows its work — prompt, expected, actual — so the fail cards gave it away: that 29% was the grader's <em>own</em> bug, not the model's. The real number was <strong>0%</strong> — caught before it could publish a false claim about a real model. An auditable grader has bugs you can catch; a vibes arena just hands you a number.</p>
     <p class="intro">Red-teaming LLMs is crowded, mature ground — garak, PyRIT, and promptfoo cover far more. What's checkable here: the grader is <code>gradecore</code>, lifted straight from the engine behind <a href="#board">the live board</a> above — not a reimplementation, <strong>run the board's own frozen suite through it and the <code>suite_hash</code> comes out byte-for-byte identical</strong>. One engine turned two ways: longitudinal drift on the board, on-demand attack here. No LLM-as-judge, so every grade reproduces. And your key <strong>never touches my server</strong> — the browser calls the provider directly, the grade request carries no key field at all; watch it in the Network tab.</p>
-    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px 16px; margin-top:16px">
+    <div style="margin-top:16px">
       <a class="plive" href="https://crashkit.onrender.com" target="_blank" rel="noopener">▶ Crash-test a model — your key, your browser</a>
-      <div style="display:flex; flex-direction:column; gap:6px">
-        <a class="plink" href="https://github.com/egnaro9/crashkit" target="_blank" rel="noopener">crashkit — the source <span>→</span></a>
-        <a class="plink" href="https://github.com/egnaro9/gradecore" target="_blank" rel="noopener">gradecore — the grader <span>→</span></a>
-      </div>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px">
+      <a class="plink" href="https://github.com/egnaro9/crashkit" target="_blank" rel="noopener">crashkit — the source <span>→</span></a>
+      <a class="plink" href="https://github.com/egnaro9/gradecore" target="_blank" rel="noopener">gradecore — the grader <span>→</span></a>
     </div>
     <p class="compose-note" style="margin-top:10px">Free tier — the first click takes ~50s to wake it. Deterministic grading, a severity-weighted score, and a fail card for every miss; <b>BYOK</b> for Anthropic, Gemini, xAI, Groq, OpenAI, or any OpenAI-compatible endpoint.</p>
     <p class="compose-note" style="margin-top:16px; border-left:3px solid var(--teal); padding-left:14px">That grader didn't come from nowhere. It writes the very <code>eval_run.json</code> the board and the fabric below speak — then keeps its <em>own</em> store, so a public, key-in-the-browser crash test can never scribble on the drift history. Below is that same discipline wired into a whole system — five live pieces that check their own work.</p>
