@@ -1,6 +1,6 @@
 # egnaro9.github.io
 
-Portfolio site for **Erik Hill** — agentic systems engineer.
+Portfolio site for **Erik Hill** — AI evaluation & testing engineer.
 
 **Live:** https://egnaro9.github.io · Hand-written HTML/CSS, no framework, no build.
 
