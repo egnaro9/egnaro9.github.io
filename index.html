@@ -232,6 +232,10 @@
   .rec figcaption{margin-top:12px; font-family:var(--mono); font-size:12px; color:var(--fg-faint)}
   .rec figcaption a{color:#c084fc; text-decoration:none}
   .rec figcaption a:hover{text-decoration:underline}
+  .rec-full{display:inline-block; margin-top:8px; padding:4px 11px; border:1px solid rgba(192,132,252,.4);
+    border-radius:20px; background:rgba(192,132,252,.08)}
+  .rec-full span{opacity:.7; margin-left:2px}
+  .rec-full:hover{background:rgba(192,132,252,.16); text-decoration:none !important}
   .rec-note{margin:14px 0 0; color:var(--fg-dim); font-size:14.5px; max-width:62ch}
   .rec-note a{color:#c084fc}
   /* The bridge: one row per crash-test battery, naming the piece it reuses. */
@@ -490,6 +494,7 @@
       <figcaption>
         <a href="https://www.linkedin.com/in/bartlomiej-nawara-phd/" target="_blank" rel="noopener">Bartłomiej Nawara, PhD</a>
         — Senior AI/ML Engineer &amp; NLP Researcher · ~12 years across academic and production ML/NLP
+        <a class="rec-full" href="https://www.linkedin.com/in/erik-hill-98895575/details/recommendations/" target="_blank" rel="noopener">read it in full on LinkedIn <span>→</span></a>
       </figcaption>
       <p class="rec-note">He wrote that about my work generally. The bug above is what it looks like in the concrete: no exception, no failing build, no alert — just the wrong date, for eight years, in a compiler thousands of projects depend on. A recommendation is a claim; <a href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">#1213</a> is the receipt.</p>
     </figure>
