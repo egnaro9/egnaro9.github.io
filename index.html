@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Erik Hill — agentic AI engineer. Ten live, runnable repos, including a public board tracking 16 LLMs for drift and a deployed FastAPI + Postgres service my CI posts eval runs to. Agents that check their own work.">
+<meta name="description" content="Erik Hill — agentic AI engineer. Twelve live, runnable repos, including a public board tracking 16 LLMs for drift and a deployed FastAPI + Postgres service my CI posts eval runs to. Agents that check their own work.">
 <title>Erik Hill — Agentic AI Engineer | Python, FastAPI, Postgres</title>
 <meta property="og:title" content="Erik Hill — Agentic AI Engineer">
-<meta property="og:description" content="Ten live repos you can run yourself — including a public board tracking 16 LLMs for drift. Six run in your browser; one's a deployed FastAPI + Postgres service.">
+<meta property="og:description" content="Twelve live repos you can run yourself — including a public board tracking 16 LLMs for drift. Six run in your browser; one's a deployed FastAPI + Postgres service.">
 <meta property="og:url" content="https://egnaro9.github.io">
 <meta property="og:type" content="website">
 <style>
@@ -223,6 +223,29 @@
   .compose .cfile{font-family:var(--mono); font-size:12.5px; color:var(--teal); border:1px dashed var(--teal); background:var(--teal-soft); padding:8px 12px; border-radius:2px}
   .compose .carr{font-family:var(--mono); font-size:11.5px; color:var(--fg-faint); letter-spacing:.04em}
   .compose-note{color:var(--fg-dim); font-size:15.5px; margin-top:12px; max-width:62ch}
+  /* A third-party recommendation, placed as corroboration next to its proof. */
+  .rec{margin:24px 0 0; padding:18px 20px; border:1px solid var(--line);
+    border-left:3px solid #c084fc; border-radius:10px; background:var(--panel)}
+  .rec blockquote{margin:0; font-size:17px; line-height:1.55; color:var(--fg)}
+  .rec blockquote::before{content:'"'; color:#c084fc; font-size:22px; line-height:0; margin-right:2px}
+  .rec blockquote::after{content:'"'; color:#c084fc; font-size:22px; line-height:0; margin-left:2px}
+  .rec figcaption{margin-top:12px; font-family:var(--mono); font-size:12px; color:var(--fg-faint)}
+  .rec figcaption a{color:#c084fc; text-decoration:none}
+  .rec figcaption a:hover{text-decoration:underline}
+  .rec-note{margin:14px 0 0; color:var(--fg-dim); font-size:14.5px; max-width:62ch}
+  .rec-note a{color:#c084fc}
+  /* The bridge: one row per crash-test battery, naming the piece it reuses. */
+  .bridge{margin-top:14px; border:1px solid var(--line); border-radius:10px; overflow:hidden}
+  .bridge-row{display:grid; grid-template-columns:minmax(120px,168px) 1fr; gap:14px;
+    padding:11px 14px; border-top:1px solid var(--line-2); align-items:baseline}
+  .bridge-row:first-child{border-top:none}
+  .bridge-b{font-family:var(--mono); font-size:12px; color:var(--teal);
+    text-transform:uppercase; letter-spacing:.04em}
+  .bridge-d{color:var(--fg-dim); font-size:14.5px}
+  .bridge-d strong{color:var(--fg)}
+  @media (max-width:560px){
+    .bridge-row{grid-template-columns:1fr; gap:4px}
+  }
   .lens-kicker{margin-top:6px; color:var(--teal); font-size:.82rem; letter-spacing:.02em}
   .compose-note b{color:var(--fg)}
 
@@ -279,7 +302,7 @@
     <div class="eye">Agentic AI Engineer</div>
     <h1>Erik Hill</h1>
     <p class="thesis">I build agentic systems that check their own work — with code, not a model grading itself — and keep <b>a human on every step that can't be undone</b>.</p>
-    <p class="lede">I designed and built an autonomous development harness: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it. The same discipline is public: <strong>ten repos</strong> — five run their real compiled code in your browser, one is a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, and the rest turn that into a <strong>dashboard</strong> that shows what failed, a <strong>merge gate</strong> that blocks regressions, an <strong>MCP</strong> tool server, and a <a href="#board"><strong>live public board tracking 16 LLMs</strong></a> for drift. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
+    <p class="lede">I designed and built an autonomous development harness: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product — with the guardrails to trust it. The same discipline is public: <strong>twelve repos</strong> — five run their real compiled code in your browser, one is a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, and the rest turn that into a <strong>dashboard</strong> that shows what failed, a <strong>merge gate</strong> that blocks regressions, an <strong>MCP</strong> tool server, a <a href="#board"><strong>live public board tracking 16 LLMs</strong></a> for drift, and a <a href="#crash-test"><strong>live crash test</strong></a> built on the shared deterministic grader underneath all of it. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
     <div class="cta" style="margin-top:28px; justify-content:flex-start">
       <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board — 16 LLMs, 5 metrics</a>
     </div>
@@ -315,7 +338,7 @@
   <section id="tour">
     <div class="label"><span class="tick">//</span> The Tour</div>
     <h2>Ninety seconds through all of it</h2>
-    <p class="intro">A narrated walk through the harness, the live board, and the ten repos — everything on this page, running. The same discipline runs under all of it — the checks are code, never a model grading itself — and you'll see it turned <strong>four ways</strong> below.</p>
+    <p class="intro">A narrated walk through the harness, the live board, and the repos — everything on this page, running. The same discipline runs under all of it — the checks are code, never a model grading itself — and you'll see it turned <strong>four ways</strong> below.</p>
     <video controls preload="metadata" playsinline poster="media/portfolio-tour-poster.jpg"
       style="width:100%; margin-top:24px; display:block; background:#000; border:1px solid var(--line); border-radius:3px">
       <source src="media/portfolio-tour.mp4" type="video/mp4">
@@ -328,7 +351,7 @@
     <div class="label"><span class="tick">//</span> In the Wild</div>
     <h2>A public board watching 16 models for drift</h2>
     <p class="lens-kicker">The same discipline, turned on time — a frozen suite, run week after week.</p>
-    <p class="intro">The stack you'll see below isn't only a demo of itself — it runs a <strong>live public tracker</strong>. A frozen, deterministically-graded suite hits <strong>16 models across 5 labs</strong> — OpenAI, Anthropic, Google, xAI, Meta — on a weekly cron, and every result is kept: <strong>accuracy, speed, verbosity, reliability, refusal rate</strong>. No LLM-as-judge — every task is scored by a fixed deterministic check (exact match, substring, regex, or numeric compare), so a score change means the <em>model</em> moved, not the test. When one regresses week-over-week it opens a GitHub issue by itself — the post about it stays a human decision.</p>
+    <p class="intro">The stack you'll see below isn't only a demo of itself — it runs a <strong>live public tracker</strong>. A frozen, deterministically-graded suite hits <strong>16 models across 5 labs</strong> — OpenAI, Anthropic, Google, xAI, Meta — on a daily cron, and every run is kept: <strong>accuracy, speed, verbosity, reliability, refusal rate</strong>. No LLM-as-judge — every task is scored by a fixed deterministic check (exact match, substring, regex, numeric compare, set membership), so a score change means the <em>model</em> moved, not the test. When one regresses against its previous run it opens a GitHub issue by itself — the post about it stays a human decision.</p>
 
     <div class="projects-flow">
 <div class="proj p-drift">
@@ -338,9 +361,9 @@
           <span class="pci api"><span class="v"></span>live</span>
         </div>
         <!-- drift:start — generated by model-drift's narrative.py; edits here are overwritten -->
-        <p>A frozen, deterministically-graded suite against <strong>16 models across 5 labs</strong>. <strong>Google's cheaper tiers match or beat its own flagship</strong> — Gemini 3.5 Flash at 100% and Gemini 3.1 Flash-Lite at 95%, against Gemini 3.1 Pro at 95% — so within that lab, on this suite, paying more buys no accuracy. <strong>Grok 4.3 answers with 20.1x the characters of the tersest model</strong>, at 77%. <strong>Llama 3.1 8B answers fastest and scores lowest</strong> (131 ms at 59%) — a speed/quality tradeoff you can see rather than argue about. <em>Generated from the run of 18 Jul 2026 — this paragraph is rebuilt from the board's own numbers, never hand-written.</em></p>
+        <p>A frozen, deterministically-graded suite against <strong>16 models across 5 labs</strong>. <strong>OpenAI's cheaper tiers match its own flagship</strong> — GPT-5 mini at 100% and GPT-5 nano at 100%, against GPT-5 at 100% — so within that lab, on this suite, paying more buys no accuracy. <strong>Grok 4.3 answers with 6x the characters of the tersest model</strong>, at 97%. <strong>GPT-4o mini leads on speed</strong> at 447 ms and 80% accuracy. <em>Generated from the run of 24 Jul 2026 — this paragraph is rebuilt from the board's own numbers, never hand-written.</em></p>
         <!-- drift:end -->
-        <div class="ptags"><span class="ptag">16 models</span><span class="ptag">5 labs</span><span class="ptag">5 metrics</span><span class="ptag">weekly cron</span><span class="ptag">deterministic grading</span><span class="ptag">GitHub Actions</span></div>
+        <div class="ptags"><span class="ptag">16 models</span><span class="ptag">5 labs</span><span class="ptag">5 metrics</span><span class="ptag">daily cron</span><span class="ptag">deterministic grading</span><span class="ptag">GitHub Actions</span></div>
         </div>
         <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board</a>
@@ -461,15 +484,27 @@
       <a class="plive" style="margin-top:18px; display:inline-flex; border-color:#c084fc; color:#c084fc; background:rgba(192,132,252,.1)" href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">▶ Read the pull request</a>
       <p class="intro" style="margin-top:16px"><strong>Merged</strong> — <a href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">konsoletyper/teavm#1213</a>, against <a href="https://github.com/konsoletyper/teavm/issues/371" target="_blank" rel="noopener">issue #371</a> (filed 2018, zero comments in the eight years since) — merged by the project lead on 17 July 2026. Nine lines changed, one of them the character that mattered. The finding never depended on it landing; it's just better that it did.</p>
     </div>
+
+    <figure class="rec">
+      <blockquote>He also has a good eye for <strong>the quiet problem</strong>. The ones that don't throw an error, don't page anyone, and just <strong>quietly corrupt what you think you know about your system</strong>. Catching those takes patience and a certain suspicion of your own dashboards.</blockquote>
+      <figcaption>
+        <a href="https://www.linkedin.com/in/bartlomiej-nawara-phd/" target="_blank" rel="noopener">Bartłomiej Nawara, PhD</a>
+        — Senior AI/ML Engineer &amp; NLP Researcher · ~12 years across academic and production ML/NLP
+      </figcaption>
+      <p class="rec-note">He wrote that about my work generally. The bug above is what it looks like in the concrete: no exception, no failing build, no alert — just the wrong date, for eight years, in a compiler thousands of projects depend on. A recommendation is a claim; <a href="https://github.com/konsoletyper/teavm/pull/1213" target="_blank" rel="noopener">#1213</a> is the receipt.</p>
+    </figure>
+
     <p class="intro" style="margin-top:20px">That's the whole argument, three times: <strong>write it twice, run it in two places, and let the disagreement tell you which one lied.</strong> It works on a demo, on my own shipped code, and on a stranger's compiler that had been quietly wrong since before I could program — and it's the same move one section down, where a deterministic grader catches its own lie about a real model.</p>
   </section>
 
-  <section>
+  <section id="crash-test">
     <div class="label"><span class="tick">//</span> The Crash Test</div>
     <h2>The grader caught its own bug</h2>
     <p class="lens-kicker">The same discipline, turned on a live model — a fixed predicate names the failure, every fail card shows its work.</p>
-    <p class="intro">Point your own model at an adversarial battery — <strong>eight tasks across seven kinds</strong>: injection, tool-abuse, hallucination-bait, refusal — with your own API key, and get back a severity-weighted vulnerability report. On a live run against a real model it read ~29% vulnerable. But the graders are deterministic and every failure shows its work — prompt, expected, actual — so the fail cards gave it away: that 29% was the grader's <em>own</em> bug, not the model's. The real number was <strong>0%</strong> — caught before it could publish a false claim about a real model. An auditable grader has bugs you can catch; a vibes arena just hands you a number.</p>
-    <p class="intro">Red-teaming LLMs is crowded, mature ground — garak, PyRIT, and promptfoo cover far more. What's checkable here: the grader is <code>gradecore</code>, lifted straight from the engine behind <a href="#board">the live board</a> above — not a reimplementation, <strong>run the board's own frozen suite through it and the <code>suite_hash</code> comes out byte-for-byte identical</strong>. One engine turned two ways: longitudinal drift on the board, on-demand attack here. No LLM-as-judge, so every grade reproduces. And your key <strong>never touches my server</strong> — the browser calls the provider directly, the grade request carries no key field at all; watch it in the Network tab.</p>
+    <p class="intro">Point your own model at an adversarial battery — <strong>eight tasks across seven kinds</strong>: injection, tool-abuse, hallucination-bait, refusal — with your own API key, and get back a severity-weighted vulnerability report. On a live run against a real model it read ~29% vulnerable. But the graders are deterministic and every failure shows its work — prompt, expected, actual — so the fail cards gave it away: that 29% was the grader's <em>own</em> bug, not the model's. Re-graded against that run's answers, the real number was <strong>0%</strong> — caught before it could publish a false claim about a real model. (A historical BYOK run: by design the key and the transcript never touch the server, so that figure isn't re-runnable from the repo — but the three grader fixes and their regression tests are.) An auditable grader has bugs you can catch; a vibes arena just hands you a number.</p>
+    <p class="intro">Red-teaming LLMs is crowded, mature ground — garak, PyRIT, and promptfoo cover far more. What's checkable here: the grader is <code>gradecore</code> — <a href="#board">the live board's</a> own grading logic, lifted into a shared package rather than rewritten from memory. <strong>Run the board's frozen suite through it and the <code>suite_hash</code> comes out byte-for-byte identical</strong>, and a test in CI keeps it that way. No LLM-as-judge, so every grade reproduces. And your key <strong>never touches my server</strong> — the browser calls the provider directly, the grade request carries no key field at all; watch it in the Network tab.</p>
+
+    <p class="intro">It also answers the question a single run can't: <strong>run the battery N times</strong> and it separates the <em>mean</em> score from the <strong>worst case</strong> — a task counts as failed if it failed in <em>any</em> run, because an attacker only needs the leak to land once. A model that leaks two times in five reads clean on three of them. The flaky tasks get named.</p>
     <div style="margin-top:16px">
       <a class="plive" href="https://crashkit.onrender.com" target="_blank" rel="noopener">▶ Crash-test a model — your key, your browser</a>
     </div>
@@ -477,15 +512,40 @@
       <a class="plink" href="https://github.com/egnaro9/crashkit" target="_blank" rel="noopener">crashkit — the source <span>→</span></a>
       <a class="plink" href="https://github.com/egnaro9/gradecore" target="_blank" rel="noopener">gradecore — the grader <span>→</span></a>
     </div>
-    <p class="compose-note" style="margin-top:10px">Free tier — the first click takes ~50s to wake it. Deterministic grading, a severity-weighted score, and a fail card for every miss; <b>BYOK</b> for Anthropic, Gemini, xAI, Groq, OpenAI, or any OpenAI-compatible endpoint.</p>
-    <p class="compose-note" style="margin-top:16px; border-left:3px solid var(--teal); padding-left:14px">That grader didn't come from nowhere. It writes the very <code>eval_run.json</code> the board and the fabric below speak — then keeps its <em>own</em> store, so a public, key-in-the-browser crash test can never scribble on the drift history. Below is that same discipline wired into a whole system — five live pieces that check their own work.</p>
+    <p class="compose-note" style="margin-top:10px">Free tier — the first click takes ~30s to wake it. Deterministic grading, a severity-weighted score, and a fail card for every miss; <b>BYOK</b> for Anthropic, Gemini, xAI, Groq, OpenAI, or any OpenAI-compatible endpoint.</p>
+    <p class="compose-note" style="margin-top:16px; border-left:3px solid var(--teal); padding-left:14px"><strong>The crash test isn't a sixth project — it's the system below, pointed at your model.</strong> Every battery it runs is a grader the system already had, and there is one battery per lens:</p>
+
+    <div class="bridge">
+      <div class="bridge-row">
+        <span class="bridge-b">Correctness</span>
+        <span class="bridge-d"><strong>35 tasks</strong> — <a href="#board">the live board's</a> own frozen suite, byte-identical <code>suite_hash</code>. Not a copy of the questions; <em>the</em> questions.</span>
+      </div>
+      <div class="bridge-row">
+        <span class="bridge-b">Adversarial</span>
+        <span class="bridge-d"><strong>8 tasks, 7 kinds</strong> — injection, tool-abuse, hallucination-bait, refusal-calibration. The net-new lens; <code>gradecore</code> graders, severity-weighted.</span>
+      </div>
+      <div class="bridge-row">
+        <span class="bridge-b">Retrieval grounding</span>
+        <span class="bridge-d">Feeds a model retrieved context and scores what it invents — with <strong>the identical function</strong> <a href="https://github.com/egnaro9/rag-eval-lab" target="_blank" rel="noopener">rag-eval-lab</a> uses to catch a planted hallucination in its own eval run. Its <code>faithfulness</code> is now a one-line call to this <code>grounding_score</code>; a test asserts the two agree exactly.</span>
+      </div>
+      <div class="bridge-row">
+        <span class="bridge-b">Agent trajectory</span>
+        <span class="bridge-d">Scores the <em>action graph</em>, not the prose — did the agent refund the order <em>without</em> checking eligibility? Ordered-overlap against an expected plan, with partial credit.</span>
+      </div>
+      <div class="bridge-row">
+        <span class="bridge-b">History</span>
+        <span class="bridge-d">Every run serializes to the same <code>eval_run.json</code> and posts to <a href="https://eval-history.onrender.com/docs" target="_blank" rel="noopener">eval-history</a>, tagged <code>source=crash_test</code> — so a public, key-in-the-browser test can <em>never</em> scribble on the drift history it shares a database with.</span>
+      </div>
+    </div>
+
+    <p class="compose-note" style="margin-top:14px">So it's one engine turned four ways, not four engines: the same <code>gradecore</code> predicate set, the same wire format, the same store. Below is that system in its own right — the pieces doing the job they were built for.</p>
   </section>
 
   <section>
     <div class="label"><span class="tick">//</span> One System</div>
     <h2>Don't read them — run them</h2>
     <p class="lens-kicker">The same discipline, turned inward — a pipeline that grades its own answer before it speaks.</p>
-    <p class="intro">Five of them here, <strong>all five live right now</strong> — no install, no signup, no API key. Four run in your browser — three are the <em>real compiled Python</em> that runs in CI, installed from the wheel CI built; the fourth is the dashboard's own static build. The fifth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And they aren't five separate exercises — <strong>they're one system that calls itself</strong>. (The other two are up in <a href="#oracle">The Oracle</a>.)</p>
+    <p class="intro">Five of them here, <strong>all five live right now</strong> — no install, no signup, no API key. Four run in your browser — three are the <em>real compiled Python</em> that runs in CI, installed from the wheel CI built; the fourth is the dashboard's own static build. The fifth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And they aren't five separate exercises — <strong>they're one system that calls itself</strong>. (The other two are up in <a href="#oracle">The Oracle</a>.) And the grounding check <a href="#crash-test">the crash test</a> above runs against your model is literally this stack's own — <em>this</em> is where it does its day job.</p>
 
     <div class="arch-wrap">
       <svg class="arch" viewBox="0 0 800 390" role="img" aria-label="Architecture: agent-graph retrieves via rag-eval-lab and routes its LLM calls through llm-gateway; rag-eval-lab grades the answers into eval_run.json, which eval-dashboard renders and eval-history stores in Postgres to compare against earlier runs.">
@@ -650,7 +710,7 @@
         <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/eval-compare/">▶ See it rendered</a>
         <a class="plink" href="https://eval-history.onrender.com/runs/d800b9a8d3284240bd536bb63fa5f2da/compare/2a95eaada39c453d9920f2ab4fd50391" target="_blank" rel="noopener">or the raw API (JSON) <span>→</span></a>
-        <span class="pnote">free tier — first click takes ~50s to wake it</span>
+        <span class="pnote">free tier — first click takes ~30s to wake it</span>
         <a class="plink" href="https://eval-history.onrender.com/runs" target="_blank" rel="noopener">the runs it's stored <span>→</span></a>
         <a class="plink" href="https://eval-history.onrender.com/docs" target="_blank" rel="noopener">interactive API docs <span>→</span></a>
         <a class="plink" href="https://github.com/egnaro9/eval-history" target="_blank" rel="noopener">github.com/egnaro9/eval-history <span>→</span></a>
