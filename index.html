@@ -311,7 +311,7 @@
     <div class="eye">AI Evaluation &amp; Testing Engineer</div>
     <h1>Erik Hill</h1>
     <p class="thesis">I build the tests that catch AI when it's wrong — <b>deterministic graders, not a model grading itself</b> — so a score change means the model moved, not the test.</p>
-    <p class="lede">Evaluation harnesses, regression gates, and adversarial test batteries for LLM systems — plus the autonomous development harness I built them for: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product, with a human on every step that can't be undone. The work is public and runnable: <strong>twelve repos</strong> — five run their real compiled code in your browser, one is a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, and the rest turn that into a <strong>dashboard</strong> that shows what failed, a <strong>merge gate</strong> that blocks regressions, an <strong>MCP</strong> tool server, a <a href="#board"><strong>live public board tracking 16 LLMs</strong></a> for drift, and a <a href="#crash-test"><strong>live crash test</strong></a> built on the shared deterministic grader underneath all of it. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
+    <p class="lede">Evaluation harnesses, regression gates, and adversarial test batteries for LLM systems — plus the autonomous development harness I built them for: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product, with a human on every step that can't be undone. The work is public and runnable: <strong>thirteen repos</strong> — five run their real compiled code in your browser, one is a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, and the rest turn that into a <strong>dashboard</strong> that shows what failed, a <strong>merge gate</strong> that blocks regressions, an <strong>MCP</strong> tool server, a <a href="#board"><strong>live public board tracking 16 LLMs</strong></a> for drift, and a <a href="#crash-test"><strong>live crash test</strong></a> built on the shared deterministic grader underneath all of it. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
     <div class="cta" style="margin-top:28px; justify-content:flex-start">
       <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board — 16 LLMs, 5 metrics</a>
     </div>
@@ -372,6 +372,17 @@
       <a class="plink" href="https://github.com/egnaro9/gradecore" target="_blank" rel="noopener">gradecore — the grader <span>→</span></a>
     </div>
     <p class="compose-note" style="margin-top:10px">Free tier — the first click takes ~30s to wake it. Deterministic grading, a severity-weighted score, and a fail card for every miss; <b>BYOK</b> for Anthropic, Gemini, xAI, Groq, OpenAI, or any OpenAI-compatible endpoint.</p>
+
+    <p class="compose-note" style="margin-top:22px; border-left:3px solid var(--amber-line); padding-left:14px"><strong>The same grader, pointed at the harness instead of the model.</strong> The crash test asks whether one model breaks under attack. The <strong>Harness Builder</strong> asks the question after it: given a task, is a planner-plus-two-drafters-plus-a-judge actually better than one model in one pass, or just four times the bill?</p>
+
+    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px">
+      <a class="plive" href="https://egnaro9.github.io/never-touch-ai/sweep.html" target="_blank" rel="noopener">▶ Draw a harness and sweep it — runs free on mocks, no key</a>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px">
+      <a class="plink" href="https://github.com/egnaro9/never-touch-ai" target="_blank" rel="noopener">never-touch-ai — the source <span>&rarr;</span></a>
+    </div>
+
+    <p class="compose-note" style="margin-top:10px">A harness config is data — roles, models, prompts, topology — so you can <strong>draw the shape</strong> and it writes the JSON, or paste the JSON and it draws the shape. Then it sweeps the matrix and does the part a leaderboard skips: a <strong>per-task paired sign test</strong> that reports <em>"this suite cannot decide"</em> when twenty tasks are too few to separate two shapes, instead of ranking on a difference it cannot detect. 173 tests. Scoring executes model-generated code, so that endpoint is token-gated and runs locally only — the editor, the mock substrates and the comparison all run in the page.</p>
     <p class="compose-note" style="margin-top:16px; border-left:3px solid var(--teal); padding-left:14px"><strong>The crash test isn't a sixth project — it's the system below, pointed at your model.</strong> Every battery it runs is a grader the system already had, and there is one battery per lens:</p>
 
     <div class="bridge">
