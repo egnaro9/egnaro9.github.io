@@ -311,7 +311,7 @@
     <div class="eye">AI Evaluation &amp; Testing Engineer</div>
     <h1>Erik Hill</h1>
     <p class="thesis">I build the tests that catch AI when it's wrong — <b>deterministic graders, not a model grading itself</b> — so a score change means the model moved, not the test.</p>
-    <p class="lede">Evaluation harnesses, regression gates, and adversarial test batteries for LLM systems — plus the autonomous development harness I built them for: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product, with a human on every step that can't be undone. The work is public and runnable: <strong>thirteen repos</strong> — five run their real compiled code in your browser, one is a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, and the rest turn that into a <strong>dashboard</strong> that shows what failed, a <strong>merge gate</strong> that blocks regressions, an <strong>MCP</strong> tool server, a <a href="#board"><strong>live public board tracking 16 LLMs</strong></a> for drift, and a <a href="#crash-test"><strong>live crash test</strong></a> built on the shared deterministic grader underneath all of it. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
+    <p class="lede">Evaluation harnesses, regression gates, and adversarial test batteries for LLM systems — plus the autonomous development harness I built them for: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product, with a human on every step that can't be undone. The work is public and runnable: <strong>thirteen repos</strong> — five run their real compiled code in your browser, one is a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, and the rest turn that into a <strong>dashboard</strong> that shows what failed, a <strong>merge gate</strong> that blocks regressions, an <strong>MCP</strong> tool server, a <a href="#board"><strong>live public board tracking 16 LLMs</strong></a> for drift, and a <a href="#crash-test"><strong>live crash test</strong></a> built on the shared deterministic grader underneath all of it — and a <a href="#harness-builder"><strong>harness sweeper</strong></a> that used that same grader to contradict me about my own architecture. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
     <div class="cta" style="margin-top:28px; justify-content:flex-start">
       <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board — 16 LLMs, 5 metrics</a>
     </div>
@@ -373,16 +373,7 @@
     </div>
     <p class="compose-note" style="margin-top:10px">Free tier — the first click takes ~30s to wake it. Deterministic grading, a severity-weighted score, and a fail card for every miss; <b>BYOK</b> for Anthropic, Gemini, xAI, Groq, OpenAI, or any OpenAI-compatible endpoint.</p>
 
-    <p class="compose-note" style="margin-top:22px; border-left:3px solid var(--amber-line); padding-left:14px"><strong>The same grader, pointed at the harness instead of the model.</strong> The crash test asks whether one model breaks under attack. The <strong>Harness Builder</strong> asks the question after it: given a task, is a planner-plus-two-drafters-plus-a-judge actually better than one model in one pass, or just four times the bill?</p>
-
-    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px">
-      <a class="plive" href="https://egnaro9.github.io/never-touch-ai/sweep.html" target="_blank" rel="noopener">▶ Draw a harness and sweep it — runs free on mocks, no key</a>
-    </div>
-    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px">
-      <a class="plink" href="https://github.com/egnaro9/never-touch-ai" target="_blank" rel="noopener">never-touch-ai — the source <span>&rarr;</span></a>
-    </div>
-
-    <p class="compose-note" style="margin-top:10px">A harness config is data — roles, models, prompts, topology — so you can <strong>draw the shape</strong> and it writes the JSON, or paste the JSON and it draws the shape. Then it sweeps the matrix and does the part a leaderboard skips: a <strong>per-task paired sign test</strong> that reports <em>"this suite cannot decide"</em> when twenty tasks are too few to separate two shapes, instead of ranking on a difference it cannot detect. 173 tests. Scoring executes model-generated code, so that endpoint is token-gated and runs locally only — the editor, the mock substrates and the comparison all run in the page.</p>
+    <p class="compose-note" style="margin-top:22px; border-left:3px solid var(--amber-line); padding-left:14px"><strong>The same grader, pointed at the harness instead of the model.</strong> The crash test asks whether one model breaks under attack. <a href="#harness-builder">The Harness Builder</a> asks the question after it — and the first time I ran it, it contradicted me.</p>
     <p class="compose-note" style="margin-top:16px; border-left:3px solid var(--teal); padding-left:14px"><strong>The crash test isn't a sixth project — it's the system below, pointed at your model.</strong> Every battery it runs is a grader the system already had, and there is one battery per lens:</p>
 
     <div class="bridge">
@@ -410,6 +401,49 @@
 
     <p class="compose-note" style="margin-top:14px">So it's one engine turned four ways, not four engines: the same <code>gradecore</code> predicate set, the same wire format, the same store. In <a href="#board">In the Wild</a> and <a href="#system">One System</a>, those same pieces do the job they were built for.</p>
   </section>
+
+  <section id="harness-builder">
+  <div class="label"><span class="tick">//</span> The Harness Builder</div>
+  <h2>More scaffolding scored worse, for 22&times; the cost</h2>
+  <p class="lens-kicker">I believed the opposite. I built the thing that could check, pointed it at my own assumption, and it disagreed.</p>
+
+  <p class="intro">Everyone <em>knows</em> a planner improves an agent, and a panel of drafters with a judge improves it further. More thinking, more review, better answers. I had never measured it. So I built a tool that could, ran it across <strong>twenty coding tasks</strong> and three harness shapes for <strong>$0.99</strong>, and the result went the other way.</p>
+
+  <div class="bridge">
+    <div class="bridge-row">
+      <span class="bridge-b">one drafter</span>
+      <span class="bridge-d"><strong>95%</strong> &middot; 1 call/task &middot; $0.031 &middot; 2.2s</span>
+    </div>
+    <div class="bridge-row">
+      <span class="bridge-b">planner &rarr; drafter</span>
+      <span class="bridge-d"><strong>90%</strong> &middot; 2 calls/task &middot; $0.264 &middot; 9.1s</span>
+    </div>
+    <div class="bridge-row">
+      <span class="bridge-b">planner &rarr; 2 drafters &rarr; judge</span>
+      <span class="bridge-d"><strong>80%</strong> &middot; 4 calls/task &middot; $0.692 &middot; 18.3s — beat the single drafter on <strong>0 of 20</strong> tasks, and lost 3</span>
+    </div>
+  </div>
+
+  <p class="intro" style="margin-top:22px"><strong>Then it refused to declare a winner.</strong> 95% versus 80% <em>looks</em> decisive. It isn't: seventeen of the twenty tasks were ties, so only three carried any information, and a paired sign test cannot clear p&lt;0.05 on three discordant pairs even if one side sweeps all of them. So the tool said so, in those words — <em>&ldquo;this suite cannot decide between them — that is a limit of the suite, not a finding about the harnesses.&rdquo;</em> A leaderboard would have printed 95 and 80 and let me conclude the panel was worse. That would have been a stronger claim than my own data supports.</p>
+
+  <p class="intro">Which leaves three separate statements, and the difference between them is the whole point: there is <strong>no evidence</strong> the panel helps on this suite; it <strong>measurably</strong> costs 22&times; more and takes 8.4&times; longer; and whether it is genuinely worse needs more tasks than twenty. Most eval tooling collapses all three into a ranking.</p>
+
+  <div style="margin-top:16px">
+    <a class="plive" href="https://egnaro9.github.io/never-touch-ai/sweep.html" target="_blank" rel="noopener">&#9654; Draw a harness and sweep it — runs free on mocks, no key</a>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px">
+    <a class="plink" href="https://github.com/egnaro9/never-touch-ai" target="_blank" rel="noopener">never-touch-ai — the source <span>&rarr;</span></a>
+    <a class="plink" href="https://github.com/egnaro9/never-touch-ai/blob/main/results/sweep_2026-07-25.json" target="_blank" rel="noopener">the raw result — check my numbers <span>&rarr;</span></a>
+    <a class="plink" href="https://github.com/egnaro9/never-touch-ai/blob/main/docs/field-note-first-result.md" target="_blank" rel="noopener">field note — the graph model &amp; the sign test <span>&rarr;</span></a>
+  </div>
+
+  <p class="compose-note" style="margin-top:16px">A harness config is <strong>data</strong> — roles, models, prompts, topology — so you can draw the shape and it writes the JSON, or paste the JSON and it draws the shape. Declare the axes you want to vary and it runs the matrix. Scoring is deterministic: fixed predicates execute the generated code and return a verdict, and <strong>no model grades anything</strong>. There is an assistant in the page; it may read scores and explain them, and it may not produce one — its config proposals have nowhere to put a score and are re-validated before they are offered, and <strong>every score-shaped number in its prose is checked against the run data</strong>, with anything it invented named and quoted back rather than rendered quietly. That check was a line of system prompt until I tested it; now it is a predicate with nine tests. <strong>188 tests</strong> — 136 Python, 52 JavaScript.</p>
+
+  <p class="compose-note" style="margin-top:10px">Honest scope: harness and prompt comparison is not a new category — promptfoo, LangSmith and Braintrust all do more. The narrow thing here is the intersection: browser-BYOK, deterministic no-LLM-judge grading, and a comparison that reports when it <em>cannot</em> decide. Grading is deterministic; generation is not — no temperature, no seed, one run per config, so a 5-point move between two runs of the same shape sits inside sampling noise. That is a second reason it won't call a winner here, and it is stated in the field note rather than buried.</p>
+
+  <p class="compose-note" style="margin-top:10px">One caveat on the 22&times;: that ratio is at Sonnet 5 introductory pricing, which runs through <strong>2026-08-31</strong>. After that the gap gets wider, not narrower.</p>
+  </section>
+
 
   <section id="board">
     <div class="label"><span class="tick">//</span> In the Wild</div>
