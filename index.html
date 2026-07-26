@@ -428,6 +428,10 @@
 
   <p class="intro">Which leaves three separate statements, and the difference between them is the whole point: there is <strong>no evidence</strong> the panel helps on this suite; it <strong>measurably</strong> costs 22&times; more and takes 8.4&times; longer; and whether it is genuinely worse needs more tasks than twenty. Most eval tooling collapses all three into a ranking.</p>
 
+  <p class="intro" style="border-left:3px solid var(--teal); padding-left:14px"><strong>The obvious objection: my own harness is scaffolded too.</strong> Five stages — plan, execute, critique, validate, ship. So does this result indict it? No, and the distinction is the reason the result is worth reading rather than a reason to hide it. What the sweep measured is <em>redundancy at a single step</em>: two drafters and a judge answering one short task, which is the same capability sampled three times and billed three times. My harness's stages are not three drafts of one answer — they are <em>different functions separated across time</em>, and the one that earns its keep is validation against a real device, which catches a regression before it ships. A twenty-task one-shot suite has no regressions to catch, so it could not have measured that either way.</p>
+
+  <p class="intro">Which is a narrower claim than I would like, and worth saying plainly: <strong>this result does not vindicate my harness. It just doesn't indict it</strong> — it is evidence against a pattern my harness does not use. Testing the pattern it <em>does</em> use needs a suite where a change can break something that already worked, and that is a different instrument from this one. Naming the experiment I have not run yet seems better than letting a favourable reading stand.</p>
+
   <div style="margin-top:16px">
     <a class="plive" href="https://egnaro9.github.io/never-touch-ai/sweep.html" target="_blank" rel="noopener">&#9654; Draw a harness and sweep it — runs free on mocks, no key</a>
   </div>
