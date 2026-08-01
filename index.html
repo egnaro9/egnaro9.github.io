@@ -237,7 +237,9 @@
       font-family:var(--mono); font-size:12px; line-height:1.5; color:var(--fg-dim)}
     .cast figcaption a{color:var(--amber); text-decoration:none}
     .cast figcaption a:hover{text-decoration:underline}
-      .tldr{margin:26px 0 6px; padding:18px 20px 16px; border:1px solid var(--line);
+        .plive.alt{background:transparent; color:var(--fg-dim); border-color:var(--line)}
+  @media (hover:hover){.plive.alt:hover{color:var(--fg); border-color:var(--fg-dim)}}
+  .tldr{margin:26px 0 6px; padding:18px 20px 16px; border:1px solid var(--line);
         border-left:3px solid var(--amber); border-radius:10px; background:var(--panel)}
   .tldr-h{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
         color:var(--amber); margin-bottom:10px}
@@ -346,23 +348,18 @@
     <p class="lede"><strong>Evaluation harnesses, regression gates, and adversarial test batteries for LLM systems.</strong> Plus the autonomous development harness I built them for — a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product, with a human on every step that can't be undone.</p>
     <p class="lede">The work is public and <strong>runnable in your browser</strong>: a <a href="#board"><strong>live board tracking 16 LLMs</strong></a> for drift, a <a href="#crash-test"><strong>crash test</strong></a> you can point at your own model, a deployed <strong>FastAPI&nbsp;+&nbsp;Postgres</strong> service my CI posts eval runs to, and a <a href="#harness-builder"><strong>harness sweeper</strong></a> that used my own grader to contradict me about my own architecture.</p>
     <p class="lede">My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
-    <div class="cta" style="margin-top:28px; justify-content:flex-start">
+    <div class="cta" style="margin-top:28px; justify-content:flex-start; gap:10px; flex-wrap:wrap">
       <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board — 16 LLMs, 5 metrics</a>
+      <a class="plive alt" href="https://crashkit.onrender.com" target="_blank" rel="noopener">▶ Crash-test a model with your own key</a>
     </div>
 
     <div class="launch">
-      <div class="ltitle">Or run any of it yourself</div>
+      <div class="ltitle">Or run any of it yourself — real code, in your tab</div>
       <div class="lgrid">
+        <a href="https://egnaro9.github.io/stack/"><span class="arrow">▶</span>the five-service stack</a>
         <a href="https://egnaro9.github.io/evals-differential-oracle/" target="_blank" rel="noopener"><span class="arrow">▶</span>differential oracle</a>
-        <a href="https://egnaro9.github.io/stack/"><span class="arrow">▶</span>five-service stack</a>
-        <a href="https://egnaro9.github.io/agent-graph/"><span class="arrow">▶</span>agent-graph</a>
-        <a href="https://egnaro9.github.io/llm-gateway/"><span class="arrow">▶</span>llm-gateway</a>
-        <a href="https://egnaro9.github.io/rag-eval-lab/"><span class="arrow">▶</span>rag-eval-lab</a>
-        <a href="https://egnaro9.github.io/eval-dashboard/"><span class="arrow">▶</span>eval-dashboard</a>
-        <a href="https://eval-history.onrender.com/runs/d800b9a8d3284240bd536bb63fa5f2da/compare/2a95eaada39c453d9920f2ab4fd50391" target="_blank" rel="noopener"><span class="arrow">▶</span>eval-history API</a>
-        <a href="https://github.com/egnaro9/mcp-tools" target="_blank" rel="noopener"><span class="arrow">▶</span>mcp-tools (grade_answer)</a>
-        <a href="https://egnaro9.github.io/match3-engine/"><span class="arrow">▶</span>match3-engine</a>
-        <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><span class="arrow">▶</span>Tap Dodge Rush</a>
+        <a href="https://egnaro9.github.io/match3-engine/"><span class="arrow">▶</span>match3-engine (Java → WASM)</a>
+        <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><span class="arrow">▶</span>Tap Dodge Rush (Google Play)</a>
       </div>
     </div>
 
