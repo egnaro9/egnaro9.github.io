@@ -681,12 +681,13 @@
 
   
     <figure class="cast">
-      <img src="https://raw.githubusercontent.com/egnaro9/rag-eval-lab/main/docs/demo.gif" alt="The eval harness catching a planted hallucination at faithfulness 0.5 — one of six cases flagged, with no model in the loop" loading="lazy">
-      <figcaption><strong>One of the five, not the five.</strong> This is rag-eval-lab alone:
-        one answer in its suite is unsupported by its own retrieved context, and the grader finds it
-        with no model in the loop. It earns its place here because that grounding function is the
-        same one the crash test above runs against your model — the composition is the shared
-        function, not this recording. <a href="https://asciinema.org/a/k0m7dOqwWt1kdSlx" target="_blank" rel="noopener">play it as a terminal session</a> — the text is selectable.</figcaption>
+      <img src="https://raw.githubusercontent.com/egnaro9/crashkit/main/docs/one-system.gif" alt="Two repos computing the same suite fingerprint independently, rag-eval-lab delegating to gradecore's grounder, and a one-character edit moving the hash" loading="lazy">
+      <figcaption>The claim above, checked rather than repeated. crashkit's correctness battery and
+        model-drift's frozen suite fingerprint to the same twelve hex digits, computed separately in
+        each repo; rag-eval-lab's faithfulness is gradecore's grounder <em>called</em>, not copied.
+        Then one trailing space is added to one task and the fingerprint moves — so if these ever
+        stopped being one system, it would show.
+        <a href="https://asciinema.org/a/DyKN8PujTaD8ImLs" target="_blank" rel="noopener">play it as a terminal session</a> — the text is selectable.</figcaption>
     </figure>
   </section>
 
