@@ -37,7 +37,11 @@ jobs:
       - uses: actions/checkout@v4
       # A rate-limited host (429) or a slow one is not a dead link, so those are
       # accepted; only genuine 4xx/5xx and unresolved hosts fail the build.
-      # Reddit / X / LinkedIn are excluded: they return 403 to automated checkers
+      # Reddit / X / LinkedIn are excluded: they return 403 to automated checkers.
+      # asciinema joined them 2026-08-01: all six cast links time out at 40s with three
+      # retries from the runner while returning 200 to a browser, which had CI red on every
+      # push for a day. Verified by hand before excluding — a green board that stopped
+      # looking is worse than a red one.
       # regardless of whether the profile exists, so they'd only ever false-fail.
       - name: Check outbound links
         uses: lycheeverse/lychee-action@v2
@@ -49,6 +53,7 @@ jobs:
             --retry-wait-time 2
             --timeout 40
             --max-concurrency 8
+            --exclude asciinema\.org
             --exclude reddit\.com
             --exclude linkedin\.com
             --exclude //x\.com
