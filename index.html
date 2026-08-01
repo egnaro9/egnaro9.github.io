@@ -459,6 +459,14 @@
   <p class="compose-note" style="margin-top:10px">Honest scope: harness and prompt comparison is not a new category — promptfoo, LangSmith and Braintrust all do more. The narrow thing here is the intersection: browser-BYOK, deterministic no-LLM-judge grading, and a comparison that reports when it <em>cannot</em> decide. Grading is deterministic; generation is not — no temperature, no seed, one run per config, so a 5-point move between two runs of the same shape sits inside sampling noise. That is a second reason it won't call a winner here, and it is stated in the field note rather than buried.</p>
 
   <p class="compose-note" style="margin-top:10px">One caveat on the 22&times;: that ratio is at Sonnet 5 introductory pricing, which runs through <strong>2026-08-31</strong>. After that the gap gets wider, not narrower.</p>
+  
+    <figure class="cast">
+      <img src="https://raw.githubusercontent.com/egnaro9/gradecore/main/docs/demo.gif" alt="A paired comparison declining to name a winner: four informative tasks cannot clear p<0.05, so the suite reports that it cannot decide" loading="lazy">
+      <figcaption>The refusal above, in the engine that produced it. Only the tasks where two configs
+        <em>disagree</em> carry information — and four disagreements cannot clear p&lt;0.05 even under a
+        clean sweep, so the honest output is a statement about the instrument rather than about the
+        configs. <a href="https://asciinema.org/a/GnfWEFk2DzH8QJyn" target="_blank" rel="noopener">play it as a terminal session</a> — the text is selectable.</figcaption>
+    </figure>
   </section>
 
 
