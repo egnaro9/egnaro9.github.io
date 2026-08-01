@@ -813,6 +813,15 @@
     </figure>
 
     <p class="intro" style="margin-top:20px">That's the whole argument, three times: <strong>write it twice, run it in two places, and let the disagreement tell you which one lied.</strong> It works on a demo, on my own shipped code, and on a stranger's compiler that had been quietly wrong since before I could program — and it's the same move that opens this page, where a deterministic grader catches its own lie about a real model.</p>
+  
+    <figure class="cast">
+      <img src="https://raw.githubusercontent.com/egnaro9/evals-differential-oracle/main/docs/demo.gif" alt="Random boards searched until the buggy implementation disagrees, then that board printed with all three answers and the violated rule named" loading="lazy">
+      <figcaption>Not a pass/fail summary — a counterexample. Random boards are searched until the
+        implementation with one rule quietly broken answers differently from the two good ones; that
+        board is printed with all three answers, and the invariant names the rule. Seeded, so it is
+        the same board on any machine.
+        <a href="https://asciinema.org/a/XTPGaCYhnbKwxy9u" target="_blank" rel="noopener">play it as a terminal session</a> — the text is selectable.</figcaption>
+    </figure>
   </section>
 
 
