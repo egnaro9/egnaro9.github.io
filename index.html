@@ -237,6 +237,19 @@
       font-family:var(--mono); font-size:12px; line-height:1.5; color:var(--fg-dim)}
     .cast figcaption a{color:var(--amber); text-decoration:none}
     .cast figcaption a:hover{text-decoration:underline}
+      .tldr{margin:26px 0 6px; padding:18px 20px 16px; border:1px solid var(--line);
+        border-left:3px solid var(--amber); border-radius:10px; background:var(--panel)}
+  .tldr-h{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+        color:var(--amber); margin-bottom:10px}
+  .tldr ul{margin:0; padding-left:18px; color:var(--fg-dim); font-size:15.5px; line-height:1.6}
+  .tldr li{margin-bottom:8px}
+  .tldr strong{color:var(--fg)}
+  .tldr a{color:inherit; text-decoration:none; border-bottom:1px solid var(--amber-line)}
+  .tldr a:hover{border-bottom-color:var(--amber)}
+  .tldr-f{margin:12px 0 0; font-size:13.5px; color:var(--fg-faint)}
+  .compose-list{margin:10px 0 0 0; padding-left:20px; color:var(--fg-dim); font-size:15px; line-height:1.6}
+  .compose-list li{margin-bottom:7px}
+  .compose-list strong{color:var(--fg)}
     .rec{margin:24px 0 0; padding:18px 20px; border:1px solid var(--line);
     border-left:3px solid #c084fc; border-radius:10px; background:var(--panel)}
   .rec blockquote{margin:0; font-size:17px; line-height:1.55; color:var(--fg)}
@@ -319,7 +332,20 @@
     <div class="eye">AI Evaluation &amp; Testing Engineer</div>
     <h1>Erik Hill</h1>
     <p class="thesis">I build the tests that catch AI when it's wrong — <b>deterministic graders, not a model grading itself</b> — so a score change means the model moved, not the test.</p>
-    <p class="lede">Evaluation harnesses, regression gates, and adversarial test batteries for LLM systems — plus the autonomous development harness I built them for: a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product, with a human on every step that can't be undone. The work is public and runnable: <strong>thirteen repos</strong> — five run their real compiled code in your browser, one is a deployed <strong>FastAPI + Postgres</strong> service my CI posts eval runs to, and the rest turn that into a <strong>dashboard</strong> that shows what failed, a <strong>merge gate</strong> that blocks regressions, an <strong>MCP</strong> tool server, a <a href="#board"><strong>live public board tracking 16 LLMs</strong></a> for drift, and a <a href="#crash-test"><strong>live crash test</strong></a> built on the shared deterministic grader underneath all of it — and a <a href="#harness-builder"><strong>harness sweeper</strong></a> that used that same grader to contradict me about my own architecture. My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
+
+    <div class="tldr">
+      <div class="tldr-h">If you only read one thing</div>
+      <ul>
+        <li><a href="#board"><strong>A live board</strong></a> has tracked 16 LLMs across 5 labs for drift, every day, on a frozen suite — no model grading anything.</li>
+        <li><a href="#crash-test"><strong>My own grader was wrong once</strong></a> and its fail cards caught it: a real model read 29% vulnerable, re-graded to 0%.</li>
+        <li><a href="#harness-builder"><strong>I measured my own architecture assumption and it was wrong</strong></a> — more scaffolding scored worse, for 22&times; the cost.</li>
+        <li><a href="#harness"><strong>The agent cannot approve its own commits.</strong></a> It has tried. There is a recording of it being refused.</li>
+      </ul>
+      <p class="tldr-f">Everything below is the long version, and every claim on this page has something running underneath it.</p>
+    </div>
+    <p class="lede"><strong>Evaluation harnesses, regression gates, and adversarial test batteries for LLM systems.</strong> Plus the autonomous development harness I built them for — a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product, with a human on every step that can't be undone.</p>
+    <p class="lede">The work is public and <strong>runnable in your browser</strong>: a <a href="#board"><strong>live board tracking 16 LLMs</strong></a> for drift, a <a href="#crash-test"><strong>crash test</strong></a> you can point at your own model, a deployed <strong>FastAPI&nbsp;+&nbsp;Postgres</strong> service my CI posts eval runs to, and a <a href="#harness-builder"><strong>harness sweeper</strong></a> that used my own grader to contradict me about my own architecture.</p>
+    <p class="lede">My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
     <div class="cta" style="margin-top:28px; justify-content:flex-start">
       <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board — 16 LLMs, 5 metrics</a>
     </div>
@@ -368,7 +394,9 @@
     <div class="label"><span class="tick">//</span> The Crash Test</div>
     <h2>The grader caught its own bug</h2>
     <p class="lens-kicker">The same discipline, turned on a live model — a fixed predicate names the failure, every fail card shows its work.</p>
-    <p class="intro">Point your own model at an adversarial battery — <strong>eight tasks across seven kinds</strong>: injection, tool-abuse, hallucination-bait, refusal — with your own API key, and get back a severity-weighted vulnerability report. On a live run against a real model it read ~29% vulnerable. But the graders are deterministic and every failure shows its work — prompt, expected, actual — so the fail cards gave it away: that 29% was the grader's <em>own</em> bug, not the model's. Re-graded against that run's answers, the real number was <strong>0%</strong> — caught before it could publish a false claim about a real model. (A historical BYOK run: by design the key and the transcript never touch the server, so that figure isn't re-runnable from the repo — but the three grader fixes and their regression tests are.) An auditable grader has bugs you can catch; a vibes arena just hands you a number.</p>
+    <p class="intro">Point your own model at an adversarial battery — <strong>eight tasks across seven kinds</strong>: injection, tool-abuse, hallucination-bait, refusal — with your own API key, and get back a severity-weighted vulnerability report.</p>
+    <p class="intro">On a live run against a real model it read <strong>~29% vulnerable</strong>. The graders are deterministic and every failure shows its work — prompt, expected, actual — so the fail cards gave it away: <strong>that 29% was the grader's own bug, not the model's.</strong> Re-graded against the same answers, the real number was <strong>0%</strong> — caught before it could publish a false claim about a real model.</p>
+    <p class="intro">An auditable grader has bugs you can catch; a vibes arena just hands you a number. <span class="q">(A historical BYOK run: by design the key and the transcript never touch the server, so that figure isn't re-runnable from the repo — but the three grader fixes and their regression tests are.)</span></p>
     <p class="intro">Red-teaming LLMs is crowded, mature ground — garak, PyRIT, and promptfoo cover far more. What's checkable here: the grader is <code>gradecore</code> — <a href="#board">the live board's</a> own grading logic, lifted into a shared package rather than rewritten from memory. <strong>Run the board's frozen suite through it and the <code>suite_hash</code> comes out byte-for-byte identical</strong>, and a test in CI keeps it that way. No LLM-as-judge, so every grade reproduces. And your key <strong>never touches my server</strong> — the browser calls the provider directly, the grade request carries no key field at all; watch it in the Network tab.</p>
 
     <p class="intro">It also answers the question a single run can't: <strong>run the battery N times</strong> and it separates the <em>mean</em> score from the <strong>worst case</strong> — a task counts as failed if it failed in <em>any</em> run, because an attacker only needs the leak to land once. A model that leaks two times in five reads clean on three of them. The flaky tasks get named.</p>
@@ -441,7 +469,9 @@
 
   <p class="intro">Which leaves three separate statements, and the difference between them is the whole point: there is <strong>no evidence</strong> the panel helps on this suite; it <strong>measurably</strong> costs 22&times; more and takes 8.4&times; longer; and whether it is genuinely worse needs more tasks than twenty. Most eval tooling collapses all three into a ranking.</p>
 
-  <p class="intro" style="border-left:3px solid var(--teal); padding-left:14px"><strong>The obvious objection: my own harness is scaffolded too.</strong> Five stages — plan, execute, critique, validate, ship. So does this result indict it? No, and the distinction is the reason the result is worth reading rather than a reason to hide it. What the sweep measured is <em>redundancy at a single step</em>: two drafters and a judge answering one short task, which is the same capability sampled three times and billed three times. My harness's stages are not three drafts of one answer — they are <em>different functions separated across time</em>, and the one that earns its keep is validation against a real device, which catches a regression before it ships. A twenty-task one-shot suite has no regressions to catch, so it could not have measured that either way.</p>
+  <p class="intro" style="border-left:3px solid var(--teal); padding-left:14px"><strong>The obvious objection: my own harness is scaffolded too.</strong> Five stages — plan, execute, critique, validate, ship. So does this result indict it?</p>
+    <p class="intro" style="border-left:3px solid var(--teal); padding-left:14px">No, and the distinction is why the result is worth reading rather than hiding. The sweep measured <em>redundancy at a single step</em>: two drafters and a judge answering one short task — the same capability sampled three times and billed three times.</p>
+    <p class="intro" style="border-left:3px solid var(--teal); padding-left:14px">My harness's stages aren't three drafts of one answer. They're <em>different functions separated across time</em>, and the one that earns its keep is validation against a real device, catching a regression before it ships. A twenty-task one-shot suite has no regressions to catch, so it couldn't have measured that either way.</p>
 
   <p class="intro">Which is a narrower claim than I would like, and worth saying plainly: <strong>this result does not vindicate my harness. It just doesn't indict it</strong> — it is evidence against a pattern my harness does not use. Testing the pattern it <em>does</em> use needs a suite where a change can break something that already worked, and that is a different instrument from this one. Naming the experiment I have not run yet seems better than letting a favourable reading stand.</p>
 
@@ -454,7 +484,9 @@
     <a class="plink" href="https://github.com/egnaro9/never-touch-ai/blob/main/docs/field-note-first-result.md" target="_blank" rel="noopener">field note — the graph model &amp; the sign test <span>&rarr;</span></a>
   </div>
 
-  <p class="compose-note" style="margin-top:16px">A harness config is <strong>data</strong> — roles, models, prompts, topology — so you can draw the shape and it writes the JSON, or paste the JSON and it draws the shape. Declare the axes you want to vary and it runs the matrix. Scoring is deterministic: fixed predicates execute the generated code and return a verdict, and <strong>no model grades anything</strong>. There is an assistant in the page; it may read scores and explain them, and it may not produce one — its config proposals have nowhere to put a score and are re-validated before they are offered, and <strong>every score-shaped number in its prose is checked against the run data</strong>, with anything it invented named and quoted back rather than rendered quietly. That check was a line of system prompt until I tested it; now it is a predicate with nine tests. <strong>188 tests</strong> — 136 Python, 52 JavaScript.</p>
+  <p class="compose-note" style="margin-top:16px">A harness config is <strong>data</strong> — roles, models, prompts, topology — so you can draw the shape and it writes the JSON, or paste the JSON and it draws the shape. Declare the axes you want to vary and it runs the matrix.</p>
+    <p class="compose-note">Scoring is deterministic: fixed predicates execute the generated code and return a verdict, and <strong>no model grades anything</strong>. There is an assistant in the page — it may read scores and explain them, and it may not produce one.</p>
+    <p class="compose-note"><strong>Every score-shaped number in its prose is checked against the run data</strong>, with anything it invented named and quoted back rather than rendered quietly. That check was a line of system prompt until I tested it; now it is a predicate with nine tests. <strong>188 tests</strong> — 136 Python, 52 JavaScript.</p>
 
   <p class="compose-note" style="margin-top:10px">Honest scope: harness and prompt comparison is not a new category — promptfoo, LangSmith and Braintrust all do more. The narrow thing here is the intersection: browser-BYOK, deterministic no-LLM-judge grading, and a comparison that reports when it <em>cannot</em> decide. Grading is deterministic; generation is not — no temperature, no seed, one run per config, so a 5-point move between two runs of the same shape sits inside sampling noise. That is a second reason it won't call a winner here, and it is stated in the field note rather than buried.</p>
 
@@ -506,7 +538,8 @@
     <div class="label"><span class="tick">//</span> One System</div>
     <h2>One system that calls itself</h2>
     <p class="lens-kicker">Don't read them — run them. The same discipline, turned inward: a pipeline that grades its own answer before it speaks.</p>
-    <p class="intro">Five of them here, <strong>all five live right now</strong> — no install, no signup, no API key. Four run in your browser — three are the <em>real compiled Python</em> that runs in CI, installed from the wheel CI built; the fourth is the dashboard's own static build. The fifth doesn't run in your tab at all — it's a <strong>deployed service on a real Postgres</strong>, and you can ask it a question. And they aren't five separate exercises — <strong>they're one system that calls itself</strong>. (The other two turn up in <a href="#oracle">The Oracle</a>.) And the grounding check <a href="#crash-test">the crash test</a> above runs against your model is literally this stack's own — <em>this</em> is where it does its day job.</p>
+    <p class="intro">Five of them here, <strong>all five live right now</strong> — no install, no signup, no API key. Four run in your browser; three of those are the <em>real compiled Python</em> that runs in CI, installed from the wheel CI built. The fifth is a <strong>deployed service on a real Postgres</strong>, and you can ask it a question.</p>
+    <p class="intro">They aren't five separate exercises — <strong>they're one system that calls itself</strong>. The grounding check <a href="#crash-test">the crash test</a> above runs against your model is literally this stack's own; <em>this</em> is where it does its day job. (The other two turn up in <a href="#oracle">The Oracle</a>.)</p>
 
     <div class="arch-wrap">
       <svg class="arch" viewBox="0 0 800 390" role="img" aria-label="Architecture: agent-graph retrieves via rag-eval-lab and routes its LLM calls through llm-gateway; rag-eval-lab grades the answers into eval_run.json, which eval-dashboard renders and eval-history stores in Postgres to compare against earlier runs.">
@@ -589,7 +622,14 @@
     <a class="plive" style="margin-top:14px" href="https://egnaro9.github.io/stack/">▶ Run all five together — one button</a>
     <p class="compose-note" style="margin-top:12px">Or try each stage on its own — the five below are numbered in the order they run. That button runs stages 1–4 in your tab; stage 5 is the deployed one, so it answers from a database instead.</p>
     <p class="compose-note" style="margin-top:18px; border-left:3px solid var(--amber-line); padding-left:14px">And it isn't only a demo of itself. The same eval stack powers <a href="https://github.com/egnaro9/prompt-regress" target="_blank" rel="noopener"><b>prompt-regress</b></a> — a merge gate that runs your evals on every pull request, compares them to the main-branch baseline, and <b>blocks the merge if the answers got worse</b>. It fills a gap the popular eval runner leaves open (no history, no cross-run comparison), ships as a GitHub Action, and gates these very repos. The demo is the machine; this is what it's <em>for</em>.</p>
-    <p class="compose-note" style="margin-top:14px; border-left:3px solid var(--teal); padding-left:14px">And an agent can now <strong>call this stack directly</strong>. Three of the five are exposed by an <a href="https://github.com/egnaro9/mcp-tools" target="_blank" rel="noopener"><strong>MCP server</strong></a>, each doing the job it was built for: <strong>agent-graph's</strong> AST-sandboxed evaluator is the <code>calc</code> tool — arithmetic and nothing else; <strong>rag-eval-lab</strong> supplies <code>search</code> (its BM25) and <code>grade_answer</code>, which takes a draft answer plus its sources and names the sentences those sources <em>don't</em> support; <strong>eval-history</strong> answers <code>compare_runs</code> — did the latest eval run regress, per case. A fifth tool, <code>model_drift</code>, reads the <a href="#board">live board</a>. <strong>No LLM judge anywhere</strong> — a model grading hallucination is just another model output you can't reproduce. The other two aren't agent-shaped and shouldn't pretend to be: <strong>llm-gateway</strong> governs the model calls themselves (auth, rate limits, cost accounting) — an agent already has a model, so it has nothing to call there; <strong>eval-dashboard</strong> is for the human, turning a run into cards a person reads. Wire the server into Claude Desktop and the page's opening line stops being a claim: <strong>an agent that checks its own work before it answers.</strong></p>
+    <p class="compose-note" style="margin-top:14px; border-left:3px solid var(--teal); padding-left:14px">And an agent can now <strong>call this stack directly</strong>. Three of the five are exposed by an <a href="https://github.com/egnaro9/mcp-tools" target="_blank" rel="noopener"><strong>MCP server</strong></a>, each doing the job it was built for:</p>
+    <ul class="compose-list">
+      <li><strong>agent-graph's</strong> AST-sandboxed evaluator is the <code>calc</code> tool — arithmetic and nothing else.</li>
+      <li><strong>rag-eval-lab</strong> supplies <code>search</code> (its BM25) and <code>grade_answer</code>, which takes a draft answer plus its sources and names the sentences those sources <em>don't</em> support.</li>
+      <li><strong>eval-history</strong> answers <code>compare_runs</code> — did the latest run regress, per case. A fifth tool reads the <a href="#board">live board</a>.</li>
+    </ul>
+    <p class="compose-note"><strong>No LLM judge anywhere</strong> — a model grading hallucination is just another model output you can't reproduce.</p>
+    <p class="compose-note">The other two aren't agent-shaped and shouldn't pretend to be: <strong>llm-gateway</strong> governs the model calls themselves, and an agent already has a model; <strong>eval-dashboard</strong> is for the human. Wire the server into Claude Desktop and the page's opening line stops being a claim: <strong>an agent that checks its own work before it answers.</strong></p>
 
     <div class="projects-flow">
 <div class="proj p-agent">
@@ -691,7 +731,7 @@
     </figure>
   </section>
 
-  <section>
+  <section id="harness">
     <div class="label"><span class="tick">//</span> The Harness</div>
     <h2>A loop that reviews itself before it lands</h2>
     <p class="intro">Agents that build unsupervised are easy. Agents you'd <em>let</em> build unsupervised are the problem — and the answer isn't a better model, it's knowing which steps a machine may never take alone. Here's the loop, how far it runs on its own, and exactly what stops it.</p>
