@@ -68,6 +68,16 @@ async function boot() {
     }
     await micropip.install(["langchain-core", "pydantic", "xxhash", "fastapi"]);
 
+    // rag-eval-lab's faithfulness metric is gradecore's grounding_score — shared, not
+    // copied — so its wheel imports gradecore at module load. The wheels below install
+    // with deps:false (their metadata declares gradecore as a git URL, which micropip
+    // cannot resolve), so gradecore has to be installed explicitly or every panel on
+    // this page dies at boot with ModuleNotFoundError.
+    setStatus("Installing gradecore, the shared grading engine…");
+    await micropip.install.callKwargs(
+      "https://egnaro9.github.io/rag-eval-lab/gradecore-0.1.0-py3-none-any.whl",
+      { deps: false });
+
     for (const [name, url] of Object.entries(WHEELS)) {
       setStatus(`Installing ${name}'s published wheel…`);
       await micropip.install.callKwargs(url, { deps: false });
