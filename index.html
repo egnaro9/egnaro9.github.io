@@ -733,6 +733,16 @@
       <a class="plive" style="margin-top:16px; display:inline-flex" href="https://egnaro9.github.io/loop/">▶ Walk through a real arc</a>
     </div>
     <p class="intro" style="margin-top:20px">This is the loop behind everything else on this page — and even its critic doesn't get the last word: it re-derives the number from source, then hands the verdict to a <strong>deterministic check</strong> the arc just installed — the same no-LLM-judge discipline the board and the oracle run on.</p>
+  
+    <figure class="cast">
+      <img src="media/harness-git-gate.gif" alt="The real commit gate refusing a commit, a push, five ways of hiding the command, and two attempts to forge the approval file — then allowing exactly one operator-approved commit" loading="lazy">
+      <figcaption><strong>Exactly what stops it.</strong> The real PreToolUse gate, driven with
+        crafted payloads in a sandbox. Commit and push are refused; five ways of hiding the command
+        inside another one are refused; two attempts to write the approval file are refused. An
+        approval typed by the operator then works <em>once</em> and is spent. The gate reads a file
+        only an operator-driven hook may write — never the agent's own words.
+        <a href="https://asciinema.org/a/BRkqfTu5mbqrVZ8h" target="_blank" rel="noopener">play it as a terminal session</a> — the text is selectable.</figcaption>
+    </figure>
   </section>
 
   <section id="oracle">
