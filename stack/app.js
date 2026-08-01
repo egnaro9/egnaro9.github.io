@@ -324,6 +324,7 @@ async function fetchStoredBaseline(signal) {
   });
   // Prefer a real CI run: an ablation is a config sweep, not a baseline anyone
   // pushed. The service knows the difference — that's what `source` is for.
+  lit("chip-eval-history");   // the deployed service answered
   const pick = list.find((r) => r.source === "ci") ?? list[0];
   if (!pick) throw new Error("eval-history has no runs stored");
   const body = await fetch(`${EVAL_HISTORY}/runs/${pick.id}/eval_run`, { signal })
@@ -413,6 +414,10 @@ async function runStack() {
   const m = await py.runPythonAsync("await gateway_metrics()").then(JSON.parse);
   localStorage.setItem("ragevallab:eval_run", JSON.stringify(evalRun));
 
+  // These two chips were never lit by anything — lit() was only called in the wheel
+  // install loop, so the labels promising "at the end" and "a real server" could not
+  // come true no matter how the run went.
+  lit("chip-eval-dashboard");
   step(5, `<span class="proj r">rag-eval-lab</span> → <span class="proj d">eval-dashboard</span> · the artifact`,
     `<div class="mono">wrote <b>eval_run.json</b> — ${evalRun.metrics.n_cases} cases ·
       ${evalRun.metrics.flagged_cases} flagged · mean faithfulness ${pct(evalRun.metrics.faithfulness)}</div>`, "d");
