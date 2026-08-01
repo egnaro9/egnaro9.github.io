@@ -42,7 +42,7 @@
   /* stepper */
   .steps{display:flex; gap:0; margin:26px 0 0; overflow-x:auto; padding-bottom:4px}
   .stab{flex:1; min-width:104px; background:transparent; border:0; border-top:2px solid var(--line); padding:11px 8px 0;
-    text-align:left; cursor:pointer; font-family:var(--mono); font-size:11px; color:var(--fg-faint); transition:all .15s}
+    text-align:left; cursor:pointer; font-family:var(--mono); font-size:11px; color:var(--fg-dim); transition:all .15s}
   .stab:hover{color:var(--fg-dim)}
   .stab.on{border-top-color:var(--amber-ink); color:var(--amber-ink)}
   .stab.on.flag{border-top-color:var(--red); color:var(--red)}
@@ -56,19 +56,19 @@
   @keyframes in{from{opacity:0; transform:translateY(4px)}to{opacity:1; transform:none}}
   @media (prefers-reduced-motion:reduce){.stage{animation:none}}
   .stage h2{font-family:var(--mono); font-size:19px; margin:0 0 4px}
-  .role{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-faint);
+  .role{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-dim);
     border:1px solid var(--line); padding:2px 8px; border-radius:2px; display:inline-block; margin-bottom:10px}
   .stage p{color:var(--fg-dim); margin:10px 0 0; max-width:66ch}
   .stage p b{color:var(--fg)}
 
   blockquote{margin:16px 0 0; padding:14px 16px; border-left:2px solid var(--red); background:var(--red-soft);
     border-radius:0 3px 3px 0; font-size:15px; color:var(--fg)}
-  blockquote .attrib{display:block; font-family:var(--mono); font-size:10.5px; color:var(--fg-faint); margin-top:8px; letter-spacing:.04em}
+  blockquote .attrib{display:block; font-family:var(--mono); font-size:10.5px; color:var(--fg-dim); margin-top:8px; letter-spacing:.04em}
 
   .metric{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
   .mx{border:1px solid var(--line); background:var(--raised); border-radius:3px; padding:9px 13px; font-family:var(--mono); font-size:12.5px}
   .mx b{color:var(--fg)}
-  .mx .was{color:var(--fg-faint); text-decoration:line-through}
+  .mx .was{color:var(--fg-dim); text-decoration:line-through}
   .mx .now{color:var(--teal)}
   .bad{color:var(--red)} .good{color:var(--teal)}
 
@@ -80,11 +80,11 @@
   button.nb.ghost{border-color:var(--line); color:var(--fg-dim); background:transparent}
 
   section{padding:34px 0; border-bottom:1px solid var(--line)}
-  .note{border-left:2px solid var(--amber-line); padding-left:14px; color:var(--fg-faint); font-size:13.5px; max-width:68ch}
+  .note{border-left:2px solid var(--amber-line); padding-left:14px; color:var(--fg-dim); font-size:13.5px; max-width:68ch}
   .note b{color:var(--fg-dim)}
   .big{font-size:clamp(17px,2.4vw,20px); color:var(--fg); max-width:56ch; line-height:1.45}
   .big em{font-style:normal; color:var(--amber-ink)}
-  footer{padding:30px 0 0; color:var(--fg-faint); font-size:13.5px}
+  footer{padding:30px 0 0; color:var(--fg-dim); font-size:13.5px}
 </style>
 </head>
 <body>

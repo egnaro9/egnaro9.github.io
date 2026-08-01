@@ -71,7 +71,7 @@
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
   .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
-  .chip{font-family:var(--mono); font-size:11.5px; color:var(--fg-faint); border:1px solid var(--line);
+  .chip{font-family:var(--mono); font-size:11.5px; color:var(--fg-dim); border:1px solid var(--line);
     background:var(--panel); padding:6px 11px; border-radius:2px; opacity:.45; transition:opacity .3s}
   .chip.lit{opacity:1; color:var(--teal); border-color:var(--teal)}
   .chip.lit::before{content:"✓ "}
@@ -93,7 +93,7 @@
   .arr{color:var(--fg-faint); font-size:11px}
   /* The terminus of the map: the only box in it that isn't running in this tab. */
   .verdict-chip{padding:4px 9px; border-radius:2px; font-family:var(--mono); font-size:12px;
-    white-space:nowrap; color:var(--fg-faint); border:1px dashed var(--pink); background:transparent}
+    white-space:nowrap; color:var(--fg-dim); border:1px dashed var(--pink); background:transparent}
 
   button{font-family:var(--mono); font-size:14px; padding:13px 22px; border-radius:2px; cursor:pointer;
     border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft); transition:background .15s}
@@ -101,10 +101,10 @@
   button:disabled{opacity:.45; cursor:not-allowed}
   button.ghost{border-color:var(--line); color:var(--fg-dim); background:transparent}
   button.ghost:hover:not(:disabled){color:var(--fg); border-color:var(--fg-dim); background:transparent}
-  button.tiny{font-size:11px; padding:6px 10px; border-color:var(--line); color:var(--fg-faint); background:transparent}
+  button.tiny{font-size:11px; padding:6px 10px; border-color:var(--line); color:var(--fg-dim); background:transparent}
   button.tiny:hover:not(:disabled){color:var(--fg); border-color:var(--fg-dim); background:transparent}
   .ask{margin-top:18px; padding:16px; border:1px solid var(--line); border-left:3px solid var(--amber-line); background:var(--panel); border-radius:3px}
-  .asklab{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-faint); text-align:center; margin-bottom:12px}
+  .asklab{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-dim); text-align:center; margin-bottom:12px}
   .askrow{display:flex; gap:8px}
   .askrow input{flex:1; background:var(--raised); border:1px solid var(--line); border-radius:3px; color:var(--fg);
     font-family:var(--sans); font-size:15px; padding:11px 12px}
@@ -115,7 +115,7 @@
   #corpusBox{width:100%; background:#0a0e11; border:1px solid var(--line); border-radius:3px; color:var(--fg-dim);
     font-family:var(--mono); font-size:11.5px; line-height:1.65; padding:12px; resize:vertical}
   #corpusBox:focus{outline:none; border-color:var(--teal)}
-  .corpusnote{font-size:12.5px; color:var(--fg-faint); margin-top:8px}
+  .corpusnote{font-size:12.5px; color:var(--fg-dim); margin-top:8px}
   .whatis{font-size:13.5px; color:var(--fg-dim); line-height:1.55; border-left:2px solid var(--amber-line); padding-left:13px; margin-bottom:4px}
   .whatis b{color:var(--fg)}
   .cid{color:var(--amber-ink)}
@@ -134,7 +134,7 @@
   .q{font-size:15px; color:var(--fg); margin-top:5px}
   .mono{font-family:var(--mono); font-size:12px; color:var(--fg-dim); margin-top:5px}
   .ids{color:var(--amber-ink)}
-  .ctx{font-size:12.5px; color:var(--fg-faint); margin-top:4px; font-style:italic}
+  .ctx{font-size:12.5px; color:var(--fg-dim); margin-top:4px; font-style:italic}
   .warnline{font-size:12.5px; color:var(--amber-ink); margin-top:5px}
   .verdictline{font-family:var(--mono); font-size:12.5px; margin-top:6px}
   .verdictline.good,.good{color:var(--teal)} .verdictline.bad,.bad{color:var(--red)} .warn{color:var(--amber-ink)}
@@ -142,15 +142,15 @@
 
   .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:8px; margin:18px 0}
   .card{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:11px}
-  .card .k{font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-faint)}
+  .card .k{font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--fg-dim)}
   .card .v{font-size:1.25rem; font-weight:650; margin-top:2px; font-family:var(--mono)}
   .handoff-btn{display:inline-block; font-family:var(--mono); font-size:13.5px; padding:11px 17px; border-radius:2px;
     border:1px solid var(--blue); color:var(--blue); background:var(--blue-soft); transition:background .15s}
   @media (hover:hover){.handoff-btn:hover{background:var(--blue); color:var(--ink)}}
   .handoff-note{color:var(--fg-dim); font-size:13.5px; margin-top:10px; max-width:64ch}
-  .note{border-left:2px solid var(--amber-line); padding-left:14px; margin-top:18px; color:var(--fg-faint); font-size:13.5px; max-width:68ch}
+  .note{border-left:2px solid var(--amber-line); padding-left:14px; margin-top:18px; color:var(--fg-dim); font-size:13.5px; max-width:68ch}
   .note b{color:var(--fg-dim)}
-  footer{padding:30px 0 0; color:var(--fg-faint); font-size:13.5px}
+  footer{padding:30px 0 0; color:var(--fg-dim); font-size:13.5px}
 </style>
 </head>
 <body>
