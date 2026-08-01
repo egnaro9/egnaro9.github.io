@@ -16,6 +16,30 @@
     --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
+  /* The main page honours the reader's light-mode preference; these did not,
+     so following a link from it flipped to a dark page. Only the tokens this
+     page actually defines are overridden. */
+  @media (prefers-color-scheme: light){
+    :root{
+      --ink:#e9edee;
+      --panel:#f4f6f6;
+      --raised:#ffffff;
+      --line:rgba(12,26,32,.12);
+      --line-2:rgba(12,26,32,.07);
+      --fg:#131c20;
+      --fg-dim:#4d5a60;
+      --fg-faint:#7c888d;
+      --amber:#b7761a;
+      --amber-soft:rgba(200,128,26,.12);
+      --amber-line:rgba(200,128,26,.4);
+      --teal:#1c8f7d;
+      --teal-soft:rgba(28,143,125,.1);
+      --red:#b3261e;
+      --red-soft:rgba(179,38,30,.1);
+      --red-line:rgba(179,38,30,.4);
+    }
+  }
+
   *{box-sizing:border-box}
   body{margin:0; background:var(--ink); color:var(--fg); font-family:var(--sans); line-height:1.55;
     -webkit-font-smoothing:antialiased;
