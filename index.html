@@ -140,7 +140,7 @@
   .proj .pci .v{width:6px; height:6px; border-radius:50%; background:var(--teal)}
   .proj p{margin:9px 0 0; font-size:15.5px; color:var(--fg-dim); line-height:1.55; max-width:70ch}
   .proj .ptags{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
-  .proj .ptag{font-family:var(--mono); font-size:12px; color:var(--fg-faint); border:1px solid var(--line); padding:3px 7px; border-radius:2px}
+  .proj .ptag{font-family:var(--mono); font-size:12px; color:var(--fg-dim); border:1px solid var(--line); background:var(--panel); padding:3px 7px; border-radius:2px}
   .proj .plink{font-family:var(--mono); font-size:13px; color:var(--amber-ink); text-align:center}
   .proj .plink span{color:var(--fg-faint)}
   /* Unscoped on purpose. This was `.proj .plive`, so the three CTAs outside a
@@ -164,6 +164,8 @@
   .proj.p-m3{border-left-color:#c084fc}
   .proj.p-drift{border-left-color:#48c1ac}
   .ptag.mcp{color:var(--teal); border-color:var(--teal); background:var(--teal-soft)}
+  a.ptag.mcp{text-decoration:none; transition:background .15s}
+  @media (hover:hover){a.ptag.mcp:hover{background:var(--teal); color:var(--ink)}}
   /* launcher panel — one tidy grid instead of ragged pills */
   .launch{margin-top:24px; border:1px solid var(--line); background:var(--panel); border-radius:4px; padding:16px 18px}
   .launch .ltitle{font-family:var(--mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase;
@@ -663,7 +665,7 @@
           <span class="pci live">live</span>
         </div>
         <p>A <strong>LangGraph</strong> ReAct agent: multi-step tool-calling with guardrails that bite — a safe evaluator and a step budget, both tested. The demo runs <strong>real LangGraph in your tab</strong>; try breaking the calculator with <code>__import__('os')</code>.</p>
-        <div class="ptags"><span class="ptag mcp">MCP tool · calc</span><span class="ptag">LangGraph</span><span class="ptag">tool-calling</span><span class="ptag">guardrails</span><span class="ptag">WebAssembly</span></div>
+        <div class="ptags"><a class="ptag mcp" href="https://github.com/egnaro9/mcp-tools" target="_blank" rel="noopener" title="Exposed by mcp-tools, a Model Context Protocol server built from the spec">MCP tool · calc</a><span class="ptag">LangGraph</span><span class="ptag">tool-calling</span><span class="ptag">guardrails</span><span class="ptag">WebAssembly</span></div>
         </div>
         <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/agent-graph/">▶ Watch it think, in your browser</a>
@@ -695,7 +697,7 @@
           <span class="pci live">live</span>
         </div>
         <p>A dependency-free RAG pipeline with a deterministic eval harness that <strong>catches a planted hallucination</strong>, re-checked on every push. The demo <strong>pip-installs the real wheel into your browser</strong> — write a false answer and watch it get caught, word by word. And it's <strong>measured</strong>: a from-scratch <strong>BM25 that matches the published SciFact baseline</strong> (nDCG@10 <strong>0.664</strong> vs 0.665) — plus <strong>hybrid retrieval and a reranker</strong> it benchmarks honestly and shows <em>don't</em> beat BM25 here, with the mechanism. Knowing when a technique doesn't help is the point.</p>
-        <div class="ptags"><span class="ptag mcp">MCP tools · search + grade_answer</span><span class="ptag">RAG</span><span class="ptag">evals · nDCG</span><span class="ptag">BM25 · hybrid · reranker</span><span class="ptag">SciFact</span><span class="ptag">WebAssembly</span></div>
+        <div class="ptags"><a class="ptag mcp" href="https://github.com/egnaro9/mcp-tools" target="_blank" rel="noopener" title="Exposed by mcp-tools, a Model Context Protocol server built from the spec">MCP tools · search + grade_answer</a><span class="ptag">RAG</span><span class="ptag">evals · nDCG</span><span class="ptag">BM25 · hybrid · reranker</span><span class="ptag">SciFact</span><span class="ptag">WebAssembly</span></div>
         </div>
         <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/rag-eval-lab/">▶ Try to fool it, in your browser</a>
@@ -729,7 +731,7 @@
           <span class="pci api"><span class="v"></span>live api</span>
         </div>
         <p>Ask it what regressed and a real database answers — same commit, retrieval <code>k=3</code> vs <code>k=2</code>: <strong>five cases better, one worse, verdict <code>regressed</code></strong>. It won't let a better average bury the case that broke. Behind it, the only one of these five <strong>not running in your tab</strong>: a <strong>FastAPI</strong> + <strong>SQLAlchemy 2.0</strong> service on Render against <strong>Postgres</strong> on Neon, with <strong>rag-eval-lab's CI posting its eval runs here automatically</strong>, tagged with the commit that produced them — non-blocking, so the bookkeeping can never redden the suite it books.</p>
-        <div class="ptags"><span class="ptag mcp">MCP tool · compare_runs</span><span class="ptag">FastAPI</span><span class="ptag">SQLAlchemy 2.0</span><span class="ptag">Postgres</span><span class="ptag">Neon</span><span class="ptag">Render</span><span class="ptag">CI on PG 16 + 18</span><span class="ptag">Alembic drift test</span><span class="ptag">/health · /readyz</span></div>
+        <div class="ptags"><a class="ptag mcp" href="https://github.com/egnaro9/mcp-tools" target="_blank" rel="noopener" title="Exposed by mcp-tools, a Model Context Protocol server built from the spec">MCP tool · compare_runs</a><span class="ptag">FastAPI</span><span class="ptag">SQLAlchemy 2.0</span><span class="ptag">Postgres</span><span class="ptag">Neon</span><span class="ptag">Render</span><span class="ptag">CI on PG 16 + 18</span><span class="ptag">Alembic drift test</span><span class="ptag">/health · /readyz</span></div>
         </div>
         <div class="pside">
         <a class="plive" href="https://egnaro9.github.io/eval-compare/">▶ See it rendered</a>
