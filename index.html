@@ -80,8 +80,16 @@
   .thesis b{color:var(--amber-ink); font-weight:600}
   .lede{margin:20px 0 0; max-width:60ch}
   .meta{display:flex; flex-wrap:wrap; gap:8px; margin-top:26px}
-  .chip{font-family:var(--mono); font-size:13.5px; color:var(--fg-dim); border:1px solid var(--line); background:var(--panel); padding:7px 12px; border-radius:2px; display:inline-flex; align-items:center; gap:7px}
-  .chip a{color:var(--fg)}
+    /* These are links, and they were styled like captions: dimmed text on a hairline
+     with no hover, so nothing said they could be clicked. Full-strength text, a border
+     that responds, and the amber only on hover — the accent stays reserved for the
+     two things at the top of the page. */
+  .chip{font-family:var(--mono); font-size:13.5px; color:var(--fg-dim); border:1px solid var(--line);
+    background:var(--panel); padding:7px 12px; border-radius:2px; display:inline-flex;
+    align-items:center; gap:7px; transition:border-color .15s, background .15s}
+  @media (hover:hover){.chip:hover{border-color:var(--amber-line); background:var(--amber-soft)}}
+  @media (hover:hover){.chip:hover a{color:var(--amber-ink)}}
+  .chip a{color:var(--fg); text-decoration:none; transition:color .15s}
   .chip .dot{width:6px; height:6px; border-radius:50%; background:var(--teal)}
 
   section{padding:76px 0 60px; border-bottom:1px solid var(--line)}
@@ -315,7 +323,10 @@
   footer{padding:44px 0 0; text-align:center}
   .cta{display:inline-flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:8px}
   .btn{font-family:var(--mono); font-size:13.5px; padding:12px 20px; border-radius:2px; border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft); transition:background .15s}
-  .btn.ghost{border-color:var(--line); color:var(--fg-dim); background:transparent}
+    /* Five identical washed-out ghosts under an amber email button read as disabled.
+     Full-strength text on a visible border: secondary to the email, not inert. */
+  .btn.ghost{border-color:var(--fg-faint); color:var(--fg); background:transparent}
+  @media (hover:hover){.btn.ghost:hover{border-color:var(--amber-line); background:var(--amber-soft); color:var(--amber-ink)}}
   @media (hover:hover){.btn:hover{background:var(--amber-ink); color:var(--ink)} .btn.ghost:hover{color:var(--fg); border-color:var(--fg-dim)}}
   .foot-note{font-family:var(--mono); font-size:11px; color:var(--fg-faint); letter-spacing:.14em; text-transform:uppercase; margin-top:34px}
 
@@ -351,7 +362,7 @@
     </div>
 
     <div class="cta" style="margin-top:18px; justify-content:flex-start; gap:10px; flex-wrap:wrap">
-      <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board — 16 LLMs, 5 metrics</a>
+      <a class="plive" href="https://egnaro9.github.io/model-drift/">▶ Open the live board — 16 LLMs, 5 metrics</a>
       <a class="plive alt" href="https://crashkit.onrender.com" target="_blank" rel="noopener">▶ Crash-test a model with your own key</a>
       <span class="pnote">free tier — first click takes ~50s to wake</span>
     </div>
@@ -364,7 +375,7 @@
       <div class="ltitle">Or run any of it yourself — real code, in your tab</div>
       <div class="lgrid">
         <a href="https://egnaro9.github.io/stack/"><span class="arrow">▶</span>the five-service stack</a>
-        <a href="https://egnaro9.github.io/evals-differential-oracle/" target="_blank" rel="noopener"><span class="arrow">▶</span>differential oracle</a>
+        <a href="https://egnaro9.github.io/evals-differential-oracle/"><span class="arrow">▶</span>differential oracle</a>
         <a href="https://egnaro9.github.io/match3-engine/"><span class="arrow">▶</span>match3-engine (Java → WASM)</a>
         <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><span class="arrow">▶</span>Tap Dodge Rush (Google Play)</a>
       </div>
@@ -374,11 +385,11 @@
 
     <div class="contact">
       <span class="chip"><a href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a></span>
-      <span class="chip"><a href="https://github.com/egnaro9" target="_blank" rel="noopener">github.com/egnaro9</a></span>
-      <span class="chip"><a href="https://dev.to/AgentDev9" target="_blank" rel="noopener">dev.to/AgentDev9</a></span>
-      <span class="chip"><a href="https://www.linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">linkedin.com/in/erik-hill-98895575</a></span>
-      <span class="chip"><a href="https://x.com/AgentDev9" target="_blank" rel="noopener">x.com/AgentDev9</a></span>
-      <span class="chip"><a href="https://www.reddit.com/user/AgentDev9" target="_blank" rel="noopener">reddit.com/user/AgentDev9</a></span>
+      <span class="chip"><a href="https://github.com/egnaro9" target="_blank" rel="noopener">GitHub</a></span>
+      <span class="chip"><a href="https://dev.to/AgentDev9" target="_blank" rel="noopener">dev.to</a></span>
+      <span class="chip"><a href="https://www.linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">LinkedIn</a></span>
+      <span class="chip"><a href="https://x.com/AgentDev9" target="_blank" rel="noopener">X</a></span>
+      <span class="chip"><a href="https://www.reddit.com/user/AgentDev9" target="_blank" rel="noopener">Reddit</a></span>
     </div>
   </header>
 
@@ -525,7 +536,7 @@
         <div class="ptags"><span class="ptag">16 models</span><span class="ptag">5 labs</span><span class="ptag">5 metrics</span><span class="ptag">daily cron</span><span class="ptag">deterministic grading</span><span class="ptag">GitHub Actions</span></div>
         </div>
         <div class="pside">
-        <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board</a>
+        <a class="plive" href="https://egnaro9.github.io/model-drift/">▶ Open the live board</a>
         <span class="pnote">toggle the metric, filter by tier or lab</span>
         <a class="plink" href="https://github.com/egnaro9/model-drift" target="_blank" rel="noopener">github.com/egnaro9/model-drift <span>→</span></a>
         </div>
@@ -571,13 +582,13 @@
         <text class="edge" x="517" y="242" text-anchor="middle">renders</text>
 
         <!-- nodes -->
-        <a href="https://egnaro9.github.io/agent-graph/" target="_blank" rel="noopener">
+        <a href="https://egnaro9.github.io/agent-graph/">
           <rect class="n a" x="20" y="126" width="155" height="58" rx="3"/>
           <text class="nm" x="97" y="150" text-anchor="middle">agent-graph</text>
           <text class="ns" x="97" y="168" text-anchor="middle">plans · calls tools</text>
         </a>
 
-        <a href="https://egnaro9.github.io/llm-gateway/" target="_blank" rel="noopener">
+        <a href="https://egnaro9.github.io/llm-gateway/">
           <rect class="n g" x="310" y="37" width="190" height="58" rx="3"/>
           <text class="nm" x="405" y="61" text-anchor="middle">llm-gateway</text>
           <text class="ns" x="405" y="79" text-anchor="middle">governs every model call</text>
@@ -587,7 +598,7 @@
         <text class="nm dim" x="631" y="61" text-anchor="middle">provider</text>
         <text class="ns" x="631" y="79" text-anchor="middle">mock · or a real key</text>
 
-        <a href="https://egnaro9.github.io/rag-eval-lab/" target="_blank" rel="noopener">
+        <a href="https://egnaro9.github.io/rag-eval-lab/">
           <rect class="n r" x="310" y="144" width="180" height="58" rx="3"/>
           <text class="nm" x="400" y="168" text-anchor="middle">rag-eval-lab</text>
           <text class="ns" x="400" y="186" text-anchor="middle">retrieves · grades grounding</text>
@@ -596,7 +607,7 @@
         <rect class="n file" x="330" y="232" width="148" height="38" rx="3"/>
         <text class="nf" x="404" y="256" text-anchor="middle">eval_run.json</text>
 
-        <a href="https://egnaro9.github.io/eval-dashboard/" target="_blank" rel="noopener">
+        <a href="https://egnaro9.github.io/eval-dashboard/">
           <rect class="n d" x="556" y="222" width="180" height="58" rx="3"/>
           <text class="nm" x="646" y="246" text-anchor="middle">eval-dashboard</text>
           <text class="ns" x="646" y="264" text-anchor="middle">shows what failed</text>
@@ -647,7 +658,7 @@
         <div class="ptags"><span class="ptag mcp">MCP tool · calc</span><span class="ptag">LangGraph</span><span class="ptag">tool-calling</span><span class="ptag">guardrails</span><span class="ptag">WebAssembly</span></div>
         </div>
         <div class="pside">
-        <a class="plive" href="https://egnaro9.github.io/agent-graph/" target="_blank" rel="noopener">▶ Watch it think, in your browser</a>
+        <a class="plive" href="https://egnaro9.github.io/agent-graph/">▶ Watch it think, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/agent-graph" target="_blank" rel="noopener">github.com/egnaro9/agent-graph <span>→</span></a>
         </div>
       </div>
@@ -663,7 +674,7 @@
         <div class="ptags"><span class="ptag">FastAPI</span><span class="ptag">rate-limit</span><span class="ptag">caching</span><span class="ptag">observability</span><span class="ptag">WebAssembly</span></div>
         </div>
         <div class="pside">
-        <a class="plive" href="https://egnaro9.github.io/llm-gateway/" target="_blank" rel="noopener">▶ Poke the API, in your browser</a>
+        <a class="plive" href="https://egnaro9.github.io/llm-gateway/">▶ Poke the API, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/llm-gateway" target="_blank" rel="noopener">github.com/egnaro9/llm-gateway <span>→</span></a>
         </div>
       </div>
@@ -679,7 +690,7 @@
         <div class="ptags"><span class="ptag mcp">MCP tools · search + grade_answer</span><span class="ptag">RAG</span><span class="ptag">evals · nDCG</span><span class="ptag">BM25 · hybrid · reranker</span><span class="ptag">SciFact</span><span class="ptag">WebAssembly</span></div>
         </div>
         <div class="pside">
-        <a class="plive" href="https://egnaro9.github.io/rag-eval-lab/" target="_blank" rel="noopener">▶ Try to fool it, in your browser</a>
+        <a class="plive" href="https://egnaro9.github.io/rag-eval-lab/">▶ Try to fool it, in your browser</a>
         <a class="plink" href="https://rag-eval-lab.onrender.com/docs" target="_blank" rel="noopener">live API — /query · /eval <span>→</span></a>
         <span class="pnote">free tier — first call takes ~30s to wake it</span>
         <a class="plink" href="https://github.com/egnaro9/rag-eval-lab" target="_blank" rel="noopener">github.com/egnaro9/rag-eval-lab <span>→</span></a>
@@ -697,7 +708,7 @@
         <div class="ptags"><span class="ptag">Next.js</span><span class="ptag">TypeScript</span><span class="ptag">Vitest</span></div>
         </div>
         <div class="pside">
-        <a class="plive" href="https://egnaro9.github.io/eval-dashboard/" target="_blank" rel="noopener">▶ Open the live dashboard</a>
+        <a class="plive" href="https://egnaro9.github.io/eval-dashboard/">▶ Open the live dashboard</a>
         <a class="plink" href="https://github.com/egnaro9/eval-dashboard" target="_blank" rel="noopener">github.com/egnaro9/eval-dashboard <span>→</span></a>
         </div>
       </div>
@@ -817,7 +828,7 @@
         <span class="eq">→ swap in the bug →</span>
         <span class="verdict" style="color:var(--fg-dim); border-color:var(--line); background:transparent"><span class="v" style="background:#f87171"></span>2,624 caught, by both nets</span>
       </div>
-      <a class="plive" style="margin-top:18px; display:inline-flex" href="https://egnaro9.github.io/evals-differential-oracle/" target="_blank" rel="noopener">▶ Run the oracle in your browser</a>
+      <a class="plive" style="margin-top:18px; display:inline-flex" href="https://egnaro9.github.io/evals-differential-oracle/">▶ Run the oracle in your browser</a>
       <p class="intro" style="margin-top:16px">Or clone it and run <strong>pytest</strong> — self-contained, no setup beyond <code>requirements.txt</code>. Repo: <a href="https://github.com/egnaro9/evals-differential-oracle" target="_blank" rel="noopener">github.com/egnaro9/evals-differential-oracle</a></p>
     </div>
 
@@ -835,7 +846,7 @@
         <div class="ptags"><span class="ptag">Java</span><span class="ptag">property-based testing</span><span class="ptag">jqwik</span><span class="ptag">TeaVM</span></div>
         </div>
         <div class="pside">
-        <a class="plive" href="https://egnaro9.github.io/match3-engine/" target="_blank" rel="noopener">▶ Play the real engine, in your browser</a>
+        <a class="plive" href="https://egnaro9.github.io/match3-engine/">▶ Play the real engine, in your browser</a>
         <a class="plink" href="https://github.com/egnaro9/match3-engine" target="_blank" rel="noopener">github.com/egnaro9/match3-engine <span>→</span></a>
         </div>
       </div>
