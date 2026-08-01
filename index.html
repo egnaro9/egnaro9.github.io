@@ -237,8 +237,12 @@
       font-family:var(--mono); font-size:12px; line-height:1.5; color:var(--fg-dim)}
     .cast figcaption a{color:var(--amber); text-decoration:none}
     .cast figcaption a:hover{text-decoration:underline}
-        .plive.alt{background:transparent; color:var(--fg-dim); border-color:var(--line)}
-  @media (hover:hover){.plive.alt:hover{color:var(--fg); border-color:var(--fg-dim)}}
+  /* The second action is a different job, not a lesser one: the board asks nothing
+     of you, the crash test asks for your key. Teal rather than a dimmed amber, so it
+     reads as a choice between two things instead of a primary and an also-ran — the
+     first attempt used --fg-dim on transparent and looked disabled. */
+  .plive.alt{color:var(--teal); border-color:var(--teal-line); background:var(--teal-soft)}
+  @media (hover:hover){.plive.alt:hover{background:var(--teal); color:var(--ink); border-color:var(--teal)}}
   .tldr{margin:26px 0 6px; padding:18px 20px 16px; border:1px solid var(--line);
         border-left:3px solid var(--amber); border-radius:10px; background:var(--panel)}
   .tldr-h{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
