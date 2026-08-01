@@ -901,6 +901,17 @@
         the same board on any machine.
         <a href="https://asciinema.org/a/XTPGaCYhnbKwxy9u" target="_blank" rel="noopener">play it as a terminal session</a> — the text is selectable.</figcaption>
     </figure>
+
+    <figure class="cast">
+      <img src="https://raw.githubusercontent.com/egnaro9/tapdodge-engine/main/docs/demo.gif" alt="The cross-compiler check passing, then the same command run against the recording of the build from before the fix, printing 69 differences" loading="lazy">
+      <figcaption>The same move on a game that is live on Google Play. Its rules compile twice —
+        <code>javac</code> for the app, TeaVM for the browser — and the two played <em>different
+        games</em> from one seed. The determinism test I already had was green throughout: it ran
+        the engine twice in the <em>same</em> runtime, which cannot see a disagreement between
+        runtimes. A golden file of the JVM trace passed too, because the JVM side never moved.
+        Only the diff between them fails.
+        <a href="https://asciinema.org/a/6vDCRqLuJ0FqzuHO" target="_blank" rel="noopener">play it as a terminal session</a> — the text is selectable.</figcaption>
+    </figure>
   </section>
 
 
