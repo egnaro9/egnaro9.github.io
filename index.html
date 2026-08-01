@@ -407,7 +407,7 @@
       </div>
     </div>
 
-    <p class="compose-note" style="margin-top:14px">So it's one engine turned four ways, not four engines: the same <code>gradecore</code> predicate set, the same wire format, the same store. In <a href="#board">In the Wild</a> and <a href="#system">One System</a>, those same pieces do the job they were built for.</p>
+    <p class="compose-note" style="margin-top:14px">So it's one engine turned four ways, not four engines: the same <code>gradecore</code> predicate set, the same wire format, the same store. In <a href="#board">The Board</a> and <a href="#system">One System</a>, those same pieces do the job they were built for.</p>
   
     <figure class="cast">
       <img src="https://raw.githubusercontent.com/egnaro9/crashkit/main/docs/demo.gif" alt="Adversarial battery against a deliberately-vulnerable mock: vulnerability 1.00, one fail card per broken guarantee" loading="lazy">
@@ -471,7 +471,7 @@
 
 
   <section id="board">
-    <div class="label"><span class="tick">//</span> In the Wild</div>
+    <div class="label"><span class="tick">//</span> The Board</div>
     <h2>A public board watching 16 models for drift</h2>
     <p class="lens-kicker">The same discipline, turned on time — a frozen suite, run week after week.</p>
     <p class="intro">The stack you'll see below isn't only a demo of itself — it runs a <strong>live public tracker</strong>. A frozen, deterministically-graded suite hits <strong>16 models across 5 labs</strong> — OpenAI, Anthropic, Google, xAI, Meta — on a daily cron, and every run is kept: <strong>accuracy, speed, verbosity, reliability, refusal rate</strong>. No LLM-as-judge — every task is scored by a fixed deterministic check (exact match, substring, regex, numeric compare, set membership), so a score change means the <em>model</em> moved, not the test. When one regresses against its previous run it opens a GitHub issue by itself — the post about it stays a human decision.</p>
