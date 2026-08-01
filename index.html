@@ -109,7 +109,7 @@
   .node{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:0 6px}
   .node .bead{width:14px; height:14px; border-radius:50%; background:var(--raised); border:2px solid var(--amber-line); margin-top:20px}
   .node .nlab{font-family:var(--mono); font-size:12.5px; color:var(--fg); font-weight:600}
-  .node .nsub{font-size:11px; color:var(--fg-faint); font-family:var(--mono); letter-spacing:.02em}
+  .node .nsub{font-size:11px; color:var(--fg-dim); font-family:var(--mono); letter-spacing:.02em}
   .pipe-note{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px 26px; margin-top:30px}
   .pipe-note div{border-left:2px solid var(--amber-line); padding-left:14px}
   .pipe-note b{display:block; font-family:var(--mono); font-size:12.5px; color:var(--fg); margin-bottom:3px; letter-spacing:.02em}
@@ -169,7 +169,7 @@
   /* launcher panel — one tidy grid instead of ragged pills */
   .launch{margin-top:24px; border:1px solid var(--line); background:var(--panel); border-radius:4px; padding:16px 18px}
   .launch .ltitle{font-family:var(--mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase;
-    color:var(--fg-faint); margin-bottom:12px}
+    color:var(--fg-dim); margin-bottom:12px}
   .launch .lgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:8px}
   .launch a{display:flex; align-items:center; gap:9px; font-family:var(--mono); font-size:13px;
     color:var(--fg-dim); border:1px solid var(--line); background:var(--raised); border-radius:3px;
@@ -187,12 +187,12 @@
   .proj .pci.api{color:#f472b6; border-color:#f472b6; background:rgba(244,114,182,.09)}
   .proj .pci.api .v{background:#f472b6; animation:pulse 2s ease-in-out infinite}
   @media (prefers-reduced-motion:reduce){.proj .pci.api .v{animation:none}}
-  .proj .pnote{font-family:var(--mono); font-size:11px; color:var(--fg-faint); text-align:center; line-height:1.45; white-space:normal; margin-top:-3px}
+  .proj .pnote{font-family:var(--mono); font-size:11px; color:var(--fg-dim); text-align:center; line-height:1.45; white-space:normal; margin-top:-3px}
   .proj .pstep{font-family:var(--mono); font-size:10px; color:var(--fg-faint); border:1px solid var(--line);
     width:19px; height:19px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; flex:none}
 
   /* the connector between stages */
-  .flowlink{position:relative; padding:11px 0 11px 30px; font-family:var(--mono); font-size:11px; color:var(--fg-faint)}
+  .flowlink{position:relative; padding:11px 0 11px 30px; font-family:var(--mono); font-size:11px; color:var(--fg-dim)}
   .flowlink::before{content:""; position:absolute; left:12px; top:0; bottom:0; width:1px; background:var(--line)}
   .flowlink .fl-a{color:var(--fg-dim)}
   @media (max-width:640px){
@@ -212,16 +212,16 @@
   .arch a{cursor:pointer}
   .arch a:hover .n{fill:var(--panel); stroke-width:2}
   .arch a:hover .nm{fill:var(--amber-ink)}
-  .arch .nm{font-family:var(--mono); font-size:13px; font-weight:600; fill:var(--fg)}
+  .arch .nm{font-family:var(--mono); font-size:15.5px; font-weight:600; fill:var(--fg)}
   /* These were 10 and 10.5px at --fg-faint. The phone breakpoint below already
      enlarged them, having noticed the problem there — but on desktop the SVG renders
      near 1:1 in an 880px column, so the labels stayed at their authored size and the
      subtitles sat at the lowest-contrast token in the palette. The edge labels are
      what make this a call graph rather than a picture of boxes; they have to be
      readable or the diagram says nothing. */
-  .arch .ns{font-family:var(--mono); font-size:11.5px; fill:var(--fg-dim)}
-  .arch .nf{font-family:var(--mono); font-size:12px; fill:var(--teal)}
-  .arch .edge{font-family:var(--mono); font-size:12px; fill:var(--fg)}
+  .arch .ns{font-family:var(--mono); font-size:13.5px; fill:var(--fg-dim)}
+  .arch .nf{font-family:var(--mono); font-size:13px; fill:var(--teal)}
+  .arch .edge{font-family:var(--mono); font-size:13px; fill:var(--fg)}
   .arch .edge.dim, .arch .dim{fill:var(--fg-dim)}
   .arch-legend{font-family:var(--mono); font-size:12px; color:var(--fg-dim); margin-top:12px; text-align:center}
   /* On a phone the SVG scaled to ~0.39, so 13px node labels rendered at ~5px and
@@ -231,9 +231,7 @@
   @media (max-width:600px){
     .arch-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch; padding:12px}
     .arch{width:800px; min-width:800px}
-    .arch .nm{font-size:14px}
-    .arch .edge{font-size:12px}
-    .arch .nf{font-size:12px}
+
     .arch .ns{display:block; font-size:11px}
   }
 
@@ -268,7 +266,7 @@
   .tldr strong{color:var(--fg)}
   .tldr a{color:inherit; text-decoration:none; border-bottom:1px solid var(--amber-line)}
   .tldr a:hover{border-bottom-color:var(--amber)}
-  .tldr-f{margin:12px 0 0; font-size:13.5px; color:var(--fg-faint)}
+  .tldr-f{margin:12px 0 0; font-size:13.5px; color:var(--fg-dim)}
   .compose-list{margin:10px 0 0 0; padding-left:20px; color:var(--fg-dim); font-size:15px; line-height:1.6}
   .compose-list li{margin-bottom:7px}
   .compose-list strong{color:var(--fg)}
@@ -277,7 +275,7 @@
   .rec blockquote{margin:0; font-size:17px; line-height:1.55; color:var(--fg)}
   .rec blockquote::before{content:'"'; color:#c084fc; font-size:22px; line-height:0; margin-right:2px}
   .rec blockquote::after{content:'"'; color:#c084fc; font-size:22px; line-height:0; margin-left:2px}
-  .rec figcaption{margin-top:12px; font-family:var(--mono); font-size:12px; color:var(--fg-faint)}
+  .rec figcaption{margin-top:12px; font-family:var(--mono); font-size:12px; color:var(--fg-dim)}
   .rec figcaption a{color:#c084fc; text-decoration:none}
   .rec figcaption a:hover{text-decoration:underline}
   .rec-full{display:inline-block; margin-top:8px; padding:4px 11px; border:1px solid rgba(192,132,252,.4);
@@ -304,18 +302,18 @@
   /* ---- ladder ---- */
   .ladder{margin-top:24px; display:flex; flex-direction:column; gap:1px; border:1px solid var(--line); border-radius:3px; overflow:hidden}
   .rung{display:grid; grid-template-columns:64px 1fr auto; align-items:center; gap:16px; padding:14px 18px; background:var(--panel)}
-  .rung .lv{font-family:var(--mono); font-size:14px; font-weight:600; color:var(--fg-faint)}
+  .rung .lv{font-family:var(--mono); font-size:14px; font-weight:600; color:var(--fg-dim)}
   .rung .rt{font-size:15.5px; color:var(--fg-dim)}
   .rung .rt b{color:var(--fg)}
-  .rung .tag{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-faint); border:1px solid var(--line); padding:3px 8px; border-radius:2px; white-space:nowrap}
+  .rung .tag{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-dim); border:1px solid var(--line); padding:3px 8px; border-radius:2px; white-space:nowrap}
   .rung.here{background:var(--amber-soft)}
   .rung.here .lv{color:var(--amber-ink)}
   .rung.here .tag{color:var(--amber-ink); border-color:var(--amber-line)}
-  .ladder-note{font-family:var(--mono); font-size:12.5px; color:var(--fg-faint); margin-top:14px; letter-spacing:.01em}
+  .ladder-note{font-family:var(--mono); font-size:12.5px; color:var(--fg-dim); margin-top:14px; letter-spacing:.01em}
   .ladder-note b{color:var(--amber-ink); font-weight:600}
 
   /* ---- stack ---- */
-  .stacknote{font-size:13.5px; color:var(--fg-faint); margin:2px 0 0; max-width:70ch}
+  .stacknote{font-size:13.5px; color:var(--fg-dim); margin:2px 0 0; max-width:70ch}
   /* 330 not 220: at 220 four columns need 4*220+3*30 = 970 into an 880 container,
      so auto-fit silently drops to 3 tracks and orphans the fourth. 330 resolves
      to a clean 2x2 at 425px, collapsing to one column on mobile. */
@@ -584,7 +582,7 @@
         <text class="edge" x="205" y="96">its LLM calls</text>
 
         <path d="M500,66 L556,66" fill="none" stroke="var(--fg-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
-        <text class="edge" x="528" y="52" text-anchor="middle">auth · cache · cost</text>
+        <text class="edge" x="528" y="28" text-anchor="middle">auth · cache · cost</text>
 
         <path d="M175,170 L310,170" fill="none" stroke="var(--fg-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
         <text class="edge" x="242" y="162" text-anchor="middle">retrieves via</text>
@@ -616,7 +614,7 @@
         <a href="https://egnaro9.github.io/rag-eval-lab/">
           <rect class="n r" x="310" y="144" width="180" height="58" rx="3"/>
           <text class="nm" x="400" y="168" text-anchor="middle">rag-eval-lab</text>
-          <text class="ns" x="400" y="186" text-anchor="middle">retrieves · grades grounding</text>
+          <text class="ns" x="400" y="186" text-anchor="middle">retrieves · grades</text>
         </a>
 
         <rect class="n file" x="330" y="232" width="148" height="38" rx="3"/>
@@ -638,7 +636,7 @@
         <a href="https://eval-history.onrender.com/suites/rag-eval-lab/latest-comparison" target="_blank" rel="noopener">
           <rect class="n h" x="310" y="310" width="190" height="58" rx="3"/>
           <text class="nm" x="405" y="334" text-anchor="middle">eval-history</text>
-          <text class="ns" x="405" y="352" text-anchor="middle">remembers · what regressed?</text>
+          <text class="ns" x="405" y="352" text-anchor="middle">what regressed?</text>
         </a>
 
         <rect class="n ghost" x="556" y="310" width="150" height="58" rx="3"/>
