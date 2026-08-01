@@ -483,7 +483,7 @@
     </div>
     <div class="bridge-row">
       <span class="bridge-b">planner &rarr; 2 drafters &rarr; judge</span>
-      <span class="bridge-d"><strong>80%</strong> &middot; 4 calls/task &middot; $0.692 &middot; 18.3s — beat the single drafter on <strong>0 of 20</strong> tasks, and lost 3</span>
+      <span class="bridge-d"><strong>80%</strong> &middot; 4 calls/task &middot; $0.692 &middot; 18.3s</span>
     </div>
   </div>
 
@@ -647,8 +647,9 @@
     <p class="compose-note" style="margin-top:14px; border-left:3px solid var(--teal); padding-left:14px">And an agent can now <strong>call this stack directly</strong>. Three of the five are exposed by an <a href="https://github.com/egnaro9/mcp-tools" target="_blank" rel="noopener"><strong>MCP server</strong></a>, each doing the job it was built for:</p>
     <ul class="compose-list">
       <li><strong>agent-graph's</strong> AST-sandboxed evaluator is the <code>calc</code> tool — arithmetic and nothing else.</li>
-      <li><strong>rag-eval-lab</strong> supplies <code>search</code> (its BM25) and <code>grade_answer</code>, which takes a draft answer plus its sources and names the sentences those sources <em>don't</em> support.</li>
-      <li><strong>eval-history</strong> answers <code>compare_runs</code> — did the latest run regress, per case. A fifth tool reads the <a href="#board">live board</a>.</li>
+      <li><strong>rag-eval-lab</strong> supplies <code>search</code> (its BM25) and <code>grade_answer</code>, which names the sentences your sources <em>don't</em> support.</li>
+      <li><strong>eval-history</strong> answers <code>compare_runs</code> — did the latest run regress, per case.</li>
+      <li>A fifth tool reads the <a href="#board">live board</a>.</li>
     </ul>
     <p class="compose-note"><strong>No LLM judge anywhere</strong> — a model grading hallucination is just another model output you can't reproduce.</p>
     <p class="compose-note">The other two aren't agent-shaped and shouldn't pretend to be: <strong>llm-gateway</strong> governs the model calls themselves, and an agent already has a model; <strong>eval-dashboard</strong> is for the human. Wire the server into Claude Desktop and the page's opening line stops being a claim: <strong>an agent that checks its own work before it answers.</strong></p>
