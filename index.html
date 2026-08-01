@@ -85,7 +85,7 @@
      that responds, and the amber only on hover — the accent stays reserved for the
      two things at the top of the page. */
   .chip{font-family:var(--mono); font-size:13.5px; color:var(--fg-dim); border:1px solid var(--line);
-    background:var(--panel); padding:7px 12px; border-radius:2px; display:inline-flex;
+    background:var(--raised); padding:7px 12px; border-radius:2px; display:inline-flex;
     align-items:center; gap:7px; transition:border-color .15s, background .15s}
   @media (hover:hover){.chip:hover{border-color:var(--amber-line); background:var(--amber-soft)}}
   @media (hover:hover){.chip:hover a{color:var(--amber-ink)}}
@@ -326,8 +326,13 @@
     /* Five identical washed-out ghosts under an amber email button read as disabled.
      Full-strength text on a visible border: secondary to the email, not inert. */
   .btn.ghost{border-color:var(--fg-faint); color:var(--fg); background:transparent}
-  @media (hover:hover){.btn.ghost:hover{border-color:var(--amber-line); background:var(--amber-soft); color:var(--amber-ink)}}
-  @media (hover:hover){.btn:hover{background:var(--amber-ink); color:var(--ink)} .btn.ghost:hover{color:var(--fg); border-color:var(--fg-dim)}}
+  /* One rule per state. There used to be two .btn.ghost:hover rules — the later one
+     reset the colour the earlier one had just set, so the background tinted amber and
+     the text stayed white. The footer links hover exactly like the header chips now. */
+  @media (hover:hover){
+    .btn:hover{background:var(--amber-ink); color:var(--ink); border-color:var(--amber-ink)}
+    .btn.ghost:hover{border-color:var(--amber-line); background:var(--amber-soft); color:var(--amber-ink)}
+  }
   .foot-note{font-family:var(--mono); font-size:11px; color:var(--fg-faint); letter-spacing:.14em; text-transform:uppercase; margin-top:34px}
 
   @media (max-width:560px){
@@ -943,11 +948,11 @@
     <h2 style="margin-top:8px">Building trustworthy agents — the kind that prove it before they speak — on a team</h2>
     <div class="cta">
       <a class="btn" href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a>
-      <a class="btn ghost" href="https://github.com/egnaro9" target="_blank" rel="noopener">GitHub</a>
-      <a class="btn ghost" href="https://dev.to/AgentDev9" target="_blank" rel="noopener">dev.to</a>
-      <a class="btn ghost" href="https://www.linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">LinkedIn</a>
-      <a class="btn ghost" href="https://x.com/AgentDev9" target="_blank" rel="noopener">X</a>
-      <a class="btn ghost" href="https://www.reddit.com/user/AgentDev9" target="_blank" rel="noopener">Reddit</a>
+      <span class="chip"><a href="https://github.com/egnaro9" target="_blank" rel="noopener">GitHub</a></span>
+      <span class="chip"><a href="https://dev.to/AgentDev9" target="_blank" rel="noopener">dev.to</a></span>
+      <span class="chip"><a href="https://www.linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">LinkedIn</a></span>
+      <span class="chip"><a href="https://x.com/AgentDev9" target="_blank" rel="noopener">X</a></span>
+      <span class="chip"><a href="https://www.reddit.com/user/AgentDev9" target="_blank" rel="noopener">Reddit</a></span>
     </div>
     <div class="foot-note">Erik Hill · AI Evaluation &amp; Testing Engineer · 2026</div>
   </footer>
