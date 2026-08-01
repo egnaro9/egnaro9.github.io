@@ -21,7 +21,7 @@
     --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
     --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
     --amber:#f2a53c; --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
-    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12); --teal-line:rgba(72,193,172,.34);
     --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     --maxw:880px;
@@ -32,7 +32,7 @@
       --line:rgba(12,26,32,.12); --line-2:rgba(12,26,32,.07);
       --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
       --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
-      --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1);
+      --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1); --teal-line:rgba(28,143,125,.4);
     }
   }
   :root[data-theme="dark"]{
@@ -40,14 +40,14 @@
     --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
     --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
     --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
-    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12); --teal-line:rgba(72,193,172,.34);
   }
   :root[data-theme="light"]{
     --ink:#e9edee; --panel:#f4f6f6; --raised:#ffffff;
     --line:rgba(12,26,32,.12); --line-2:rgba(12,26,32,.07);
     --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
     --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
-    --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1);
+    --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1); --teal-line:rgba(28,143,125,.4);
   }
 
   *{box-sizing:border-box}
@@ -345,13 +345,16 @@
       </ul>
       <p class="tldr-f">Everything below is the long version, and every claim on this page has something running underneath it.</p>
     </div>
-    <p class="lede"><strong>Evaluation harnesses, regression gates, and adversarial test batteries for LLM systems.</strong> Plus the autonomous development harness I built them for — a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product, with a human on every step that can't be undone.</p>
-    <p class="lede">The work is public and <strong>runnable in your browser</strong>: a <a href="#board"><strong>live board tracking 16 LLMs</strong></a> for drift, a <a href="#crash-test"><strong>crash test</strong></a> you can point at your own model, a deployed <strong>FastAPI&nbsp;+&nbsp;Postgres</strong> service my CI posts eval runs to, and a <a href="#harness-builder"><strong>harness sweeper</strong></a> that used my own grader to contradict me about my own architecture.</p>
-    <p class="lede">My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
-    <div class="cta" style="margin-top:28px; justify-content:flex-start; gap:10px; flex-wrap:wrap">
+
+    <div class="cta" style="margin-top:18px; justify-content:flex-start; gap:10px; flex-wrap:wrap">
       <a class="plive" href="https://egnaro9.github.io/model-drift/" target="_blank" rel="noopener">▶ Open the live board — 16 LLMs, 5 metrics</a>
       <a class="plive alt" href="https://crashkit.onrender.com" target="_blank" rel="noopener">▶ Crash-test a model with your own key</a>
+      <span class="pnote">free tier — first click takes ~50s to wake</span>
     </div>
+    <p class="lede"><strong>Evaluation harnesses, regression gates, and adversarial test batteries for LLM systems.</strong> Plus the autonomous development harness I built them for — a multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product, with a human on every step that can't be undone.</p>
+    
+    <p class="lede">My first game is already <a href="https://play.google.com/store/apps/details?id=com.seraphlight.tapdodgerush" target="_blank" rel="noopener"><strong>live on Google Play</strong></a> — this is the second one. <strong>Self-taught, in under a year.</strong></p>
+    
 
     <div class="launch">
       <div class="ltitle">Or run any of it yourself — real code, in your tab</div>
