@@ -1,0 +1,7 @@
+# Authorised digital sellers for SeraphLight Studios apps.
+# https://iabtechlab.com/ads-txt/
+#
+# This file must sit at the ROOT of the domain named as the developer website on the
+# Play Store listing, even though the studio site lives at /seraphlight-studios/ —
+# crawlers only ever look at <domain>/app-ads.txt.
+google.com, pub-1212488242244375, DIRECT, f08c47fec0942fa0
