@@ -47,7 +47,8 @@ jobs:
             --accept 200,206,429
             --max-retries 3
             --retry-wait-time 2
-            --timeout 20
+            --timeout 40
+            --max-concurrency 8
             --exclude reddit\.com
             --exclude linkedin\.com
             --exclude //x\.com
