@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Résumé — Erik Hill, AI Evaluation &amp; Testing Engineer. Verifiable-evaluation suite, certification lab for coding agents, published mutation tester for eval graders; shipped a game to Google Play. Download as PDF.">
+<title>Résumé — Erik Hill</title>
+<style>
+  :root {
+    color-scheme: dark light;
+    --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
+    --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
+    --amber:#f2a53c; --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12); --teal-line:rgba(72,193,172,.34);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --maxw:880px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --ink:#e9edee; --panel:#f4f6f6; --raised:#ffffff;
+      --line:rgba(12,26,32,.12); --line-2:rgba(12,26,32,.07);
+      --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
+      --amber:#b7761a; --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
+      --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1); --teal-line:rgba(28,143,125,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
+    --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
+    --amber:#f2a53c; --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12); --teal-line:rgba(72,193,172,.34);
+  }
+  :root[data-theme="light"]{
+    --ink:#e9edee; --panel:#f4f6f6; --raised:#ffffff;
+    --line:rgba(12,26,32,.12); --line-2:rgba(12,26,32,.07);
+    --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
+    --amber:#b7761a; --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
+    --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1); --teal-line:rgba(28,143,125,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ink)}
+  .wrap{
+    background:var(--ink); color:var(--fg); font-family:var(--sans);
+    font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+    background-image:
+      linear-gradient(var(--line-2) 1px,transparent 1px),
+      linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:34px 34px; background-position:center top;
+    padding:0 20px 72px; min-height:100vh;
+  }
+  .col{max-width:var(--maxw); margin:0 auto}
+
+  .label{font-family:var(--mono); font-size:19px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--amber-ink)}
+  .label .tick{color:var(--fg-faint)}
+  h1{font-family:var(--mono); font-weight:600; font-size:clamp(38px,9vw,64px); line-height:.98; letter-spacing:-.02em; margin:18px 0 0; color:var(--fg)}
+  .role{font-family:var(--mono); font-size:15px; color:var(--amber-ink); margin-top:12px; letter-spacing:.02em}
+  p{color:var(--fg-dim)}
+  strong, b{color:var(--fg); font-weight:600}
+  a{color:var(--amber-ink); text-decoration:none}
+  a:focus-visible{outline:2px solid var(--amber-ink); outline-offset:3px; border-radius:3px}
+  code{font-family:var(--mono); font-size:.88em; color:var(--fg)}
+
+  header{padding:56px 0 30px; border-bottom:1px solid var(--line)}
+  .rmeta{font-family:var(--mono); font-size:13.5px; color:var(--fg-dim); margin-top:18px; line-height:1.9}
+  .rmeta a{color:var(--fg-dim); border-bottom:1px solid var(--line)}
+  @media (hover:hover){.rmeta a:hover{color:var(--amber-ink); border-bottom-color:var(--amber-line)}}
+  .rmeta .sep{color:var(--fg-faint); margin:0 4px}
+
+  .chip{font-family:var(--mono); font-size:13.5px; color:var(--fg-dim); border:1px solid var(--line);
+    background:var(--raised); padding:7px 12px; border-radius:2px; display:inline-flex;
+    align-items:center; gap:7px; transition:border-color .15s, background .15s}
+  @media (hover:hover){.chip:hover{border-color:var(--amber-line); background:var(--amber-soft)}}
+  @media (hover:hover){.chip:hover a{color:var(--amber-ink)}}
+  .chip a{color:var(--fg); text-decoration:none; transition:color .15s}
+  .contact{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+
+  .plive{display:inline-flex; align-items:center; justify-content:center; gap:8px; font-family:var(--mono); font-size:12.5px;
+    padding:10px 15px; border-radius:2px; border:1px solid var(--amber-line); color:var(--amber-ink); background:var(--amber-soft); transition:background .15s}
+  @media (hover:hover){.plive:hover{background:var(--amber-ink); color:var(--ink)}}
+
+  section{padding:36px 0 8px}
+  h2{font-family:var(--mono); font-size:13px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--amber-ink);
+    margin:0 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line)}
+  h2 .hnote{font-weight:400; text-transform:none; letter-spacing:0; color:var(--fg-faint); font-size:12px}
+  section p{margin:0 0 12px; max-width:76ch}
+  .skills p{margin:0 0 10px}
+  .proj{margin:0 0 12px; color:var(--fg-dim); max-width:76ch}
+  .job{color:var(--fg); font-weight:600; margin:14px 0 2px}
+  .job .meta{color:var(--fg-faint); font-family:var(--mono); font-size:12.5px; font-weight:400}
+  ul{margin:4px 0 0; padding-left:20px; color:var(--fg-dim)}
+  li{margin:4px 0; max-width:74ch}
+  .tests{color:var(--fg-faint); font-style:italic}
+
+  .foot-note{font-family:var(--mono); font-size:11px; color:var(--fg-faint); letter-spacing:.14em; text-transform:uppercase; margin-top:52px; text-align:center}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<div class="col">
+
+  <header>
+    <nav class="contact" style="margin:0 0 30px" aria-label="Site">
+      <span class="chip"><a href="../">← Home</a></span>
+      <span class="chip"><a href="../about/">About</a></span>
+    </nav>
+    <div class="label"><span class="tick">//</span> Résumé</div>
+    <h1>Erik Hill</h1>
+    <div class="role">AI Evaluation &amp; Testing Engineer</div>
+    <div class="rmeta">
+      Summerville, SC (Charleston area) <span class="sep">·</span> <a href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a> <span class="sep">·</span> 808-765-0240<br>
+      <a href="https://linkedin.com/in/erik-hill-98895575" target="_blank" rel="noopener">linkedin.com/in/erik-hill-98895575</a>
+      <span class="sep">·</span> <a href="../">egnaro9.github.io</a>
+      <span class="sep">·</span> Open to remote (US)
+    </div>
+    <div style="margin-top:22px">
+      <a class="plive" href="Erik_Hill_Resume.pdf" download>↓ Download the PDF — one page</a>
+    </div>
+  </header>
+
+  <section>
+    <h2>Summary</h2>
+    <p>Self-taught AI evaluation and testing engineer. In under a year, career-changing from professional kitchens, I
+    built a <strong>verifiable-evaluation suite</strong>: seeded-defect task families with provable answer keys, a
+    <strong>certification lab for coding agents</strong>, a <strong>published mutation-tester for eval graders</strong>,
+    and an evidence protocol under which <strong>eleven published evaluation claims are independently replayed in
+    CI</strong> — deterministic, no LLM judges, failures published by design. Also <strong>shipped a game to Google
+    Play</strong>; <strong>twenty-plus public repos, two PyPI packages, one npm package, a merged fix to a 12-year-old
+    compiler, and an open fix to a widely-used eval framework.</strong></p>
+  </section>
+
+  <section class="skills">
+    <h2>Skills</h2>
+    <p><b>Agentic / AI:</b> Multi-agent orchestration · LangGraph · Model Context Protocol (MCP) · LLM application
+    development · Tool-calling &amp; guardrails · RAG · Evals &amp; regression gating (nDCG) · Prompt &amp; context
+    engineering · Safety (OWASP LLM Top 10, human-in-the-loop) · Differential-oracle, property-based &amp; mutation testing · No-LLM-judge grading</p>
+    <p><b>Backend &amp; data:</b> Python · FastAPI · Pydantic · SQLAlchemy 2.0 · PostgreSQL · pgvector · Alembic · REST / OpenAPI</p>
+    <p><b>Frontend / mobile:</b> TypeScript · JavaScript · React · Next.js 15 · Java · Capacitor · Android (adb) · WebAssembly (Pyodide, TeaVM)</p>
+    <p><b>Ship &amp; verify:</b> pytest · Vitest · JUnit · jqwik · Playwright · PyPI / npm packaging · GitHub Actions (matrix CI) · Docker · Render · Neon</p>
+  </section>
+
+  <section>
+    <h2>Selected Projects <span class="hnote">— all public at <a href="https://github.com/egnaro9" target="_blank" rel="noopener">github.com/egnaro9</a></span></h2>
+    <div class="proj">&bull; <b>agent-certlab</b> — <strong>Certification lab for coding agents</strong>: three <strong>seeded-defect task families</strong> with provable answer keys (incl. <strong>coordinated two-file defects</strong> no single-file patch can pass), a <strong>precondition prover</strong> (clean passes, every seed fails — it refused one of my own defects), and <strong>calibration agents</strong> the harness must separate before certifying. Two real agents certified; every verdict <strong>regradeable from artifacts</strong>.</div>
+    <div class="proj">&bull; <b>reference-fleet</b> — <strong>An answer key for eval suites</strong>: six models each broken <strong>one documented way at an exact seeded rate</strong>, so detection rates are measurable against ground truth — a naive suite detects <strong>1 of 6</strong> (paired protocol). Plus a <strong>LoRA-trained native defect</strong>: mixture 0.507 &rarr; realized <strong>0.200</strong> — training's rate control is lossy, measured.</div>
+    <div class="proj">&bull; <b>vac-protocol</b> — <strong>Verifiable Agent Claims</strong>: an evidence-bundle format + <strong>offline verifier</strong>; a registry where <strong>eleven real claims are hash-checked and re-earned in CI</strong>, with a <strong>public record of it rejecting my own evidence</strong>. Plus <b>vac-gate</b>: replayable evidence or no green check.</div>
+    <div class="proj">&bull; <b>evalmut</b> — <strong>Mutation testing for eval graders</strong> (<strong>PyPI</strong>, with its <strong>gradecore</strong> engine): inject known defects, report which checks stayed green. Found <strong>3 holes in its own engine's suite</strong>, <strong>6 in ports of a widely-used framework's assertions</strong>. <strong>No LLM judge</strong>; every operator tied to a documented real failure. <span class="tests">90 tests.</span></div>
+    <div class="proj">&bull; <b>rag-eval-lab</b> — deterministic RAG <strong>eval harness</strong> that catches a planted hallucination in CI; from-scratch <strong>BM25 matching the published SciFact baseline (0.664 vs 0.665)</strong>. <span class="tests">38 tests.</span></div>
+    <div class="proj">&bull; <b>Also:</b> <b>crashkit</b> — live (<code>crashkit.onrender.com</code>) deterministic adversarial stress-test &middot; <b>model-drift</b> — public board re-running a <strong>frozen, hash-fingerprinted suite</strong> across <strong>16 models / 5 labs</strong>, with a derived minimum-detectable-regression floor &middot; <b>eval-history</b> — deployed FastAPI/Postgres eval store &middot; <b>mcp-tools</b> — MCP server from the spec, no SDK &middot; <b>llm-wire-stub</b> (npm) &middot; a merged <strong>TeaVM</strong> compiler fix &middot; an <strong>open PR to promptfoo</strong>.</div>
+  </section>
+
+  <section>
+    <h2>Experience</h2>
+    <div class="job">Agentic Systems Engineer (Solo) — Independent Project <span class="meta">· Remote · Mar 2026 – Present</span></div>
+    <ul>
+      <li>Designed a five-stage agent loop (Strategy → Execution → Critic → Evaluation → Ops) that plans, builds, reviews, and validates changes to a real React / Capacitor product, human-in-the-loop on every consequential step.</li>
+      <li>Built per-role model routing and hook-based automation that hands work between stages with no manual relaunch; enforced rules with <strong>property-based invariants</strong> (jqwik) over a native engine and <strong>adb-driven on-device validation</strong>. Case study: <strong>github.com/egnaro9/agentic-dev-harness</strong></li>
+    </ul>
+    <div class="job">Indie Game Developer — SeraphLight Studios <span class="meta">· Remote · Nov 2025 – Present</span></div>
+    <ul>
+      <li><strong>Shipped Tap Dodge Rush to Google Play</strong> (Kotlin / Jetpack Compose, AdMob) — closed testing with 12+ testers, then store review, then launch. Building a second, larger game (React / Capacitor) — the product the harness above operates on.</li>
+    </ul>
+    <div class="job">Kitchen Manager / Shift Lead — Big Island Brewhaus &amp; other high-volume kitchens <span class="meta">· Hawaii · 2018 – 2025</span></div>
+    <ul>
+      <li>Led shifts and trained staff across island restaurants; owned prep, inventory, and food-safety under sustained pressure — the reliability and discipline I bring to software now.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Education</h2>
+    <p><strong>freeCodeCamp</strong> — self-directed software curriculum.</p>
+  </section>
+
+  <section style="padding-top:28px">
+    <div class="contact" style="margin-top:0">
+      <span class="chip"><a href="Erik_Hill_Resume.pdf" download>↓ Download the PDF</a></span>
+      <span class="chip"><a href="mailto:erik.hill0987@gmail.com">erik.hill0987@gmail.com</a></span>
+      <span class="chip"><a href="../">← Back to the work</a></span>
+    </div>
+    <div class="foot-note">Erik Hill · AI Evaluation &amp; Testing Engineer · 2026</div>
+  </section>
+
+</div>
+</div>
+</body>
+</html>
