@@ -18,7 +18,7 @@ data path in the code, not an aspiration.
 
 ```mermaid
 flowchart TD
-    MD["<b>model-drift</b><br/>weekly LLM regression probe<br/>deterministic grading, no LLM judge"]
+    MD["<b>model-drift</b><br/>daily LLM regression probe<br/>deterministic grading, no LLM judge"]
     EH[("<b>eval-history</b><br/>FastAPI · SQLAlchemy 2.0 · Postgres<br/>Render + Neon · Alembic drift test<br/>/health · /readyz")]
     GW["<b>llm-gateway</b><br/>OpenAI-shaped API · auth · rate-limit<br/>cache · retries · cost accounting"]
     REL["<b>rag-eval-lab</b><br/>from-scratch BM25 · precision@k / recall@k<br/>faithfulness · optional pgvector"]
@@ -62,7 +62,7 @@ and is easy to miss, so, plainly:
   bearer auth, token-bucket rate limiting, retry, per-model cost accounting, and
   SSE streaming — behind one OpenAI-compatible contract.
 - The **CI/infra habits** repeat across repos: green CI as the default, zero
-  committed secrets, deterministic tests, and — in `model-drift` — a weekly cron
+  committed secrets, deterministic tests, and — in `model-drift` — a daily cron
   that files a regression as a GitHub issue.
 
 Framed as *managed Postgres · health checks · IaC · migrations · CI-against-real-DB*,
@@ -70,13 +70,52 @@ this is a cloud/infra story that maps concept-for-concept onto AWS primitives
 (RDS · ALB health checks · CloudFormation · CodePipeline). It's built on Render +
 Neon, and it's honest to say so.
 
+## The verifiable-evaluation suite (August 2026)
+
+The newest layer sits above the eval stack: a program on **Agent Release
+Readiness**, where a claim about an AI system ships as a **capability
+contract** backed by a **replayable evidence bundle**.
+
+- **[evalmut](https://github.com/egnaro9/evalmut)** — mutation testing for
+  eval suites ([on PyPI](https://pypi.org/project/evalmut/)): inject a known
+  defect mined from a real failure; a grader that stays green has a hole.
+  Found 3 real holes in `gradecore`'s own graders.
+- **[reference-fleet](https://github.com/egnaro9/reference-fleet)** — six
+  reference models broken in exactly one documented way each, at a stated,
+  seeded rate, plus a [live audit board](https://egnaro9.github.io/reference-fleet/)
+  of which suite styles notice. CI re-runs the audit before the board deploys.
+- **[agent-certlab](https://github.com/egnaro9/agent-certlab)** — capability
+  contracts for coding agents: seeded defects, artifacts-only grading, every
+  committed contract independently re-graded in CI; one certification earned
+  entirely inside GitHub Actions.
+- **[vac-protocol](https://github.com/egnaro9/vac-protocol)** — the VAC spec
+  and [registry](https://egnaro9.github.io/vac-protocol/) (11 accepted
+  bundles, two-gated acceptance: structural verification, then semantic
+  replay by the issuer's own deterministic grader).
+- **[vac-gate](https://github.com/egnaro9/vac-gate)** — a composite GitHub
+  Action: no verified contract, no green check.
+
+`model-drift` and `crashkit` each emit their central claim into that registry
+as a bundle (`emit_vac.py`).
+
 ## The repos
+
+The canonical, always-current map is the site itself:
+[egnaro9.github.io](https://egnaro9.github.io).
 
 | Repo | What it is | What it proves |
 |---|---|---|
+| **[evalmut](https://github.com/egnaro9/evalmut)** | Mutation testing for eval suites (PyPI) | 18 mined operators · holes proven against ground truth, never guessed |
+| **[reference-fleet](https://github.com/egnaro9/reference-fleet)** | Certified defect models + live audit board | seeded exact defect rates · CI-reproduced board · a LoRA-trained native member |
+| **[agent-certlab](https://github.com/egnaro9/agent-certlab)** | Capability contracts for coding agents | seeded-defect certification · artifacts-only grading · CI regrade |
+| **[vac-protocol](https://github.com/egnaro9/vac-protocol)** | Verifiable Agent Claims spec + registry | replayable evidence bundles · two-gated acceptance |
+| **[vac-gate](https://github.com/egnaro9/vac-gate)** | Composite Action gating CI on a verified contract | integrity gate · sha256-checked registry fetch |
+| **[crashkit](https://github.com/egnaro9/crashkit)** | BYOK adversarial crash test, deployed on Render | deterministic severity-weighted grading · twin-control mocks |
+| **[gradecore](https://github.com/egnaro9/gradecore)** | The shared deterministic grading engine | one grader package under crashkit + model-drift, byte-identical `suite_hash` |
+| **[harness-builder](https://github.com/egnaro9/harness-builder)** | Harness-shape sweep tool | paired sign test that refuses to over-claim · deterministic scoring |
 | **[eval-history](https://github.com/egnaro9/eval-history)** | FastAPI + Postgres regression store for LLM eval runs | API design · data modeling · Alembic migrations · dual-DB CI · health/readiness |
 | **[llm-gateway](https://github.com/egnaro9/llm-gateway)** | Multi-provider LLM gateway, OpenAI-shaped | API contract design · auth · rate limiting · caching · retries · cost accounting |
-| **[model-drift](https://github.com/egnaro9/model-drift)** | Weekly public LLM regression tracker | deterministic grading · frozen fingerprinted suite · cron CI · regression-as-issue |
+| **[model-drift](https://github.com/egnaro9/model-drift)** | Daily public LLM regression tracker | deterministic grading · frozen fingerprinted suite · cron CI · regression-as-issue |
 | **[rag-eval-lab](https://github.com/egnaro9/rag-eval-lab)** | Dependency-free RAG pipeline + eval harness | IR/ML metrics (BM25 · precision@k · recall@k · faithfulness) · pgvector · honest negatives |
 | **[mcp-tools](https://github.com/egnaro9/mcp-tools)** | From-scratch MCP server (stdio, stdlib-only) | protocol implementation · safe tool sandboxing (AST allow-list) · live service lookups |
 | **[agent-graph](https://github.com/egnaro9/agent-graph)** | LangGraph ReAct agent with guarded tools | multi-step tool use · deterministic/testable tools · max-step safety guard |
