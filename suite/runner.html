@@ -1,0 +1,159 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Verifiable Evaluation Suite</title>
+<meta name="description" content="Six steps that test each other, ending with a verifier
+refusing tampered evidence by name. Every number read from a committed artifact.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>
+:root{color-scheme:dark light;--ink:#0e1316;--panel:#141c21;--raised:#1b252b;
+--line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.05);
+--fg:#dae2e4;--fg-dim:#8a989e;--fg-faint:#5e6c72;
+--amber:#f2a53c;--amber-soft:rgba(242,165,60,.13);--amber-line:rgba(242,165,60,.34);
+--teal:#48c1ac;--teal-soft:rgba(72,193,172,.12);--hot:#e0785f;--hot-soft:rgba(224,120,95,.12);
+--mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+--sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--maxw:900px}
+@media (prefers-color-scheme:light){:root{--ink:#e9edee;--panel:#f4f6f6;--raised:#fff;
+--line:rgba(12,26,32,.12);--line-2:rgba(12,26,32,.07);--fg:#131c20;--fg-dim:#4d5a60;
+--fg-faint:#7c888d;--amber:#b7761a;--amber-soft:rgba(200,128,26,.12);
+--amber-line:rgba(200,128,26,.4);--teal:#1c8f7d;--hot:#a8412c;--hot-soft:rgba(168,65,44,.1)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--fg);font:15px/1.55 var(--sans);
+-webkit-font-smoothing:antialiased}
+.nav{position:fixed;top:12px;left:14px;z-index:99;font-family:var(--mono);font-size:13px}
+.nav a{color:var(--amber);background:var(--panel);border:1px solid var(--amber-line);
+border-radius:4px;padding:6px 11px;text-decoration:none;font-weight:600}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:4.5rem 1.25rem 4rem}
+.kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;color:var(--amber);
+text-transform:uppercase}
+h1{font-size:2rem;line-height:1.18;letter-spacing:-.02em;margin:.5rem 0 .8rem;font-weight:650;
+max-width:22ch}
+.thesis{border-left:2px solid var(--amber);padding-left:1rem;color:var(--fg-dim);
+max-width:56ch;margin:0 0 1.6rem;font-size:1rem}
+.thesis b{color:var(--fg)}
+.ctl{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin:0 0 2rem}
+button{font-family:var(--mono);font-size:.78rem;color:var(--ink);background:var(--amber);
+border:1px solid var(--amber);border-radius:999px;padding:.45rem 1.2rem;cursor:pointer;
+font-weight:600}
+button.ghost{color:var(--fg);background:var(--panel);border-color:var(--line)}
+button:hover{filter:brightness(1.08)}
+.step{border:1px solid var(--line);border-radius:5px;margin:0 0 .7rem;background:var(--panel);
+opacity:.32;transition:opacity .35s ease,border-color .35s ease}
+.step.on{opacity:1;border-color:var(--amber-line)}
+.step.absent{border-color:var(--hot);border-style:dashed}
+.head{display:flex;align-items:baseline;gap:.8rem;padding:1rem 1.2rem;flex-wrap:wrap}
+.num{font-family:var(--mono);font-size:.7rem;color:var(--fg-faint);min-width:1.2rem}
+.verb{font-family:var(--mono);font-size:.76rem;letter-spacing:.12em;color:var(--amber);
+font-weight:700}
+.tool{font-family:var(--mono);font-size:.74rem;color:var(--fg-faint)}
+.big{margin-left:auto;font-family:var(--mono);font-size:1.25rem;font-weight:650;color:var(--fg);
+font-variant-numeric:tabular-nums}
+.step.absent .big{color:var(--hot);font-size:.85rem}
+.body{padding:0 1.2rem 1.1rem;display:none}
+.step.on .body{display:block}
+.q{color:var(--fg);font-size:.95rem;margin:0 0 .8rem}
+dl{margin:0 0 .9rem;font-family:var(--mono);font-size:.75rem;display:grid;
+grid-template-columns:1fr auto;gap:.28rem 1rem}
+dt{color:var(--fg-faint)}dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.note{color:var(--fg-dim);font-size:.85rem;margin:0 0 .8rem;max-width:60ch}
+.src{font-family:var(--mono);font-size:.68rem;color:var(--fg-faint);border-top:1px dashed
+var(--line);padding-top:.6rem;word-break:break-all}
+.term{font-family:var(--mono);font-size:.74rem;background:var(--ink);border:1px solid var(--line);
+border-radius:3px;padding:.7rem .8rem;margin:.5rem 0 0;overflow-x:auto;white-space:pre-wrap;
+word-break:break-word}
+.term .pass{color:var(--teal)}
+.term .fail{color:var(--hot)}
+.term .cmd{color:var(--fg-faint)}
+footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);color:var(--fg-faint);
+font-size:.78rem;line-height:1.7;max-width:64ch}
+footer b{color:var(--fg-dim)}
+footer a{color:var(--amber)}
+</style></head><body>
+<div class="nav"><a href="/">&larr; Portfolio</a></div>
+<div class="wrap">
+<p class="kicker">Verifiable Evaluation Suite</p>
+<h1>Watch a reliability claim get built, then get broken</h1>
+<p class="thesis">A verification system can show green over exactly the surface it does not
+cover. So <b>the instruments themselves have to be measured, challenged, and replayable.</b>
+Six steps below, each testing the one above it.</p>
+<div class="ctl"><button id="go">Run the stack</button>
+<button class="ghost" id="step">Step</button>
+<button class="ghost" id="rst">Reset</button></div>
+<div class="step" data-i="1">
+<div class="head"><span class="num">1</span><span class="verb">AUDIT</span>
+<span class="tool">evalmut</span><span class="big">4 holes</span></div>
+<div class="body"><p class="q">Would your checks notice a planted defect?</p><dl><dt>mutations applied</dt><dd>46</dd><dt>caught</dt><dd>42</dd><dt>holes found</dt><dd>4</dd><dt>declined rather than guessed</dt><dd>223</dd></dl>
+<p class="note">An operator declines when it cannot prove its mutant is wrong. That refusal is why a hole is a fact and not a guess.</p>
+<p class="src">read from evalmut/docs/dogfood_gradecore.json</p></div></div><div class="step" data-i="2">
+<div class="head"><span class="num">2</span><span class="verb">CALIBRATE</span>
+<span class="tool">reference-fleet</span><span class="big">1 of 6</span></div>
+<div class="body"><p class="q">Can the instrument detect a model that is broken on purpose?</p><dl><dt>suite x member results</dt><dd>18</dd><dt>naive suite detections</dt><dd>1 of 6</dd><dt>fleet commit</dt><dd>b93ab29</dd></dl>
+<p class="note">Each member is broken in one documented way at a seeded rate, so a detection rate is measured against ground truth rather than opinion.</p>
+<p class="src">read from reference-fleet/board/results.json</p></div></div><div class="step" data-i="3">
+<div class="head"><span class="num">3</span><span class="verb">CERTIFY</span>
+<span class="tool">agent-certlab</span><span class="big">6/6</span></div>
+<div class="body"><p class="q">What can this agent do, and where exactly does it fail?</p><dl><dt>agent</dt><dd>claude-code-headless</dd><dt>model</dt><dd>None</dd><dt>task family</dt><dd>machine</dd><dt>seeded defects fixed</dt><dd>6 of 6</dd><dt>grading</dt><dd>artifacts only</dd></dl>
+<p class="note">Graded from artifacts on disk, never from what the agent said it did. Policy first (suite byte-identical, allowed paths), then tests: an agent that deletes the suite fails BY POLICY while pytest is green.</p>
+<p class="src">read from agent-certlab/certifications/claude-code-machine-2026-08-14/bundle.json</p></div></div><div class="step" data-i="4">
+<div class="head"><span class="num">4</span><span class="verb">PRESERVE</span>
+<span class="tool">vac-protocol</span><span class="big">11</span></div>
+<div class="body"><p class="q">Is there enough evidence to replay the conclusion later?</p><dl><dt>bundles in registry</dt><dd>11</dd><dt>pending</dt><dd>0</dd></dl>
+<p class="note">A bundle pins claim and limitations, the subject and its version, the protocol and fixtures, raw artifacts and hashes, the derivation, and the command to replay it. No wall-clock: a claim dies when a bound input changes, not when a date passes.</p>
+<p class="src">read from vac-protocol/registry.json</p></div></div><div class="step" data-i="5">
+<div class="head"><span class="num">5</span><span class="verb">CHALLENGE</span>
+<span class="tool">vac-verify</span>
+<span class="big">5 refused</span></div>
+<div class="body"><p class="q">Does the verifier reject manipulated evidence, by name?</p>
+<p class="note">This is the step a competitor cannot answer by adding a metric. Every line below
+was produced by running the real verifier at build time, against a clean bundle and against
+deliberately corrupted ones. A verifier that has never been seen refusing is indistinguishable
+from one that cannot.</p>
+<div class="term"><span class="cmd">$ vac-verify examples/outsider</span>
+<span class="pass">exit 0  structural verification: PASS (outsider)</span>
+
+<span class="cmd">$ vac-verify fixtures/tamper-summary-score</span>
+<span class="fail">exit 1  FAIL summary-outruns-checks: summary.mutation_score_3: declares 0.714, no check recomputes it</span>
+
+<span class="cmd">$ vac-verify fixtures/tamper-evalmut-rows</span>
+<span class="fail">exit 1  FAIL raw-aggregate-mismatch: evidence/evalmut_run.json: tally.caught declared 4, recomputed 5</span>
+
+<span class="cmd">$ vac-verify fixtures/tamper-stamp-deleted</span>
+<span class="fail">exit 1  FAIL stamp-mismatch: taskset_hash: named by protocol.hashes but absent from evidence/bundle.json</span>
+
+<span class="cmd">$ vac-verify fixtures/tamper-empty-limitations</span>
+<span class="fail">exit 1  FAIL empty-limitations</span>
+
+<span class="cmd">$ vac-verify fixtures/tamper-missing-artifact</span>
+<span class="fail">exit 1  FAIL missing-artifact: evidence/bundle.json</span>
+
+</div>
+<p class="src">executed by suite/runner.py at build time; transcripts, not quotations</p></div></div><div class="step" data-i="6">
+<div class="head"><span class="num">6</span><span class="verb">LIMITS</span>
+<span class="tool">the bundle</span><span class="big">published</span></div>
+<div class="body"><p class="q">Are the failures published beside the findings?</p>
+<p class="note">A bundle with empty limitations is refused, which is one of the failures shown
+above. The claim and what it does not cover travel together or the bundle does not verify.</p>
+<p class="note">What this stack does NOT establish: that any agent is safe, that an eval is
+complete, or that a passing contract predicts behaviour outside the task families it names. It
+establishes exactly what was tested, against what known-bad, with what evidence, and how to
+re-run it.</p>
+<p class="src">SPEC.md and INVALIDATION.md in vac-protocol</p></div></div>
+
+<footer>Every number is read from the artifact its repo commits, and step 5 is <b>executed</b>
+when this page is built, so the refusals are transcripts. Nothing here is typed by hand.<br><br>
+This is not a benchmark and not a leaderboard. The point is to make an unsupported reliability
+claim fail <b>mechanically</b> rather than merely look questionable.<br><br>
+Try to falsify it: <a href="https://github.com/egnaro9/vac-protocol/blob/main/REPLAY_REQUEST.md">
+REPLAY_REQUEST.md</a> names what to run, what it costs, and what counts as success, mismatch, or
+cannot-decide.</footer>
+</div>
+<script>
+const S=[...document.querySelectorAll('.step')];let i=0,t=null;
+const g=id=>document.getElementById(id);
+function step(){ if(i>=S.length){stop();return;} S[i].classList.add('on');
+  S[i].scrollIntoView({behavior:'smooth',block:'center'}); i++; }
+function stop(){ clearInterval(t); t=null; g('go').textContent='Run the stack'; }
+g('go').onclick=()=>{ if(t){stop();return;} g('go').textContent='Pause';
+  step(); t=setInterval(step,1400); };
+g('step').onclick=()=>{ stop(); step(); };
+g('rst').onclick=()=>{ stop(); i=0; S.forEach(s=>s.classList.remove('on'));
+  window.scrollTo({top:0,behavior:'smooth'}); };
+</script></body></html>
