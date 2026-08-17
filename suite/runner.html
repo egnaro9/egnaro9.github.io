@@ -59,6 +59,14 @@ var(--line);padding-top:.6rem;word-break:break-all}
 .term{font-family:var(--mono);font-size:.74rem;background:var(--ink);border:1px solid var(--line);
 border-radius:3px;padding:.7rem .8rem;margin:.5rem 0 0;overflow-x:auto;white-space:pre-wrap;
 word-break:break-word}
+.bounds{border:1px solid var(--line);border-radius:4px;padding:.9rem 1.1rem;margin:0 0 1.2rem;
+background:var(--panel)}
+.bounds p{margin:0 0 .5rem;font-size:.86rem;color:var(--fg-dim)}
+.bounds b{color:var(--fg)}
+.bounds .derived{font-size:.74rem;color:var(--fg-faint);margin:0}
+.bounds a{color:var(--fg-faint)}
+.modes{display:grid;gap:.35rem;margin:0 0 1.4rem;font-size:.76rem;color:var(--fg-faint)}
+.modes b{color:var(--amber);font-weight:600}
 .legend{display:grid;gap:.5rem;margin:0 0 1.6rem;padding:.9rem 1rem;background:var(--panel);
 border:1px solid var(--line);border-radius:4px}
 .lg{font-size:.78rem;color:var(--fg-dim);display:grid;grid-template-columns:1.3rem auto;
@@ -76,11 +84,19 @@ footer a{color:var(--amber)}
 </style></head><body>
 <div class="nav"><a href="/">&larr; Portfolio</a></div>
 <div class="wrap">
-<p class="kicker">Verifiable Evaluation Suite</p>
-<h1>Watch a reliability claim get built, then get broken</h1>
-<p class="thesis">A verification system can show green over exactly the surface it does not
-cover. So <b>the instruments themselves have to be measured, challenged, and replayable.</b>
-Six steps below, each testing the one above it.</p>
+<p class="kicker">Verifiable Evaluation Suite &middot; Recorded proof run</p>
+<h1>Recorded evalmut dogfood run: 42 of 46 declared mutations were caught; 4 survived (2 blind, 2 coverage gap).</h1>
+<div class="bounds">
+<p><b>Scope.</b> evalmut&#x27;s own Corpus A protocol and tooling corpus, under the recorded environment, at the commit this bundle names.</p>
+<p><b>Does not establish.</b> independent operator validity, external evaluation-suite detection power, or production reliability of anything.</p>
+<p class="derived">Every number above is derived from
+<a href="https://github.com/egnaro9/evalmut/blob/main/docs/dogfood_gradecore.json">docs/dogfood_gradecore.json</a>
+at build time. The build fails if that bundle contradicts itself.</p></div>
+<div class="modes">
+<span><b>Recorded proof run</b> replays a completed run's artifacts. Nothing is executed here.</span>
+<span><b>Browser tamper demo</b> alters a local copy to show one named rejection path.</span>
+<span><b>Independent replay</b> re-runs the real verifier outside this page. Only this re-earns
+the claim, and only this may be called live verification.</span></div>
 <div class="legend"><span class="lg"><i>✓</i><b>Verified</b> deterministic evidence exists and the required checks passed, for the stated scope<em>not: not that the subject is safe, correct, or trustworthy. Only that this bounded claim was re-earned under this recorded protocol</em></span><span class="lg"><i>◆</i><b>Survived</b> a declared defect was NOT detected. A measured hole, and a discovery<em>not: not a system error and not a bug in the tool. The tool worked; the check under test did not</em></span><span class="lg"><i>○</i><b>Incomplete</b> infrastructure or required evidence failed, so no capability conclusion is available<em>not: NOT a negative finding about the subject. An uninvoked agent is not an incapable agent</em></span><span class="lg"><i>✕</i><b>Invalidated</b> a claim or artifact was broken, deliberately or independently, and the verifier refused it by name<em>not: not a crash. This is the refusal path firing, which is the strongest evidence in the stack</em></span></div>
 <div class="ctl"><button id="go">Run the stack</button>
 <button class="ghost" id="step">Step</button>
@@ -90,22 +106,7 @@ Six steps below, each testing the one above it.</p>
 <span class="tool">evalmut</span><span class="big">4 holes</span></div>
 <div class="body"><p class="q">Would your checks notice a planted defect?</p><dl><dt>mutations applied</dt><dd>46</dd><dt>caught</dt><dd>42</dd><dt>holes found</dt><dd>4</dd><dt>declined rather than guessed</dt><dd>223</dd></dl>
 <p class="note">An operator declines when it cannot prove its mutant is wrong. That refusal is why a hole is a fact and not a guess.</p>
-<p class="src">read from evalmut/docs/dogfood_gradecore.json</p></div></div><div class="step" data-i="2">
-<div class="head"><span class="num">2</span><span class="verb">CALIBRATE</span>
-<span class="tool">reference-fleet</span><span class="big">1 of 6</span></div>
-<div class="body"><p class="q">Can the instrument detect a model that is broken on purpose?</p><dl><dt>suite x member results</dt><dd>18</dd><dt>naive suite detections</dt><dd>1 of 6</dd><dt>fleet commit</dt><dd>b93ab29</dd></dl>
-<p class="note">Each member is broken in one documented way at a seeded rate, so a detection rate is measured against ground truth rather than opinion.</p>
-<p class="src">read from reference-fleet/board/results.json</p></div></div><div class="step" data-i="3">
-<div class="head"><span class="num">3</span><span class="verb">CERTIFY</span>
-<span class="tool">agent-certlab</span><span class="big">6/6</span></div>
-<div class="body"><p class="q">What can this agent do, and where exactly does it fail?</p><dl><dt>agent</dt><dd>claude-code-headless</dd><dt>model</dt><dd>None</dd><dt>task family</dt><dd>machine</dd><dt>seeded defects fixed</dt><dd>6 of 6</dd><dt>grading</dt><dd>artifacts only</dd></dl>
-<p class="note">Graded from artifacts on disk, never from what the agent said it did. Policy first (suite byte-identical, allowed paths), then tests: an agent that deletes the suite fails BY POLICY while pytest is green.</p>
-<p class="src">read from agent-certlab/certifications/claude-code-machine-2026-08-14/bundle.json</p></div></div><div class="step" data-i="4">
-<div class="head"><span class="num">4</span><span class="verb">PRESERVE</span>
-<span class="tool">vac-protocol</span><span class="big">11</span></div>
-<div class="body"><p class="q">Is there enough evidence to replay the conclusion later?</p><dl><dt>bundles in registry</dt><dd>11</dd><dt>pending</dt><dd>0</dd></dl>
-<p class="note">A bundle pins claim and limitations, the subject and its version, the protocol and fixtures, raw artifacts and hashes, the derivation, and the command to replay it. No wall-clock: a claim dies when a bound input changes, not when a date passes.</p>
-<p class="src">read from vac-protocol/registry.json</p></div></div><div class="step" data-i="5">
+<p class="src">read from evalmut/docs/dogfood_gradecore.json</p></div></div><div class="step" data-i="5">
 <div class="head"><span class="num">5</span><span class="verb">CHALLENGE</span>
 <span class="tool">vac-verify</span>
 <span class="big">5 refused</span></div>

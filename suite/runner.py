@@ -10,12 +10,13 @@ program exists to refuse. So this page is a SEQUENCE: six steps, each one testin
 it, ending with the only move in the whole stack that a competitor cannot copy by adding a metric,
 which is a verifier refusing tampered evidence BY NAME.
 
-    1  AUDIT      would your checks notice a planted defect            evalmut
-    2  CALIBRATE  can the instrument detect a known-broken model       reference-fleet
-    3  CERTIFY    what can this agent do, and where does it fail       agent-certlab
-    4  PRESERVE   is there enough evidence to replay the conclusion    VAC bundle
-    5  CHALLENGE  does the verifier reject manipulated evidence        vac-verify
-    6  LIMITS     are the failures published beside the findings       the bundle itself
+    1  AUDIT      would these checks notice a planted defect          evalmut dogfood
+    2  CHALLENGE  does the verifier reject manipulated evidence        vac-verify
+    3  LIMITS     are the failures published beside the findings       the bundle itself
+
+ONE EXAMPLE, ON PURPOSE. An earlier draft pulled four repos onto one page, which tells a
+multi-repository product story the handoff explicitly forbids before a single slice is
+evidence-backed. The page now shows exactly one run, fully bound to one bundle.
 
 EVERY NUMBER IS READ, AND STEP 5 IS EXECUTED. The counts come from each repo's committed
 artifact. The verifier output is captured by actually running `vac-verify` against a clean bundle
@@ -36,8 +37,9 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from claim import derive  # noqa: E402
 from states import (INCOMPLETE, INVALIDATED, SURVIVED, VERIFIED, Finding,  # noqa: E402
-                    css_vars, legend_rows)
+                    css_vars, legend_rows, resolve_chain)
 
 HOME = pathlib.Path.home()
 OUT = pathlib.Path(__file__).resolve().parent / "runner.html"
@@ -90,66 +92,6 @@ def steps() -> list[dict]:
         out.append(dict(n=1, verb="AUDIT", tool="evalmut", ok=False, head="artifact missing",
                         q="Would your checks notice a planted defect?", rows=[], note="",
                         src="evalmut/docs/dogfood_gradecore.json"))
-
-    # 2 CALIBRATE
-    d = read("reference-fleet/board/results.json")
-    if d:
-        rows = d["rows"]
-        naive = [r for r in rows if "naive" in str(r.get("suite", "")).lower()]
-        det = sum(1 for r in naive if float(r.get("detection_rate") or 0) > 0)
-        out.append(dict(n=2, verb="CALIBRATE", tool="reference-fleet",
-                        q="Can the instrument detect a model that is broken on purpose?",
-                        head=f"{det} of {len(naive)}" if naive else f"{len(rows)} rows", ok=True,
-                        rows=[("suite x member results", str(len(rows))),
-                              ("naive suite detections", f"{det} of {len(naive)}" if naive else "n/a"),
-                              ("fleet commit", str(d.get("fleet_commit", ""))[:7])],
-                        note="Each member is broken in one documented way at a seeded rate, so a "
-                             "detection rate is measured against ground truth rather than opinion.",
-                        src="reference-fleet/board/results.json"))
-    else:
-        out.append(dict(n=2, verb="CALIBRATE", tool="reference-fleet", ok=False,
-                        head="artifact missing", q="Can the instrument detect known-bad?",
-                        rows=[], note="", src="reference-fleet/board/results.json"))
-
-    # 3 CERTIFY
-    certs = sorted((HOME / "agent-certlab" / "certifications").glob("*/bundle.json"))
-    if certs:
-        b = json.loads(certs[-1].read_text())
-        v = b["verdicts"]
-        fixed = sum(1 for x in v if x.get("fixed"))
-        out.append(dict(n=3, verb="CERTIFY", tool="agent-certlab",
-                        q="What can this agent do, and where exactly does it fail?",
-                        head=f"{fixed}/{len(v)}", ok=True,
-                        rows=[("agent", str(b.get("agent_id"))), ("model", str(b.get("model"))),
-                              ("task family", str(b.get("family"))),
-                              ("seeded defects fixed", f"{fixed} of {len(v)}"),
-                              ("grading", "artifacts only")],
-                        note="Graded from artifacts on disk, never from what the agent said it "
-                             "did. Policy first (suite byte-identical, allowed paths), then tests: "
-                             "an agent that deletes the suite fails BY POLICY while pytest is green.",
-                        src=str(certs[-1].relative_to(HOME))))
-    else:
-        out.append(dict(n=3, verb="CERTIFY", tool="agent-certlab", ok=False,
-                        head="no certification found", q="What can this agent do?", rows=[],
-                        note="", src="agent-certlab/certifications/*/bundle.json"))
-
-    # 4 PRESERVE
-    d = read("vac-protocol/registry.json")
-    if d:
-        out.append(dict(n=4, verb="PRESERVE", tool="vac-protocol",
-                        q="Is there enough evidence to replay the conclusion later?",
-                        head=str(len(d["entries"])), ok=True,
-                        rows=[("bundles in registry", str(len(d["entries"]))),
-                              ("pending", str(len(d.get("pending") or [])))],
-                        note="A bundle pins claim and limitations, the subject and its version, "
-                             "the protocol and fixtures, raw artifacts and hashes, the derivation, "
-                             "and the command to replay it. No wall-clock: a claim dies when a "
-                             "bound input changes, not when a date passes.",
-                        src="vac-protocol/registry.json"))
-    else:
-        out.append(dict(n=4, verb="PRESERVE", tool="vac-protocol", ok=False,
-                        head="registry missing", q="Can the conclusion be replayed?", rows=[],
-                        note="", src="vac-protocol/registry.json"))
 
     return out
 
@@ -227,6 +169,14 @@ var(--line);padding-top:.6rem;word-break:break-all}
 .term{font-family:var(--mono);font-size:.74rem;background:var(--ink);border:1px solid var(--line);
 border-radius:3px;padding:.7rem .8rem;margin:.5rem 0 0;overflow-x:auto;white-space:pre-wrap;
 word-break:break-word}
+.bounds{border:1px solid var(--line);border-radius:4px;padding:.9rem 1.1rem;margin:0 0 1.2rem;
+background:var(--panel)}
+.bounds p{margin:0 0 .5rem;font-size:.86rem;color:var(--fg-dim)}
+.bounds b{color:var(--fg)}
+.bounds .derived{font-size:.74rem;color:var(--fg-faint);margin:0}
+.bounds a{color:var(--fg-faint)}
+.modes{display:grid;gap:.35rem;margin:0 0 1.4rem;font-size:.76rem;color:var(--fg-faint)}
+.modes b{color:var(--amber);font-weight:600}
 .legend{display:grid;gap:.5rem;margin:0 0 1.6rem;padding:.9rem 1rem;background:var(--panel);
 border:1px solid var(--line);border-radius:4px}
 .lg{font-size:.78rem;color:var(--fg-dim);display:grid;grid-template-columns:1.3rem auto;
@@ -245,6 +195,7 @@ footer a{color:var(--amber)}
 
 
 def build() -> str:
+    claim = derive(HOME / "evalmut/docs/dogfood_gradecore.json")
     st = steps()
     ch = challenge()
     absent = sum(1 for s in st if not s["ok"])
@@ -306,11 +257,19 @@ refusing tampered evidence by name. Every number read from a committed artifact.
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>{css}</style></head><body>
 <div class="nav"><a href="/">&larr; Portfolio</a></div>
 <div class="wrap">
-<p class="kicker">Verifiable Evaluation Suite</p>
-<h1>Watch a reliability claim get built, then get broken</h1>
-<p class="thesis">A verification system can show green over exactly the surface it does not
-cover. So <b>the instruments themselves have to be measured, challenged, and replayable.</b>
-Six steps below, each testing the one above it.</p>
+<p class="kicker">Verifiable Evaluation Suite &middot; Recorded proof run</p>
+<h1>{_e(claim.headline)}</h1>
+<div class="bounds">
+<p><b>Scope.</b> {_e(claim.scope)}</p>
+<p><b>Does not establish.</b> {_e(claim.not_established)}</p>
+<p class="derived">Every number above is derived from
+<a href="https://github.com/egnaro9/evalmut/blob/main/docs/dogfood_gradecore.json">docs/dogfood_gradecore.json</a>
+at build time. The build fails if that bundle contradicts itself.</p></div>
+<div class="modes">
+<span><b>Recorded proof run</b> replays a completed run's artifacts. Nothing is executed here.</span>
+<span><b>Browser tamper demo</b> alters a local copy to show one named rejection path.</span>
+<span><b>Independent replay</b> re-runs the real verifier outside this page. Only this re-earns
+the claim, and only this may be called live verification.</span></div>
 <div class="legend">{legend}</div>
 <div class="ctl"><button id="go">Run the stack</button>
 <button class="ghost" id="step">Step</button>
