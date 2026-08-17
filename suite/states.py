@@ -134,9 +134,11 @@ def css_vars_light() -> str:
 
     Hue and meaning are preserved, only lightness and chroma move: teal stays the verified teal,
     amber stays discovery, red stays the single reserved refusal colour. Every step below clears
-    4.5:1 against both light surfaces in use (the panel #f4f6f6 and the inset ground #e9edee)."""
+    4.5:1 against both light surfaces in use (the panel #f4f6f6 and the inset ground #e9edee).
+    --ok is stepped past the bar rather than onto it: at #0f7a68 the clean form sat at 4.45,
+    which leaves no headroom for a later spacing or token change to spend."""
     return (
-        "--ok:#0f7a68;--ok-soft:rgba(15,122,104,.11);"
+        "--ok:#0d7261;--ok-soft:rgba(13,114,97,.11);"
         "--hole:#8a5610;--hole-soft:rgba(138,86,16,.11);"
         "--bad:#a3341d;--bad-soft:rgba(163,52,29,.1);"
         "--none:#566268;--none-soft:rgba(86,98,104,.1);")

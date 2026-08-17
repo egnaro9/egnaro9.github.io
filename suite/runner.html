@@ -21,7 +21,7 @@ refusing tampered evidence by name. Every number read from a committed artifact.
 --fg-faint:#7c888d;--amber:#b7761a;--amber-soft:rgba(200,128,26,.12);
 --amber-line:rgba(200,128,26,.4);--amber-ink:#8a5610;--teal:#1c8f7d;--hot:#a8412c;
 --hot-soft:rgba(168,65,44,.1);
---ok:#0f7a68;--ok-soft:rgba(15,122,104,.11);--hole:#8a5610;--hole-soft:rgba(138,86,16,.11);--bad:#a3341d;--bad-soft:rgba(163,52,29,.1);--none:#566268;--none-soft:rgba(86,98,104,.1);}}
+--ok:#0d7261;--ok-soft:rgba(13,114,97,.11);--hole:#8a5610;--hole-soft:rgba(138,86,16,.11);--bad:#a3341d;--bad-soft:rgba(163,52,29,.1);--none:#566268;--none-soft:rgba(86,98,104,.1);}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--ink);color:var(--fg);font:15px/1.55 var(--sans);
 -webkit-font-smoothing:antialiased}
@@ -118,6 +118,7 @@ grid-template-columns:max-content auto;gap:.2rem .9rem}
 dl.srcmeta dt{color:var(--fg-faint)}
 dl.srcmeta dd{margin:0;text-align:left;color:var(--fg-dim);word-break:break-all}
 dl.srcmeta a{color:var(--fg-dim)}
+.pinnote{display:block;color:var(--fg-faint);margin-top:.15rem;max-width:52ch;white-space:normal;line-height:1.5}
 /* The holes are the conclusion, so they get the page's only full-weight section heading and the
    only cards. The score keeps monospace row treatment inside step 1: a percentage that outranks
    the findings typographically has made the reader's judgement for them. */
@@ -195,9 +196,9 @@ at build time. The build fails if that bundle contradicts itself.</p>
 <dl class="srcmeta"><dt>file</dt><dd><a href="https://github.com/egnaro9/evalmut/blob/ace358748a4b/docs/dogfood_gradecore.json">evalmut/docs/dogfood_gradecore.json</a></dd>
 <dt>sha256</dt><dd>cc3b76f7bfe54eed1b2c95e5c1c68df1a718c63a141229aab5004c86b9ddbbc8</dd>
 <dt>bytes</dt><dd>221426</dd>
-<dt>commit</dt><dd>ace358748a4b</dd>
+<dt>bundle last changed in</dt><dd>ace358748a4b<br><span class="pinnote">the last commit that touched this file, not the repository's current HEAD. An unrelated commit does not move this pin.</span></dd>
 <dt>produced by</dt><dd>evalmut run demos/dogfood_gradecore.py --json --all</dd></dl>
-<p class="xn">Independent replay, pinned to that commit rather than to main:</p>
+<p class="xn">Independent replay, pinned to the bundle-changing commit above rather than to main:</p>
 <div class="term">git clone https://github.com/egnaro9/evalmut &amp;&amp; cd evalmut
 git checkout ace358748a4b
 evalmut run demos/dogfood_gradecore.py --json --all   # regenerates docs/dogfood_gradecore.json
@@ -223,9 +224,9 @@ the claim, and only this may be called live verification.</span></div>
 <dl class="srcmeta"><dt>file</dt><dd><a href="https://github.com/egnaro9/evalmut/blob/ace358748a4b/docs/dogfood_gradecore.json">evalmut/docs/dogfood_gradecore.json</a></dd>
 <dt>sha256</dt><dd>cc3b76f7bfe54eed1b2c95e5c1c68df1a718c63a141229aab5004c86b9ddbbc8</dd>
 <dt>bytes</dt><dd>221426</dd>
-<dt>commit</dt><dd>ace358748a4b</dd>
+<dt>bundle last changed in</dt><dd>ace358748a4b<br><span class="pinnote">the last commit that touched this file, not the repository's current HEAD. An unrelated commit does not move this pin.</span></dd>
 <dt>produced by</dt><dd>evalmut run demos/dogfood_gradecore.py --json --all</dd></dl>
-<p class="xn">Independent replay, pinned to that commit rather than to main:</p>
+<p class="xn">Independent replay, pinned to the bundle-changing commit above rather than to main:</p>
 <div class="term">git clone https://github.com/egnaro9/evalmut &amp;&amp; cd evalmut
 git checkout ace358748a4b
 evalmut run demos/dogfood_gradecore.py --json --all   # regenerates docs/dogfood_gradecore.json

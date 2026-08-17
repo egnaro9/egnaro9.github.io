@@ -201,3 +201,15 @@ def test_the_cited_commit_is_the_one_that_touched_the_artifact_not_head():
                           capture_output=True, text=True, check=True).stdout.strip()[:12]
     if head != expected:
         assert src.commit != head, "the page is pinned to HEAD, which did not produce the bundle"
+
+
+@pytest.mark.skipif(not PAGE.exists(), reason="page not built")
+def test_the_page_says_what_the_pin_is_not_just_that_there_is_one():
+    """A bare "commit" label reads as the repository's current HEAD, which is a different claim.
+
+    The pin is the last commit that CHANGED this bundle. A reader who assumes it means HEAD will
+    also assume the page tracks the repo, and will read a stale pin as a stale page."""
+    page = PAGE.read_text()
+    assert "bundle last changed in" in page
+    assert "the last commit that touched this file, not the repository's" in page
+    assert "<dt>commit</dt>" not in page, "the generic label must not survive alongside it"

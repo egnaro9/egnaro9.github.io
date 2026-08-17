@@ -125,9 +125,9 @@ def drawer(title: str, values: list, src, extra: str = "") -> str:
 <dl class="srcmeta"><dt>file</dt><dd><a href="{_e(src.url)}">{_e(src.rel)}</a></dd>
 <dt>sha256</dt><dd>{_e(src.sha256)}</dd>
 <dt>bytes</dt><dd>{src.size}</dd>
-<dt>commit</dt><dd>{_e(src.commit)}</dd>
+<dt>bundle last changed in</dt><dd>{_e(src.commit)}<br><span class="pinnote">the last commit that touched this file, not the repository's current HEAD. An unrelated commit does not move this pin.</span></dd>
 <dt>produced by</dt><dd>{_e(src.produced_by)}</dd></dl>
-<p class="xn">Independent replay, pinned to that commit rather than to main:</p>
+<p class="xn">Independent replay, pinned to the bundle-changing commit above rather than to main:</p>
 <div class="term">{_e(src.replay)}</div>{extra}</details>"""
 
 
@@ -352,6 +352,7 @@ grid-template-columns:max-content auto;gap:.2rem .9rem}
 dl.srcmeta dt{color:var(--fg-faint)}
 dl.srcmeta dd{margin:0;text-align:left;color:var(--fg-dim);word-break:break-all}
 dl.srcmeta a{color:var(--fg-dim)}
+.pinnote{display:block;color:var(--fg-faint);margin-top:.15rem;max-width:52ch;white-space:normal;line-height:1.5}
 /* The holes are the conclusion, so they get the page's only full-weight section heading and the
    only cards. The score keeps monospace row treatment inside step 1: a percentage that outranks
    the findings typographically has made the reader's judgement for them. */
