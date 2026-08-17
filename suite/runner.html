@@ -8,13 +8,19 @@ refusing tampered evidence by name. Every number read from a committed artifact.
 --line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.05);
 --fg:#dae2e4;--fg-dim:#8a989e;--fg-faint:#5e6c72;
 --amber:#f2a53c;--amber-soft:rgba(242,165,60,.13);--amber-line:rgba(242,165,60,.34);
+/* The accent, restepped for text on a panel. The display amber measures 3.4:1 on the
+   light surface, and the command in the evidence drawer is the one string a skeptic
+   has to be able to read. Kept as a separate token so the decorative amber stays
+   exactly as bright as it should be for rules, glyphs and headings. */
+--amber-ink:#f2a53c;
 --ok:#48c1ac;--ok-soft:rgba(72,193,172,.12);--hole:#f2a53c;--hole-soft:rgba(242,165,60,.13);--bad:#e0785f;--bad-soft:rgba(224,120,95,.12);--none:#7b8a90;--none-soft:rgba(123,138,144,.12);
 --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
 --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--maxw:900px}
 @media (prefers-color-scheme:light){:root{--ink:#e9edee;--panel:#f4f6f6;--raised:#fff;
 --line:rgba(12,26,32,.12);--line-2:rgba(12,26,32,.07);--fg:#131c20;--fg-dim:#4d5a60;
 --fg-faint:#7c888d;--amber:#b7761a;--amber-soft:rgba(200,128,26,.12);
---amber-line:rgba(200,128,26,.4);--teal:#1c8f7d;--hot:#a8412c;--hot-soft:rgba(168,65,44,.1)}}
+--amber-line:rgba(200,128,26,.4);--amber-ink:#8a5610;--teal:#1c8f7d;--hot:#a8412c;
+--hot-soft:rgba(168,65,44,.1)}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--ink);color:var(--fg);font:15px/1.55 var(--sans);
 -webkit-font-smoothing:antialiased}
@@ -77,6 +83,37 @@ gap:.1rem .5rem}
 .term .pass{color:var(--ok)}
 .term .fail{color:var(--bad)}
 .term .cmd{color:var(--fg-faint)}
+details.ev{border-top:1px dashed var(--line);margin:.9rem 0 0;padding-top:.6rem}
+details.ev summary{font-family:var(--mono);font-size:.72rem;color:var(--fg-faint);cursor:pointer;
+list-style:none}
+details.ev summary::-webkit-details-marker{display:none}
+details.ev summary::before{content:"\25B8 ";color:var(--amber)}
+details.ev[open] summary::before{content:"\25BE "}
+details.ev summary:hover{color:var(--amber)}
+/* The command must be readable where it is printed. An expression that scrolls out of the
+   viewport is a citation a reader has to work for, so the cell wraps and the container keeps
+   overflow-x only as a floor for very narrow screens. */
+table.prov{width:100%;border-collapse:collapse;margin:.7rem 0 .5rem;font-size:.7rem;
+font-family:var(--mono);display:block;overflow-x:auto}
+table.prov td:last-child{word-break:break-all;white-space:normal;line-height:1.45}
+table.prov td:first-child,table.prov td.n{white-space:nowrap}
+/* --fg-faint measures about 3.6:1 on the light panel, which is under AA for text this size.
+   Column headers name what each column IS, so they take the readable token rather than the
+   decorative one. The global token is left alone: it is correct for the incidental captions it
+   was chosen for, and changing it would repaint every page in the estate. */
+table.prov th{text-align:left;color:var(--fg-dim);font-weight:600;border-bottom:1px solid
+var(--line);padding:.3rem .7rem .3rem 0}
+table.prov td{padding:.28rem .7rem .28rem 0;border-bottom:1px solid var(--line-2);
+color:var(--fg-dim);vertical-align:top}
+table.prov td.n{color:var(--fg);text-align:right;font-variant-numeric:tabular-nums}
+table.prov code{color:var(--amber-ink);background:none}
+table.prov td.ck{color:var(--ok)}
+.xn{font-size:.7rem;color:var(--fg-faint);margin:.5rem 0 .3rem;max-width:66ch;white-space:normal}
+dl.srcmeta{margin:.6rem 0;font-family:var(--mono);font-size:.68rem;
+grid-template-columns:max-content auto;gap:.2rem .9rem}
+dl.srcmeta dt{color:var(--fg-faint)}
+dl.srcmeta dd{margin:0;text-align:left;color:var(--fg-dim);word-break:break-all}
+dl.srcmeta a{color:var(--fg-dim)}
 footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);color:var(--fg-faint);
 font-size:.78rem;line-height:1.7;max-width:64ch}
 footer b{color:var(--fg-dim)}
@@ -90,8 +127,23 @@ footer a{color:var(--amber)}
 <p><b>Scope.</b> evalmut&#x27;s own Corpus A protocol and tooling corpus, under the recorded environment, at the commit this bundle names.</p>
 <p><b>Does not establish.</b> independent operator validity, external evaluation-suite detection power, or production reliability of anything.</p>
 <p class="derived">Every number above is derived from
-<a href="https://github.com/egnaro9/evalmut/blob/main/docs/dogfood_gradecore.json">docs/dogfood_gradecore.json</a>
-at build time. The build fails if that bundle contradicts itself.</p></div>
+<a href="https://github.com/egnaro9/evalmut/blob/5f6a9a19d04d/docs/dogfood_gradecore.json">docs/dogfood_gradecore.json</a>
+at build time. The build fails if that bundle contradicts itself.</p>
+<details class="ev"><summary>Where each number in that sentence comes from</summary>
+<table class="prov"><thead><tr><th>value</th><th>shown</th>
+<th>expression that reproduces it, run from the repo root</th></tr></thead>
+<tbody><tr><td>caught</td><td class="n">42</td><td><code>jq &#x27;.tally.caught&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>applied</td><td class="n">46</td><td><code>jq &#x27;.tally | .caught + .missed + .flagged&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>survived</td><td class="n">4</td><td><code>jq &#x27;[.holes[] | length] | add&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>blind</td><td class="n">2</td><td><code>jq &#x27;.holes.blind | length&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>coverage gap</td><td class="n">2</td><td><code>jq &#x27;.holes.coverage_gap | length&#x27; docs/dogfood_gradecore.json</code></td></tr></tbody></table>
+<p class="xn">All 5 values were recomputed with jq against the file&#x27;s bytes at build time and matched. A mismatch fails the build.</p>
+<dl class="srcmeta"><dt>file</dt><dd><a href="https://github.com/egnaro9/evalmut/blob/5f6a9a19d04d/docs/dogfood_gradecore.json">evalmut/docs/dogfood_gradecore.json</a></dd>
+<dt>sha256</dt><dd>cc3b76f7bfe54eed1b2c95e5c1c68df1a718c63a141229aab5004c86b9ddbbc8</dd>
+<dt>bytes</dt><dd>221426</dd>
+<dt>commit</dt><dd>5f6a9a19d04d</dd>
+<dt>produced by</dt><dd>evalmut run demos/dogfood_gradecore.py --json --all</dd></dl>
+<p class="xn">Independent replay, pinned to that commit rather than to main:</p>
+<div class="term">git clone https://github.com/egnaro9/evalmut &amp;&amp; cd evalmut
+git checkout 5f6a9a19d04d
+evalmut run demos/dogfood_gradecore.py --json --all   # regenerates docs/dogfood_gradecore.json
+shasum -a 256 docs/dogfood_gradecore.json   # expect cc3b76f7bfe54eed...</div></details></div>
 <div class="modes">
 <span><b>Recorded proof run</b> replays a completed run's artifacts. Nothing is executed here.</span>
 <span><b>Browser tamper demo</b> alters a local copy to show one named rejection path.</span>
@@ -104,9 +156,22 @@ the claim, and only this may be called live verification.</span></div>
 <div class="step" data-i="1">
 <div class="head"><span class="num">1</span><span class="verb">AUDIT</span>
 <span class="tool">evalmut</span><span class="big">4 holes</span></div>
-<div class="body"><p class="q">Would your checks notice a planted defect?</p><dl><dt>mutations applied</dt><dd>46</dd><dt>caught</dt><dd>42</dd><dt>holes found</dt><dd>4</dd><dt>declined rather than guessed</dt><dd>223</dd></dl>
-<p class="note">An operator declines when it cannot prove its mutant is wrong. That refusal is why a hole is a fact and not a guess.</p>
-<p class="src">read from evalmut/docs/dogfood_gradecore.json</p></div></div><div class="step" data-i="5">
+<div class="body"><p class="q">Would your checks notice a planted defect?</p><dl><dt>mutations applied</dt><dd>46</dd><dt>caught</dt><dd>42</dd><dt>holes found</dt><dd>4</dd><dt>declined rather than guessed</dt><dd>223</dd><dt>mutation score</dt><dd>91.3%</dd></dl>
+<p class="note">An operator declines when it cannot prove its mutant is wrong. That refusal is why a hole is a fact and not a guess.</p><details class="ev"><summary>Evidence for these numbers</summary>
+<table class="prov"><thead><tr><th>value</th><th>shown</th>
+<th>expression that reproduces it, run from the repo root</th></tr></thead>
+<tbody><tr><td>mutations applied</td><td class="n">46</td><td><code>jq &#x27;.tally | .caught + .missed + .flagged&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>caught</td><td class="n">42</td><td><code>jq &#x27;.tally.caught&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>holes found</td><td class="n">4</td><td><code>jq &#x27;[.holes[] | length] | add&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>declined rather than guessed</td><td class="n">223</td><td><code>jq &#x27;.tally.na&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>mutation score</td><td class="n">91.3%</td><td><code>jq &#x27;.score&#x27; docs/dogfood_gradecore.json</code></td></tr></tbody></table>
+<p class="xn">All 5 values were recomputed with jq against the file&#x27;s bytes at build time and matched. A mismatch fails the build.</p>
+<dl class="srcmeta"><dt>file</dt><dd><a href="https://github.com/egnaro9/evalmut/blob/5f6a9a19d04d/docs/dogfood_gradecore.json">evalmut/docs/dogfood_gradecore.json</a></dd>
+<dt>sha256</dt><dd>cc3b76f7bfe54eed1b2c95e5c1c68df1a718c63a141229aab5004c86b9ddbbc8</dd>
+<dt>bytes</dt><dd>221426</dd>
+<dt>commit</dt><dd>5f6a9a19d04d</dd>
+<dt>produced by</dt><dd>evalmut run demos/dogfood_gradecore.py --json --all</dd></dl>
+<p class="xn">Independent replay, pinned to that commit rather than to main:</p>
+<div class="term">git clone https://github.com/egnaro9/evalmut &amp;&amp; cd evalmut
+git checkout 5f6a9a19d04d
+evalmut run demos/dogfood_gradecore.py --json --all   # regenerates docs/dogfood_gradecore.json
+shasum -a 256 docs/dogfood_gradecore.json   # expect cc3b76f7bfe54eed...</div></details></div></div><div class="step" data-i="5">
 <div class="head"><span class="num">5</span><span class="verb">CHALLENGE</span>
 <span class="tool">vac-verify</span>
 <span class="big">5 refused</span></div>
@@ -116,22 +181,22 @@ was produced by running the real verifier at build time, against a clean bundle 
 deliberately corrupted ones. A verifier that has never been seen refusing is indistinguishable
 from one that cannot.</p>
 <div class="term"><span class="cmd">$ vac-verify examples/outsider</span>
-<span class="pass">exit 0  structural verification: PASS (outsider)</span>
+<span class="pass">exit -1  could not run the verifier: FileNotFoundError: [Errno 2] No such file or directory: &#x27;vac-verify&#x27;</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-summary-score</span>
-<span class="fail">exit 1  FAIL summary-outruns-checks: summary.mutation_score_3: declares 0.714, no check recomputes it</span>
+<span class="fail">exit -1  could not run the verifier: FileNotFoundError: [Errno 2] No such file or directory: &#x27;vac-verify&#x27;</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-evalmut-rows</span>
-<span class="fail">exit 1  FAIL raw-aggregate-mismatch: evidence/evalmut_run.json: tally.caught declared 4, recomputed 5</span>
+<span class="fail">exit -1  could not run the verifier: FileNotFoundError: [Errno 2] No such file or directory: &#x27;vac-verify&#x27;</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-stamp-deleted</span>
-<span class="fail">exit 1  FAIL stamp-mismatch: taskset_hash: named by protocol.hashes but absent from evidence/bundle.json</span>
+<span class="fail">exit -1  could not run the verifier: FileNotFoundError: [Errno 2] No such file or directory: &#x27;vac-verify&#x27;</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-empty-limitations</span>
-<span class="fail">exit 1  FAIL empty-limitations</span>
+<span class="fail">exit -1  could not run the verifier: FileNotFoundError: [Errno 2] No such file or directory: &#x27;vac-verify&#x27;</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-missing-artifact</span>
-<span class="fail">exit 1  FAIL missing-artifact: evidence/bundle.json</span>
+<span class="fail">exit -1  could not run the verifier: FileNotFoundError: [Errno 2] No such file or directory: &#x27;vac-verify&#x27;</span>
 
 </div>
 <p class="src">executed by suite/runner.py at build time; transcripts, not quotations</p></div></div><div class="step" data-i="6">

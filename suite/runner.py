@@ -38,8 +38,8 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from claim import derive  # noqa: E402
-from states import (INCOMPLETE, INVALIDATED, SURVIVED, VERIFIED, Finding,  # noqa: E402
-                    css_vars, legend_rows, resolve_chain)
+from evidence import source, unchecked_note, value  # noqa: E402
+from states import css_vars, legend_rows  # noqa: E402
 
 HOME = pathlib.Path.home()
 OUT = pathlib.Path(__file__).resolve().parent / "runner.html"
@@ -70,28 +70,82 @@ def run_verifier(target: pathlib.Path) -> tuple[int, str]:
         return -1, f"could not run the verifier: {type(e).__name__}: {e}"
 
 
-def steps() -> list[dict]:
+DOGFOOD = "docs/dogfood_gradecore.json"
+
+
+def audit_values(src, d) -> list:
+    """The four numbers of step 1, each bound to the expression that reproduces it.
+
+    Written as (label, jq, python) triples rather than as formatted strings, so the provenance
+    shown in the drawer is the provenance used to build the row. There is no way to display a
+    path here that was not walked."""
+    spec = [
+        ("mutations applied", ".tally | .caught + .missed + .flagged",
+         lambda x: x["tally"]["caught"] + x["tally"]["missed"] + x["tally"]["flagged"], str),
+        ("caught", ".tally.caught", lambda x: x["tally"]["caught"], str),
+        ("holes found", "[.holes[] | length] | add",
+         lambda x: sum(len(v) for v in x["holes"].values()), str),
+        ("declined rather than guessed", ".tally.na", lambda x: x["tally"]["na"], str),
+        ("mutation score", ".score", lambda x: x["score"], lambda v: f"{v:.1%}"),
+    ]
+    return [value(src, d, label, jq, py, fmt) for label, jq, py, fmt in spec]
+
+
+def claim_values(src, d) -> list:
+    """The numbers a reader meets first, in the headline. Same binding, no exceptions."""
+    spec = [
+        ("caught", ".tally.caught", lambda x: x["tally"]["caught"], str),
+        ("applied", ".tally | .caught + .missed + .flagged",
+         lambda x: x["tally"]["caught"] + x["tally"]["missed"] + x["tally"]["flagged"], str),
+        ("survived", "[.holes[] | length] | add",
+         lambda x: sum(len(v) for v in x["holes"].values()), str),
+        ("blind", ".holes.blind | length", lambda x: len(x["holes"]["blind"]), str),
+        ("coverage gap", ".holes.coverage_gap | length",
+         lambda x: len(x["holes"]["coverage_gap"]), str),
+    ]
+    return [value(src, d, label, jq, py, fmt) for label, jq, py, fmt in spec]
+
+
+def drawer(title: str, values: list, src, extra: str = "") -> str:
+    """One collapsed route from a visible number to the bytes behind it.
+
+    <details> and not a modal: it works with scripting off, it is keyboard reachable, and it
+    prints when the page prints. Evidence that needs JavaScript to appear is evidence a skeptic
+    cannot get to."""
+    rows = "".join(
+        f'<tr><td>{_e(v.label)}</td><td class="n">{_e(v.shown)}</td>'
+        f'<td><code>{_e(v.command)}</code></td></tr>'
+        for v in values)
+    return f"""<details class="ev"><summary>{_e(title)}</summary>
+<table class="prov"><thead><tr><th>value</th><th>shown</th>
+<th>expression that reproduces it, run from the repo root</th></tr></thead>
+<tbody>{rows}</tbody></table>
+<p class="xn">{_e(unchecked_note(values))}</p>
+<dl class="srcmeta"><dt>file</dt><dd><a href="{_e(src.url)}">{_e(src.rel)}</a></dd>
+<dt>sha256</dt><dd>{_e(src.sha256)}</dd>
+<dt>bytes</dt><dd>{src.size}</dd>
+<dt>commit</dt><dd>{_e(src.commit)}</dd>
+<dt>produced by</dt><dd>{_e(src.produced_by)}</dd></dl>
+<p class="xn">Independent replay, pinned to that commit rather than to main:</p>
+<div class="term">{_e(src.replay)}</div>{extra}</details>"""
+
+
+def steps(src, d) -> list[dict]:
     out: list[dict] = []
 
     # 1 AUDIT
-    d = read("evalmut/docs/dogfood_gradecore.json")
     if d:
-        t = d["tally"]
-        holes = sum(len(v) for v in d["holes"].values())
+        vals = audit_values(src, d)
+        holes = next(v.shown for v in vals if v.label == "holes found")
         out.append(dict(n=1, verb="AUDIT", tool="evalmut",
                         q="Would your checks notice a planted defect?",
-                        head=f"{holes} holes", ok=True,
-                        rows=[("mutations applied", str(t["caught"] + t["missed"] + t["flagged"])),
-                              ("caught", str(t["caught"])),
-                              ("holes found", str(holes)),
-                              ("declined rather than guessed", str(t["na"]))],
+                        head=f"{holes} holes", ok=True, values=vals, src=src,
                         note="An operator declines when it cannot prove its mutant is wrong. "
-                             "That refusal is why a hole is a fact and not a guess.",
-                        src="evalmut/docs/dogfood_gradecore.json"))
+                             "That refusal is why a hole is a fact and not a guess."))
     else:
         out.append(dict(n=1, verb="AUDIT", tool="evalmut", ok=False, head="artifact missing",
-                        q="Would your checks notice a planted defect?", rows=[], note="",
-                        src="evalmut/docs/dogfood_gradecore.json"))
+                        q="Would your checks notice a planted defect?", values=[], src=None,
+                        note=f"wanted evalmut/{DOGFOOD}"))
 
     return out
 
@@ -118,13 +172,19 @@ CSS = """
 --line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.05);
 --fg:#dae2e4;--fg-dim:#8a989e;--fg-faint:#5e6c72;
 --amber:#f2a53c;--amber-soft:rgba(242,165,60,.13);--amber-line:rgba(242,165,60,.34);
+/* The accent, restepped for text on a panel. The display amber measures 3.4:1 on the
+   light surface, and the command in the evidence drawer is the one string a skeptic
+   has to be able to read. Kept as a separate token so the decorative amber stays
+   exactly as bright as it should be for rules, glyphs and headings. */
+--amber-ink:#f2a53c;
 %%STATEVARS%%
 --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
 --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--maxw:900px}
 @media (prefers-color-scheme:light){:root{--ink:#e9edee;--panel:#f4f6f6;--raised:#fff;
 --line:rgba(12,26,32,.12);--line-2:rgba(12,26,32,.07);--fg:#131c20;--fg-dim:#4d5a60;
 --fg-faint:#7c888d;--amber:#b7761a;--amber-soft:rgba(200,128,26,.12);
---amber-line:rgba(200,128,26,.4);--teal:#1c8f7d;--hot:#a8412c;--hot-soft:rgba(168,65,44,.1)}}
+--amber-line:rgba(200,128,26,.4);--amber-ink:#8a5610;--teal:#1c8f7d;--hot:#a8412c;
+--hot-soft:rgba(168,65,44,.1)}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--ink);color:var(--fg);font:15px/1.55 var(--sans);
 -webkit-font-smoothing:antialiased}
@@ -187,6 +247,37 @@ gap:.1rem .5rem}
 .term .pass{color:var(--ok)}
 .term .fail{color:var(--bad)}
 .term .cmd{color:var(--fg-faint)}
+details.ev{border-top:1px dashed var(--line);margin:.9rem 0 0;padding-top:.6rem}
+details.ev summary{font-family:var(--mono);font-size:.72rem;color:var(--fg-faint);cursor:pointer;
+list-style:none}
+details.ev summary::-webkit-details-marker{display:none}
+details.ev summary::before{content:"\\25B8 ";color:var(--amber)}
+details.ev[open] summary::before{content:"\\25BE "}
+details.ev summary:hover{color:var(--amber)}
+/* The command must be readable where it is printed. An expression that scrolls out of the
+   viewport is a citation a reader has to work for, so the cell wraps and the container keeps
+   overflow-x only as a floor for very narrow screens. */
+table.prov{width:100%;border-collapse:collapse;margin:.7rem 0 .5rem;font-size:.7rem;
+font-family:var(--mono);display:block;overflow-x:auto}
+table.prov td:last-child{word-break:break-all;white-space:normal;line-height:1.45}
+table.prov td:first-child,table.prov td.n{white-space:nowrap}
+/* --fg-faint measures about 3.6:1 on the light panel, which is under AA for text this size.
+   Column headers name what each column IS, so they take the readable token rather than the
+   decorative one. The global token is left alone: it is correct for the incidental captions it
+   was chosen for, and changing it would repaint every page in the estate. */
+table.prov th{text-align:left;color:var(--fg-dim);font-weight:600;border-bottom:1px solid
+var(--line);padding:.3rem .7rem .3rem 0}
+table.prov td{padding:.28rem .7rem .28rem 0;border-bottom:1px solid var(--line-2);
+color:var(--fg-dim);vertical-align:top}
+table.prov td.n{color:var(--fg);text-align:right;font-variant-numeric:tabular-nums}
+table.prov code{color:var(--amber-ink);background:none}
+table.prov td.ck{color:var(--ok)}
+.xn{font-size:.7rem;color:var(--fg-faint);margin:.5rem 0 .3rem;max-width:66ch;white-space:normal}
+dl.srcmeta{margin:.6rem 0;font-family:var(--mono);font-size:.68rem;
+grid-template-columns:max-content auto;gap:.2rem .9rem}
+dl.srcmeta dt{color:var(--fg-faint)}
+dl.srcmeta dd{margin:0;text-align:left;color:var(--fg-dim);word-break:break-all}
+dl.srcmeta a{color:var(--fg-dim)}
 footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);color:var(--fg-faint);
 font-size:.78rem;line-height:1.7;max-width:64ch}
 footer b{color:var(--fg-dim)}
@@ -195,20 +286,22 @@ footer a{color:var(--amber)}
 
 
 def build() -> str:
-    claim = derive(HOME / "evalmut/docs/dogfood_gradecore.json")
-    st = steps()
+    src = source("evalmut", DOGFOOD)
+    d = read(f"evalmut/{DOGFOOD}")
+    claim = derive(HOME / f"evalmut/{DOGFOOD}")
+    st = steps(src, d)
     ch = challenge()
     absent = sum(1 for s in st if not s["ok"])
 
     cards = []
     for s in st:
-        rows = "".join(f"<dt>{_e(k)}</dt><dd>{_e(v)}</dd>" for k, v in s["rows"])
+        rows = "".join(f'<dt>{_e(v.label)}</dt><dd>{_e(v.shown)}</dd>' for v in s["values"])
+        ev = drawer("Evidence for these numbers", s["values"], s["src"]) if s["values"] else ""
         cards.append(f"""<div class="step{'' if s['ok'] else ' absent'}" data-i="{s['n']}">
 <div class="head"><span class="num">{s['n']}</span><span class="verb">{_e(s['verb'])}</span>
 <span class="tool">{_e(s['tool'])}</span><span class="big">{_e(s['head'])}</span></div>
 <div class="body"><p class="q">{_e(s['q'])}</p>{f'<dl>{rows}</dl>' if rows else ''}
-<p class="note">{_e(s['note'])}</p>
-<p class="src">read from {_e(s['src'])}</p></div></div>""")
+<p class="note">{_e(s['note'])}</p>{ev}</div></div>""")
 
     ref = "".join(
         f'<span class="cmd">$ vac-verify fixtures/{_e(r["name"])}</span>\n'
@@ -263,8 +356,9 @@ refusing tampered evidence by name. Every number read from a committed artifact.
 <p><b>Scope.</b> {_e(claim.scope)}</p>
 <p><b>Does not establish.</b> {_e(claim.not_established)}</p>
 <p class="derived">Every number above is derived from
-<a href="https://github.com/egnaro9/evalmut/blob/main/docs/dogfood_gradecore.json">docs/dogfood_gradecore.json</a>
-at build time. The build fails if that bundle contradicts itself.</p></div>
+<a href="{_e(src.url)}">{_e(DOGFOOD)}</a>
+at build time. The build fails if that bundle contradicts itself.</p>
+{drawer("Where each number in that sentence comes from", claim_values(src, d), src)}</div>
 <div class="modes">
 <span><b>Recorded proof run</b> replays a completed run's artifacts. Nothing is executed here.</span>
 <span><b>Browser tamper demo</b> alters a local copy to show one named rejection path.</span>
