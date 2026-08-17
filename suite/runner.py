@@ -33,6 +33,11 @@ import html
 import json
 import pathlib
 import subprocess
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from states import (INCOMPLETE, INVALIDATED, SURVIVED, VERIFIED, Finding,  # noqa: E402
+                    css_vars, legend_rows)
 
 HOME = pathlib.Path.home()
 OUT = pathlib.Path(__file__).resolve().parent / "runner.html"
@@ -171,7 +176,7 @@ CSS = """
 --line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.05);
 --fg:#dae2e4;--fg-dim:#8a989e;--fg-faint:#5e6c72;
 --amber:#f2a53c;--amber-soft:rgba(242,165,60,.13);--amber-line:rgba(242,165,60,.34);
---teal:#48c1ac;--teal-soft:rgba(72,193,172,.12);--hot:#e0785f;--hot-soft:rgba(224,120,95,.12);
+%%STATEVARS%%
 --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
 --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--maxw:900px}
 @media (prefers-color-scheme:light){:root{--ink:#e9edee;--panel:#f4f6f6;--raised:#fff;
@@ -201,7 +206,7 @@ button:hover{filter:brightness(1.08)}
 .step{border:1px solid var(--line);border-radius:5px;margin:0 0 .7rem;background:var(--panel);
 opacity:.32;transition:opacity .35s ease,border-color .35s ease}
 .step.on{opacity:1;border-color:var(--amber-line)}
-.step.absent{border-color:var(--hot);border-style:dashed}
+.step.absent{border-color:var(--bad);border-style:dashed}
 .head{display:flex;align-items:baseline;gap:.8rem;padding:1rem 1.2rem;flex-wrap:wrap}
 .num{font-family:var(--mono);font-size:.7rem;color:var(--fg-faint);min-width:1.2rem}
 .verb{font-family:var(--mono);font-size:.76rem;letter-spacing:.12em;color:var(--amber);
@@ -209,7 +214,7 @@ font-weight:700}
 .tool{font-family:var(--mono);font-size:.74rem;color:var(--fg-faint)}
 .big{margin-left:auto;font-family:var(--mono);font-size:1.25rem;font-weight:650;color:var(--fg);
 font-variant-numeric:tabular-nums}
-.step.absent .big{color:var(--hot);font-size:.85rem}
+.step.absent .big{color:var(--bad);font-size:.85rem}
 .body{padding:0 1.2rem 1.1rem;display:none}
 .step.on .body{display:block}
 .q{color:var(--fg);font-size:.95rem;margin:0 0 .8rem}
@@ -222,8 +227,15 @@ var(--line);padding-top:.6rem;word-break:break-all}
 .term{font-family:var(--mono);font-size:.74rem;background:var(--ink);border:1px solid var(--line);
 border-radius:3px;padding:.7rem .8rem;margin:.5rem 0 0;overflow-x:auto;white-space:pre-wrap;
 word-break:break-word}
-.term .pass{color:var(--teal)}
-.term .fail{color:var(--hot)}
+.legend{display:grid;gap:.5rem;margin:0 0 1.6rem;padding:.9rem 1rem;background:var(--panel);
+border:1px solid var(--line);border-radius:4px}
+.lg{font-size:.78rem;color:var(--fg-dim);display:grid;grid-template-columns:1.3rem auto;
+gap:.1rem .5rem}
+.lg i{font-style:normal;font-family:var(--mono);grid-row:span 2;color:var(--fg-faint)}
+.lg b{color:var(--fg);font-weight:600}
+.lg em{font-style:normal;color:var(--fg-faint);font-size:.74rem;grid-column:2}
+.term .pass{color:var(--ok)}
+.term .fail{color:var(--bad)}
 .term .cmd{color:var(--fg-faint)}
 footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);color:var(--fg-faint);
 font-size:.78rem;line-height:1.7;max-width:64ch}
@@ -277,16 +289,21 @@ establishes exactly what was tested, against what known-bad, with what evidence,
 re-run it.</p>
 <p class="src">SPEC.md and INVALIDATION.md in vac-protocol</p></div></div>""")
 
+    legend = "".join(
+        f'<span class="lg"><i>{_e(g)}</i><b>{_e(lab)}</b> {_e(means)}'
+        f'<em>not: {_e(nm)}</em></span>' for g, lab, means, nm in legend_rows())
+
     note = ("" if not absent else
-            f'<p class="note" style="color:var(--hot)"><b>{absent} step(s) could not read their '
+            f'<p class="note" style="color:var(--bad)"><b>{absent} step(s) could not read their '
             "artifact</b> and are marked above. A missing source is shown, never replaced.</p>")
 
+    css = CSS.replace("%%STATEVARS%%", css_vars())
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Verifiable Evaluation Suite</title>
 <meta name="description" content="Six steps that test each other, ending with a verifier
 refusing tampered evidence by name. Every number read from a committed artifact.">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>{CSS}</style></head><body>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>{css}</style></head><body>
 <div class="nav"><a href="/">&larr; Portfolio</a></div>
 <div class="wrap">
 <p class="kicker">Verifiable Evaluation Suite</p>
@@ -294,6 +311,7 @@ refusing tampered evidence by name. Every number read from a committed artifact.
 <p class="thesis">A verification system can show green over exactly the surface it does not
 cover. So <b>the instruments themselves have to be measured, challenged, and replayable.</b>
 Six steps below, each testing the one above it.</p>
+<div class="legend">{legend}</div>
 <div class="ctl"><button id="go">Run the stack</button>
 <button class="ghost" id="step">Step</button>
 <button class="ghost" id="rst">Reset</button></div>

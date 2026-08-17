@@ -8,7 +8,7 @@ refusing tampered evidence by name. Every number read from a committed artifact.
 --line:rgba(255,255,255,.09);--line-2:rgba(255,255,255,.05);
 --fg:#dae2e4;--fg-dim:#8a989e;--fg-faint:#5e6c72;
 --amber:#f2a53c;--amber-soft:rgba(242,165,60,.13);--amber-line:rgba(242,165,60,.34);
---teal:#48c1ac;--teal-soft:rgba(72,193,172,.12);--hot:#e0785f;--hot-soft:rgba(224,120,95,.12);
+--ok:#48c1ac;--ok-soft:rgba(72,193,172,.12);--hole:#f2a53c;--hole-soft:rgba(242,165,60,.13);--bad:#e0785f;--bad-soft:rgba(224,120,95,.12);--none:#7b8a90;--none-soft:rgba(123,138,144,.12);
 --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
 --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--maxw:900px}
 @media (prefers-color-scheme:light){:root{--ink:#e9edee;--panel:#f4f6f6;--raised:#fff;
@@ -38,7 +38,7 @@ button:hover{filter:brightness(1.08)}
 .step{border:1px solid var(--line);border-radius:5px;margin:0 0 .7rem;background:var(--panel);
 opacity:.32;transition:opacity .35s ease,border-color .35s ease}
 .step.on{opacity:1;border-color:var(--amber-line)}
-.step.absent{border-color:var(--hot);border-style:dashed}
+.step.absent{border-color:var(--bad);border-style:dashed}
 .head{display:flex;align-items:baseline;gap:.8rem;padding:1rem 1.2rem;flex-wrap:wrap}
 .num{font-family:var(--mono);font-size:.7rem;color:var(--fg-faint);min-width:1.2rem}
 .verb{font-family:var(--mono);font-size:.76rem;letter-spacing:.12em;color:var(--amber);
@@ -46,7 +46,7 @@ font-weight:700}
 .tool{font-family:var(--mono);font-size:.74rem;color:var(--fg-faint)}
 .big{margin-left:auto;font-family:var(--mono);font-size:1.25rem;font-weight:650;color:var(--fg);
 font-variant-numeric:tabular-nums}
-.step.absent .big{color:var(--hot);font-size:.85rem}
+.step.absent .big{color:var(--bad);font-size:.85rem}
 .body{padding:0 1.2rem 1.1rem;display:none}
 .step.on .body{display:block}
 .q{color:var(--fg);font-size:.95rem;margin:0 0 .8rem}
@@ -59,8 +59,15 @@ var(--line);padding-top:.6rem;word-break:break-all}
 .term{font-family:var(--mono);font-size:.74rem;background:var(--ink);border:1px solid var(--line);
 border-radius:3px;padding:.7rem .8rem;margin:.5rem 0 0;overflow-x:auto;white-space:pre-wrap;
 word-break:break-word}
-.term .pass{color:var(--teal)}
-.term .fail{color:var(--hot)}
+.legend{display:grid;gap:.5rem;margin:0 0 1.6rem;padding:.9rem 1rem;background:var(--panel);
+border:1px solid var(--line);border-radius:4px}
+.lg{font-size:.78rem;color:var(--fg-dim);display:grid;grid-template-columns:1.3rem auto;
+gap:.1rem .5rem}
+.lg i{font-style:normal;font-family:var(--mono);grid-row:span 2;color:var(--fg-faint)}
+.lg b{color:var(--fg);font-weight:600}
+.lg em{font-style:normal;color:var(--fg-faint);font-size:.74rem;grid-column:2}
+.term .pass{color:var(--ok)}
+.term .fail{color:var(--bad)}
 .term .cmd{color:var(--fg-faint)}
 footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);color:var(--fg-faint);
 font-size:.78rem;line-height:1.7;max-width:64ch}
@@ -74,6 +81,7 @@ footer a{color:var(--amber)}
 <p class="thesis">A verification system can show green over exactly the surface it does not
 cover. So <b>the instruments themselves have to be measured, challenged, and replayable.</b>
 Six steps below, each testing the one above it.</p>
+<div class="legend"><span class="lg"><i>✓</i><b>Verified</b> deterministic evidence exists and the required checks passed, for the stated scope<em>not: not that the subject is safe, correct, or trustworthy. Only that this bounded claim was re-earned under this recorded protocol</em></span><span class="lg"><i>◆</i><b>Survived</b> a declared defect was NOT detected. A measured hole, and a discovery<em>not: not a system error and not a bug in the tool. The tool worked; the check under test did not</em></span><span class="lg"><i>○</i><b>Incomplete</b> infrastructure or required evidence failed, so no capability conclusion is available<em>not: NOT a negative finding about the subject. An uninvoked agent is not an incapable agent</em></span><span class="lg"><i>✕</i><b>Invalidated</b> a claim or artifact was broken, deliberately or independently, and the verifier refused it by name<em>not: not a crash. This is the refusal path firing, which is the strongest evidence in the stack</em></span></div>
 <div class="ctl"><button id="go">Run the stack</button>
 <button class="ghost" id="step">Step</button>
 <button class="ghost" id="rst">Reset</button></div>
