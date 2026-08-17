@@ -54,7 +54,7 @@ class Source:
     in_repo: str      # path within the repo
     sha256: str       # full digest of the exact bytes read
     size: int
-    commit: str       # the repo's HEAD when this page was built
+    commit: str       # last commit that TOUCHED this artifact, never the repo's HEAD
     produced_by: str  # the command that emits this artifact, read from the emitter
 
     @property
@@ -90,14 +90,30 @@ def _sha256(p: pathlib.Path) -> tuple[str, int]:
     return hashlib.sha256(b).hexdigest(), len(b)
 
 
-def _commit(repo_dir: pathlib.Path) -> str:
+def _commit(repo_dir: pathlib.Path, in_repo: str) -> str:
+    """The last commit that TOUCHED this artifact, not the repo's HEAD.
+
+    HEAD is the wrong pin and the staleness gate proved it within minutes of shipping: committing
+    a docs-only file to evalmut moved this page's cited commit, even though that commit cannot
+    change a single byte of the bundle. Two things go wrong with HEAD. The page cites a commit
+    that did not produce the artifact, which is a false provenance claim even when replay happens
+    to still work; and every unrelated commit anywhere in the source repo forces a rebuild here,
+    which trains whoever maintains this to regenerate without reading the diff.
+
+    The path-scoped commit is both stable and the claim actually being made: these bytes came from
+    here."""
     try:
-        return subprocess.run(["git", "-C", str(repo_dir), "rev-parse", "HEAD"],
-                              capture_output=True, text=True, check=True).stdout.strip()[:12]
+        out = subprocess.run(["git", "-C", str(repo_dir), "log", "-1", "--format=%H", "--",
+                              in_repo], capture_output=True, text=True, check=True).stdout.strip()
     except Exception as e:
         raise ProvenanceError(
-            f"cannot read the commit for {repo_dir}: {type(e).__name__}: {e}. A source with no "
-            "commit cannot be replayed, so it is not evidence.") from e
+            f"cannot read the commit for {repo_dir}/{in_repo}: {type(e).__name__}: {e}. A source "
+            "with no commit cannot be replayed, so it is not evidence.") from e
+    if not out:
+        raise ProvenanceError(
+            f"{repo_dir}/{in_repo} has no commit touching it. An uncommitted artifact cannot be "
+            "replayed by anyone else, so it must not be cited as evidence.")
+    return out[:12]
 
 
 def producing_command(repo: str, in_repo: str, emitter: str = "emit_vac.py",
@@ -135,8 +151,9 @@ def source(repo: str, in_repo: str, **kw) -> Source:
     if not p.exists():
         raise ProvenanceError(f"{p} does not exist")
     digest, size = _sha256(p)
-    return Source(rel=f"{repo}/{in_repo}", repo=repo, in_repo=in_repo, sha256=digest, size=size,
-                  commit=_commit(HOME / repo), produced_by=producing_command(repo, in_repo, **kw))
+    return Source(rel=f"{repo}/{in_repo}", repo=repo, in_repo=in_repo, sha256=digest,
+                  size=size, commit=_commit(HOME / repo, in_repo),
+                  produced_by=producing_command(repo, in_repo, **kw))
 
 
 def _run_jq(expr: str, path: pathlib.Path):

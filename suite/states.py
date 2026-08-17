@@ -111,12 +111,35 @@ def css_vars() -> str:
 
     Deliberately NOT a green/red axis. Survived is amber because it is discovery; invalidated is
     the only red, reserved for a proven contradiction; incomplete is a cool grey that reads as
-    absent rather than bad."""
+    absent rather than bad.
+
+    These are the DARK steps. They must be paired with css_vars_light(); see that function for
+    why shipping only these was a defect and not a simplification."""
     return (
         "--ok:#48c1ac;--ok-soft:rgba(72,193,172,.12);"
         "--hole:#f2a53c;--hole-soft:rgba(242,165,60,.13);"
         "--bad:#e0785f;--bad-soft:rgba(224,120,95,.12);"
         "--none:#7b8a90;--none-soft:rgba(123,138,144,.12);")
+
+
+def css_vars_light() -> str:
+    """The same four states, restepped for a light surface.
+
+    WHY THIS EXISTS. The dark steps were shipped as the only definition, so on a light ground the
+    state vocabulary measured between 1.7:1 and 1.9:1: the SURVIVED chip and the mutant text were
+    effectively invisible to a reader whose OS is in light mode. A four-state vocabulary that
+    cannot be read in one of the two themes has silently collapsed into pass/fail for half the
+    audience, which is the exact failure the vocabulary exists to prevent, arriving through the
+    stylesheet instead of the wording.
+
+    Hue and meaning are preserved, only lightness and chroma move: teal stays the verified teal,
+    amber stays discovery, red stays the single reserved refusal colour. Every step below clears
+    4.5:1 against both light surfaces in use (the panel #f4f6f6 and the inset ground #e9edee)."""
+    return (
+        "--ok:#0f7a68;--ok-soft:rgba(15,122,104,.11);"
+        "--hole:#8a5610;--hole-soft:rgba(138,86,16,.11);"
+        "--bad:#a3341d;--bad-soft:rgba(163,52,29,.1);"
+        "--none:#566268;--none-soft:rgba(86,98,104,.1);")
 
 
 def legend_rows() -> list[tuple[str, str, str, str]]:

@@ -39,7 +39,8 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from claim import derive  # noqa: E402
 from evidence import source, unchecked_note, value  # noqa: E402
-from states import css_vars, legend_rows  # noqa: E402
+from holes import counts, holes  # noqa: E402
+from states import SURVIVED, css_vars, css_vars_light, legend_rows  # noqa: E402
 
 HOME = pathlib.Path.home()
 OUT = pathlib.Path(__file__).resolve().parent / "runner.html"
@@ -130,6 +131,75 @@ def drawer(title: str, values: list, src, extra: str = "") -> str:
 <div class="term">{_e(src.replay)}</div>{extra}</details>"""
 
 
+def hole_explorer(src, d) -> str:
+    """The four survivals, at card weight, as the page's conclusion.
+
+    Each card prints the mutant VERBATIM. A survival described in the abstract ("a negation was
+    inserted") is a claim; the exact string that got past the check is the evidence, and it is
+    short enough that a reader can judge for themselves whether the check should have caught it.
+
+    The two groups are separated because they are different facts. Charging a documented scope
+    limit as a broken check would be the same overclaim this program refuses, pointed the other
+    way."""
+    manifest = read("evalmut/docs/dogfood_fixtures.json") or {}
+    found = holes(d, manifest)
+    by_kind: dict[str, list] = {}
+    for h in found:
+        by_kind.setdefault(h.kind, []).append(h)
+
+    tally = "".join(
+        f'<span class="hk{"" if n else " zero"}"><b>{n}</b> {_e(label.lower())}'
+        f'{"" if n == 1 else "s"}</span>' for _, label, n in counts(d))
+
+    groups = []
+    for kind, group in by_kind.items():
+        cards = "".join(f"""<article class="hole">
+<header><span class="st">{_e(SURVIVED.glyph)} {_e(SURVIVED.label)}</span>
+<h3>{_e(h.operator)}</h3>
+<span class="hmeta">scorer <b>{_e(h.grader)}</b> &middot; layer {_e(h.family)}
+&middot; case {_e(h.case)}</span></header>
+<p class="shape">{_e(h.shape)}</p>
+<div class="mut"><span class="mlab">the check required</span>
+<code>{_e(h.requirement)}</code>
+<span class="mlab">clean form, passed</span>
+<code class="ok">{_e(h.clean) if h.clean else "not resolvable from the manifest"}</code>
+<span class="mlab">defective form, also passed</span>
+<code class="got">{_e(h.mutant)}</code></div>
+<p class="pair">{_e(h.pairing)}</p>
+<p class="why"><b>Where this comes from.</b> {_e(h.origin)}</p>
+<p class="rem">{_e(h.remedy)}</p>
+<p class="hsrc"><code>jq '{_e(h.jq)}' {_e(DOGFOOD)}</code><br>
+replay: the pinned route in the evidence drawer above regenerates this bundle at
+{_e(src.commit)}.</p>
+</article>""" for h in group)
+        label, means = group[0].label, group[0].means
+        groups.append(f"""<section class="hgroup">
+<h2>{len(group)} &times; {_e(label)}</h2><p class="gmeans">{_e(means)}</p>
+<div class="holes">{cards}</div></section>""")
+
+    return f"""<section id="holes">
+<p class="kicker">The finding</p>
+<h2 class="hh">{len(found)} declared defects were not detected</h2>
+<p class="hlede"><b>Survived</b> means the clean form and the defective form BOTH passed the same
+check under the recorded protocol, so the check cannot separate them. That is a named coverage
+hole in the check. It is not evidence that the system under test misbehaves in production, and
+this run cannot support that reading.</p>
+<div class="htally">{tally}</div>
+{''.join(groups)}
+<div class="limits"><p><b>What this run is.</b> Hypothesis-generating. It names places to look,
+on one corpus, under one recorded protocol.</p>
+<p><b>What it is not.</b> The fixtures here are evalmut's own corpus, so nothing on this page
+confirms detection power against an external suite. No percentage here is a score for any
+framework, and a per-scorer number is conditional on these fixtures rather than a property of
+the scorer.</p>
+<p><b>Independent validity is unestablished.</b> Whether these operators correspond to faults
+anyone else would care about missing is an open question, currently out for external review.
+See the status audit in the repository.</p></div>
+<p class="hnote">The kinds with a zero above are printed rather than omitted. A taxonomy that
+lists only its non-empty categories invites the reader to assume the categories were chosen after
+the results were in.</p></section>"""
+
+
 def steps(src, d) -> list[dict]:
     out: list[dict] = []
 
@@ -184,7 +254,8 @@ CSS = """
 --line:rgba(12,26,32,.12);--line-2:rgba(12,26,32,.07);--fg:#131c20;--fg-dim:#4d5a60;
 --fg-faint:#7c888d;--amber:#b7761a;--amber-soft:rgba(200,128,26,.12);
 --amber-line:rgba(200,128,26,.4);--amber-ink:#8a5610;--teal:#1c8f7d;--hot:#a8412c;
---hot-soft:rgba(168,65,44,.1)}}
+--hot-soft:rgba(168,65,44,.1);
+%%STATEVARSLIGHT%%}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--ink);color:var(--fg);font:15px/1.55 var(--sans);
 -webkit-font-smoothing:antialiased}
@@ -241,7 +312,10 @@ background:var(--panel)}
 border:1px solid var(--line);border-radius:4px}
 .lg{font-size:.78rem;color:var(--fg-dim);display:grid;grid-template-columns:1.3rem auto;
 gap:.1rem .5rem}
-.lg i{font-style:normal;font-family:var(--mono);grid-row:span 2;color:var(--fg-faint)}
+/* The glyph is the state's NON-COLOUR encoding, the thing that survives greyscale print and
+   colour blindness. Shipping it at --fg-faint measured 3.36:1 on the light ground, which
+   makes the accessibility fallback itself the least legible mark on the page. */
+.lg i{font-style:normal;font-family:var(--mono);grid-row:span 2;color:var(--fg-dim)}
 .lg b{color:var(--fg);font-weight:600}
 .lg em{font-style:normal;color:var(--fg-faint);font-size:.74rem;grid-column:2}
 .term .pass{color:var(--ok)}
@@ -278,6 +352,60 @@ grid-template-columns:max-content auto;gap:.2rem .9rem}
 dl.srcmeta dt{color:var(--fg-faint)}
 dl.srcmeta dd{margin:0;text-align:left;color:var(--fg-dim);word-break:break-all}
 dl.srcmeta a{color:var(--fg-dim)}
+/* The holes are the conclusion, so they get the page's only full-weight section heading and the
+   only cards. The score keeps monospace row treatment inside step 1: a percentage that outranks
+   the findings typographically has made the reader's judgement for them. */
+#holes{margin:3rem 0 0;padding-top:1.6rem;border-top:1px solid var(--hole)}
+h2.hh{font-size:1.5rem;line-height:1.2;letter-spacing:-.015em;margin:.45rem 0 .7rem;
+font-weight:650;max-width:20ch}
+.hlede{color:var(--fg-dim);max-width:60ch;margin:0 0 1.2rem}
+.htally{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 1.8rem}
+.hk{font-family:var(--mono);font-size:.72rem;color:var(--hole);background:var(--hole-soft);
+border:1px solid var(--hole);border-radius:999px;padding:.25rem .7rem}
+.hk b{font-variant-numeric:tabular-nums}
+/* The zero chips are the whole point of printing empty buckets, so they are de-emphasised
+   relative to the found ones but still have to be READ. --fg-faint put them at 3.09:1. */
+.hk.zero{color:var(--fg-dim);background:none;border-color:var(--line)}
+.hgroup{margin:0 0 1.8rem}
+.hgroup h2{font-family:var(--mono);font-size:.82rem;letter-spacing:.06em;color:var(--hole);
+margin:0 0 .3rem;font-weight:700;text-transform:uppercase}
+.gmeans{color:var(--fg-dim);font-size:.86rem;margin:0 0 .9rem;max-width:62ch}
+.holes{display:grid;grid-template-columns:repeat(auto-fit,minmax(19rem,1fr));gap:.8rem}
+.hole{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--hole);
+border-radius:4px;padding:1rem 1.1rem;display:flex;flex-direction:column}
+.hole header{display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap;margin:0 0 .5rem}
+/* The state is named on the card, not just coloured. A reader who meets an amber card with no
+   word for it will read it as failure, and the four-state vocabulary is the thing that stops
+   this page collapsing into pass/fail. */
+.hole .st{font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;
+color:var(--hole);border:1px solid var(--hole);border-radius:3px;padding:.1rem .4rem;
+white-space:nowrap}
+.hole h3{font-family:var(--mono);font-size:.86rem;margin:0;font-weight:650;color:var(--fg);
+word-break:break-word}
+.hmeta{font-family:var(--mono);font-size:.68rem;color:var(--fg-faint);width:100%}
+.shape{font-size:.88rem;color:var(--fg);margin:0 0 .8rem}
+.mut{background:var(--ink);border:1px solid var(--line);border-radius:3px;padding:.6rem .7rem;
+margin:0 0 .8rem;display:grid;gap:.25rem}
+.mlab{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+color:var(--fg-faint)}
+.mut code{font-family:var(--mono);font-size:.74rem;color:var(--fg-dim);word-break:break-word;
+white-space:pre-wrap}
+.mut code.ok{color:var(--ok)}
+.mut code.got{color:var(--hole)}
+.pair{font-size:.78rem;color:var(--fg-dim);margin:0 0 .7rem;max-width:60ch}
+.hmeta b{color:var(--fg-dim);font-weight:600}
+.limits{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--fg-faint);
+border-radius:4px;padding:1rem 1.1rem;margin:.4rem 0 0}
+.limits p{margin:0 0 .6rem;font-size:.82rem;color:var(--fg-dim);max-width:64ch}
+.limits p:last-child{margin:0}
+.limits b{color:var(--fg)}
+.why{font-size:.78rem;color:var(--fg-dim);margin:0 0 .7rem;max-width:60ch}
+.why b{color:var(--fg)}
+.rem{font-size:.78rem;color:var(--fg);margin:0 0 .7rem;font-weight:500}
+.hsrc{margin:auto 0 0;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.66rem;
+word-break:break-all}
+.hsrc code{font-family:var(--mono);color:var(--amber-ink)}
+.hnote{font-size:.76rem;color:var(--fg-faint);max-width:64ch;margin:1.2rem 0 0}
 footer{margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--line);color:var(--fg-faint);
 font-size:.78rem;line-height:1.7;max-width:64ch}
 footer b{color:var(--fg-dim)}
@@ -341,7 +469,8 @@ re-run it.</p>
             f'<p class="note" style="color:var(--bad)"><b>{absent} step(s) could not read their '
             "artifact</b> and are marked above. A missing source is shown, never replaced.</p>")
 
-    css = CSS.replace("%%STATEVARS%%", css_vars())
+    css = (CSS.replace("%%STATEVARS%%", css_vars())
+          .replace("%%STATEVARSLIGHT%%", css_vars_light()))
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Verifiable Evaluation Suite</title>
@@ -370,6 +499,7 @@ the claim, and only this may be called live verification.</span></div>
 <button class="ghost" id="rst">Reset</button></div>
 {"".join(cards)}
 {note}
+{hole_explorer(src, d)}
 <footer>Every number is read from the artifact its repo commits, and step 5 is <b>executed</b>
 when this page is built, so the refusals are transcripts. Nothing here is typed by hand.<br><br>
 This is not a benchmark and not a leaderboard. The point is to make an unsupported reliability
@@ -393,5 +523,10 @@ g('rst').onclick=()=>{{ stop(); i=0; S.forEach(s=>s.classList.remove('on'));
 
 
 if __name__ == "__main__":
-    OUT.write_text(build(), encoding="utf-8")
-    print(f"wrote {OUT}")
+    # An optional destination so tests can build to a scratch path and COMPARE, instead of
+    # overwriting the committed page. Without this the rendered-page tests silently regenerate
+    # the artifact they claim to inspect, which means a stale committed runner.html passes every
+    # one of them. That is the same failure shape as a green suite over a check that never ran.
+    dest = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else OUT
+    dest.write_text(build(), encoding="utf-8")
+    print(f"wrote {dest}")

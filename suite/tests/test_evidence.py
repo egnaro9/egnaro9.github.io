@@ -182,3 +182,22 @@ def test_build_refuses_when_a_displayed_value_drifts(tmp_path, monkeypatch):
     doc["tally"]["caught"] += 7  # the parsed doc drifts away from the bytes jq will read
     with pytest.raises(ProvenanceError):
         runner.claim_values(src, doc)
+
+
+@needs_repo
+def test_the_cited_commit_is_the_one_that_touched_the_artifact_not_head():
+    """Pinning to HEAD is a false provenance claim, and it churns this page on unrelated commits.
+
+    Caught in production by the staleness gate: a docs-only commit to evalmut moved the commit
+    this page cites, though it could not change a byte of the bundle. The assertion is written
+    against `git log -1 -- <path>` rather than against a captured string, so it keeps holding as
+    the bundle is legitimately re-emitted."""
+    src = source("evalmut", BUNDLE)
+    expected = subprocess.run(
+        ["git", "-C", str(HOME / "evalmut"), "log", "-1", "--format=%H", "--", BUNDLE],
+        capture_output=True, text=True, check=True).stdout.strip()[:12]
+    assert src.commit == expected
+    head = subprocess.run(["git", "-C", str(HOME / "evalmut"), "rev-parse", "HEAD"],
+                          capture_output=True, text=True, check=True).stdout.strip()[:12]
+    if head != expected:
+        assert src.commit != head, "the page is pinned to HEAD, which did not produce the bundle"

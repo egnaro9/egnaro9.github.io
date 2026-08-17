@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import pathlib
 import subprocess
+import tempfile
 import sys
 
 import pytest
@@ -68,9 +69,29 @@ def test_an_empty_run_is_not_a_clean_run(tmp_path):
 # ── the rendered page, not just the generator ────────────────────────────────
 
 def _build() -> str:
-    subprocess.run([sys.executable, str(ROOT / "runner.py")], cwd=str(ROOT),
-                   check=True, capture_output=True)
-    return (ROOT / "runner.html").read_text()
+    """Build to a scratch path and read THAT.
+
+    It used to build over runner.html itself, which quietly made every rendered-page test in this
+    repo self-fulfilling: the test regenerated the artifact microseconds before inspecting it, so
+    a stale committed page could never fail. Tests that rebuild what they audit are the same
+    shape as a gate that cannot tell "checked and clean" from "never checked". The committed file
+    is now guarded separately, by test_the_committed_page_is_not_stale."""
+    with tempfile.TemporaryDirectory() as td:
+        out = pathlib.Path(td) / "runner.html"
+        subprocess.run([sys.executable, str(ROOT / "runner.py"), str(out)], cwd=str(ROOT),
+                       check=True, capture_output=True)
+        return out.read_text()
+
+
+def test_the_committed_page_is_not_stale():
+    """The artifact in git must equal what the current code produces.
+
+    This is the assertion that lets every other rendered-page test be trusted. Without it the
+    suite can be fully green while the file actually served to a reader was built from code that
+    no longer exists."""
+    assert _build() == (ROOT / "runner.html").read_text(), (
+        "runner.html on disk differs from a fresh build. Run `python runner.py` and commit the "
+        "result, or the published page is showing output of code that is no longer here.")
 
 
 def test_the_rendered_html_carries_the_current_headline_and_bounds():
