@@ -83,3 +83,55 @@ def test_the_legend_covers_all_four():
     rows = legend_rows()
     assert len(rows) == 4
     assert all(len(r) == 4 and all(str(x).strip() for x in r) for r in rows)
+
+
+def _f(state, stage, dep="", scope="s"):
+    from states import Finding
+    return Finding(state, f"{stage} headline", scope=scope if state is VERIFIED else "",
+                   stage=stage, depends_on=dep)
+
+
+def test_a_verified_stage_is_downgraded_when_its_dependency_did_not_pass():
+    """The load-bearing rule. A green stage 3 sitting on an INCOMPLETE stage 2 is a badge
+    reachable without its dependencies."""
+    from states import resolve_chain
+    chain = resolve_chain([_f(INCOMPLETE, "calibrate"), _f(VERIFIED, "certify", "calibrate")])
+    assert chain[1].state is INCOMPLETE
+    assert "calibrate" in chain[1].detail and "No conclusion" in chain[1].detail
+
+
+def test_the_downgrade_is_to_incomplete_never_to_a_failure():
+    """The stage did not fail. It was never entitled to conclude, which is a different fact and
+    sends the reader to a different place."""
+    from states import resolve_chain
+    chain = resolve_chain([_f(INVALIDATED, "verify"), _f(VERIFIED, "enforce", "verify")])
+    assert chain[1].state is INCOMPLETE
+    assert chain[1].state is not INVALIDATED
+
+
+def test_an_intact_chain_is_left_alone():
+    from states import resolve_chain
+    chain = resolve_chain([_f(VERIFIED, "a"), _f(VERIFIED, "b", "a"), _f(VERIFIED, "c", "b")])
+    assert [f.state for f in chain] == [VERIFIED, VERIFIED, VERIFIED]
+
+
+def test_a_break_propagates_down_the_whole_chain():
+    """One broken link must not leave later stages green just because their immediate parent was
+    downgraded rather than originally failing."""
+    from states import resolve_chain
+    chain = resolve_chain([_f(SURVIVED, "a"), _f(VERIFIED, "b", "a"), _f(VERIFIED, "c", "b")])
+    assert [f.state for f in chain] == [SURVIVED, INCOMPLETE, INCOMPLETE]
+
+
+def test_a_dependency_that_never_ran_is_named_differently_than_one_that_failed():
+    from states import resolve_chain
+    chain = resolve_chain([_f(VERIFIED, "solo", "missing-stage")])
+    assert "did not run" in chain[0].detail
+
+
+def test_non_verified_states_are_not_gated():
+    """SURVIVED and INVALIDATED are facts about what happened, not conclusions resting on a
+    chain, so a broken dependency must not rewrite them."""
+    from states import resolve_chain
+    chain = resolve_chain([_f(INCOMPLETE, "a"), _f(SURVIVED, "b", "a"), _f(INVALIDATED, "c", "b")])
+    assert [f.state for f in chain] == [INCOMPLETE, SURVIVED, INVALIDATED]

@@ -67,6 +67,10 @@ class UnscopedVerification(ValueError):
     """A verified state was constructed without saying what it covers."""
 
 
+class BrokenChain(ValueError):
+    """A stage claimed VERIFIED while the stage it depends on did not pass."""
+
+
 @dataclass(frozen=True)
 class Finding:
     """One stage's outcome, with the boundary attached to the state rather than to a footnote."""
@@ -76,6 +80,8 @@ class Finding:
     scope: str = ""       # required when VERIFIED: what this claim does and does not cover
     detail: str = ""      # the named predicate, the recomputation, the refusal reason
     source: str = ""      # the artifact a reader can open
+    stage: str = ""       # this stage's id, so later stages can name it as a dependency
+    depends_on: str = ""  # the stage id whose passing is a PRECONDITION for this one
 
     def __post_init__(self):
         if self.state is VERIFIED and not self.scope.strip():
@@ -117,3 +123,34 @@ def legend_rows() -> list[tuple[str, str, str, str]]:
     """(glyph, label, means, does not mean) for rendering the legend that must appear on any page
     using these states. A reader who meets 'Survived' with no key will read it as failure."""
     return [(s.glyph, s.label, s.means, s.not_means) for s in ALL]
+
+
+def resolve_chain(findings: list[Finding]) -> list[Finding]:
+    """Enforce causal order: a stage cannot stand VERIFIED if what it rests on did not pass.
+
+    THE RULE THIS EXISTS FOR. In a proof run the stages are not independent panels, they are a
+    chain: a certification means nothing if the calibration that proves the instrument can detect
+    known-bad never ran, and a bundle verifying means nothing about capability if the agent was
+    never invoked. A UI that lights stage 5 green while stage 2 is INCOMPLETE has produced a green
+    badge reachable without its dependencies, which is the unsupported claim wearing an interface.
+
+    So a VERIFIED whose dependency did not pass is DOWNGRADED to INCOMPLETE, never to a failure
+    state: the stage did not fail, it was never entitled to conclude. The reason names the stage
+    that broke the chain, so the reader is sent to the actual problem rather than to this one.
+
+    Downgrading rather than raising is deliberate. A real run can legitimately produce a broken
+    chain (the billing incident did), and the page must be able to render that truthfully instead
+    of refusing to build."""
+    passed: dict[str, bool] = {}
+    out: list[Finding] = []
+    for f in findings:
+        dep = f.depends_on
+        if f.state is VERIFIED and dep and not passed.get(dep, False):
+            why = (f"depends on {dep}, which did not pass" if dep in passed
+                   else f"depends on {dep}, which did not run")
+            f = Finding(INCOMPLETE, f.headline, scope="", detail=f"{why}. No conclusion here.",
+                        source=f.source, stage=f.stage, depends_on=dep)
+        if f.stage:
+            passed[f.stage] = f.state is VERIFIED
+        out.append(f)
+    return out
