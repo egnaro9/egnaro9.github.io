@@ -186,10 +186,17 @@ footer a{color:var(--amber)}
 <div class="bounds">
 <p><b>Scope.</b> evalmut&#x27;s own Corpus A protocol and tooling corpus, under the recorded environment, at the commit this bundle names.</p>
 <p><b>Does not establish.</b> independent operator validity, external evaluation-suite detection power, or production reliability of anything.</p>
+<p><b>Invocation status.</b> The grader package is imported and its labels are recorded, but
+this bundle carries no per-row proof that the upstream scorer ran. evalmut ships that proof
+(<code>evalmut/sentinel.py</code> for in-process graders, <code>evalmut/witnessed.py</code> for
+subprocess ones, which refuses a row that arrives without a witness) and
+<code>demos/dogfood_gradecore.py</code> does not use either. A row with a clean verdict and no
+witness is indistinguishable from a row the harness answered for itself, so read every outcome
+here as label-recorded rather than invocation-proven.</p>
 <p class="derived">Every number above is derived from
 <a href="https://github.com/egnaro9/evalmut/blob/ace358748a4b/docs/dogfood_gradecore.json">docs/dogfood_gradecore.json</a>
 at build time. The build fails if that bundle contradicts itself.</p>
-<details class="ev"><summary>Where each number in that sentence comes from</summary>
+<details class="ev" open><summary>Where each number in that sentence comes from</summary>
 <table class="prov"><thead><tr><th>value</th><th>shown</th>
 <th>expression that reproduces it, run from the repo root</th></tr></thead>
 <tbody><tr><td>caught</td><td class="n">42</td><td><code>jq &#x27;.tally.caught&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>applied</td><td class="n">46</td><td><code>jq &#x27;.tally | .caught + .missed + .flagged&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>survived</td><td class="n">4</td><td><code>jq &#x27;[.holes[] | length] | add&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>blind</td><td class="n">2</td><td><code>jq &#x27;.holes.blind | length&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>coverage gap</td><td class="n">2</td><td><code>jq &#x27;.holes.coverage_gap | length&#x27; docs/dogfood_gradecore.json</code></td></tr></tbody></table>

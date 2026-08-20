@@ -222,17 +222,22 @@ def claim_values(src, d) -> list:
     return [value(src, d, label, jq, py, fmt) for label, jq, py, fmt in spec]
 
 
-def drawer(title: str, values: list, src, extra: str = "") -> str:
-    """One collapsed route from a visible number to the bytes behind it.
+def drawer(title: str, values: list, src, extra: str = "", start_open: bool = False) -> str:
+    """One route from a visible number to the bytes behind it.
 
     <details> and not a modal: it works with scripting off, it is keyboard reachable, and it
     prints when the page prints. Evidence that needs JavaScript to appear is evidence a skeptic
-    cannot get to."""
+    cannot get to.
+
+    THE HEADLINE'S DRAWER OPENS BY DEFAULT, the per-step ones do not. A reader who never clicks
+    should still land on the claim WITH its derivation, because a derivation behind a click is
+    close enough to a transcribed number to be read as one. The per-step drawers stay collapsed
+    so the six-step argument is still legible above the fold."""
     rows = "".join(
         f'<tr><td>{_e(v.label)}</td><td class="n">{_e(v.shown)}</td>'
         f'<td><code>{_e(v.command)}</code></td></tr>'
         for v in values)
-    return f"""<details class="ev"><summary>{_e(title)}</summary>
+    return f"""<details class="ev"{' open' if start_open else ''}><summary>{_e(title)}</summary>
 <table class="prov"><thead><tr><th>value</th><th>shown</th>
 <th>expression that reproduces it, run from the repo root</th></tr></thead>
 <tbody>{rows}</tbody></table>
@@ -705,10 +710,18 @@ refusing tampered evidence by name. Every number read from a committed artifact.
 <div class="bounds">
 <p><b>Scope.</b> {_e(claim.scope)}</p>
 <p><b>Does not establish.</b> {_e(claim.not_established)}</p>
+<p><b>Invocation status.</b> The grader package is imported and its labels are recorded, but
+this bundle carries no per-row proof that the upstream scorer ran. evalmut ships that proof
+(<code>evalmut/sentinel.py</code> for in-process graders, <code>evalmut/witnessed.py</code> for
+subprocess ones, which refuses a row that arrives without a witness) and
+<code>demos/dogfood_gradecore.py</code> does not use either. A row with a clean verdict and no
+witness is indistinguishable from a row the harness answered for itself, so read every outcome
+here as label-recorded rather than invocation-proven.</p>
 <p class="derived">Every number above is derived from
 <a href="{_e(src.url)}">{_e(DOGFOOD)}</a>
 at build time. The build fails if that bundle contradicts itself.</p>
-{drawer("Where each number in that sentence comes from", claim_values(src, d), src)}</div>
+{drawer("Where each number in that sentence comes from", claim_values(src, d), src,
+        start_open=True)}</div>
 <div class="modes">
 <span><b>Recorded proof run</b> replays a completed run's artifacts. Nothing is executed here.</span>
 <span><b>Browser tamper demo</b> alters a local copy to show one named rejection path.</span>
