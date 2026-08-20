@@ -87,6 +87,9 @@ gap:.1rem .5rem}
 .term .pass{color:var(--ok)}
 .term .fail{color:var(--bad)}
 .term .warn{color:var(--amber)}
+.provisional{margin:.5rem 0 0;font-size:.84rem;color:var(--fg-dim);max-width:64ch;
+border-left:3px solid var(--amber);padding-left:.7rem}
+.provisional b{color:var(--amber-ink,var(--amber))}
 .term .cmd{color:var(--fg-faint)}
 details.ev{border-top:1px dashed var(--line);margin:.9rem 0 0;padding-top:.6rem}
 details.ev summary{font-family:var(--mono);font-size:.72rem;color:var(--fg-faint);cursor:pointer;
@@ -182,7 +185,8 @@ footer a{color:var(--amber)}
 <div class="nav"><a href="/">&larr; Portfolio</a></div>
 <div class="wrap">
 <p class="kicker">Verifiable Evaluation Suite &middot; Recorded proof run</p>
-<h1>Recorded evalmut dogfood run: 42 of 46 declared mutations were caught; 4 survived (2 blind, 2 coverage gap).</h1>
+<h1>Recorded evalmut dogfood run: 42 of 46 declared mutations were labelled caught; 4 survived (2 blind, 2 coverage gap).</h1>
+<p class="provisional"><b>Invocation witnesses: not captured per row.</b> This result is provisional. Wiring them may move the denominator, because a row with no witness is not a caught row and not a survivor, it is INCOMPLETE.</p>
 <div class="bounds">
 <p><b>Scope.</b> evalmut&#x27;s own Corpus A protocol and tooling corpus, under the recorded environment, at the commit this bundle names.</p>
 <p><b>Does not establish.</b> independent operator validity, external evaluation-suite detection power, or production reliability of anything.</p>

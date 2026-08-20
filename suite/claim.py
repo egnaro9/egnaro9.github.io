@@ -43,7 +43,7 @@ class Claim:
         survived = (f"{self.holes_total} survived ({kinds})" if self.holes_total
                     else "none survived")
         return (f"Recorded evalmut dogfood run: {self.caught} of {self.applied} declared "
-                f"mutations were caught; {survived}.")
+                f"mutations were labelled caught; {survived}.")
 
     @property
     def scope(self) -> str:

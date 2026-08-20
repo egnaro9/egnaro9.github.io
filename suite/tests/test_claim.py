@@ -37,7 +37,20 @@ def test_the_live_bundle_still_says_what_the_page_claims():
 def test_the_headline_is_generated_from_those_fields():
     c = derive(BUNDLE)
     assert c.headline == ("Recorded evalmut dogfood run: 42 of 46 declared mutations were "
-                          "caught; 4 survived (2 blind, 2 coverage gap).")
+                          "labelled caught; 4 survived (2 blind, 2 coverage gap).")
+
+
+def test_the_headline_does_not_claim_the_grader_decided():
+    """'caught' asserts the scorer ran and decided. The bundle cannot support that.
+
+    demos/dogfood_gradecore.py wraps neither sentinel() nor witnessed(), and no result row carries
+    a witness field, so the run proves the package was imported and these labels were emitted. It
+    does not prove the intended upstream scoring path decided any given row. The verb has to stop
+    where the evidence stops."""
+    c = derive(BUNDLE)
+    assert "labelled caught" in c.headline
+    assert "mutations were caught" not in c.headline, (
+        "the headline is asserting the grader decided, which this bundle cannot support")
 
 
 def test_a_bundle_that_contradicts_itself_stops_the_build(tmp_path):

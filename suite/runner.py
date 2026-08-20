@@ -544,6 +544,9 @@ gap:.1rem .5rem}
 .term .pass{color:var(--ok)}
 .term .fail{color:var(--bad)}
 .term .warn{color:var(--amber)}
+.provisional{margin:.5rem 0 0;font-size:.84rem;color:var(--fg-dim);max-width:64ch;
+border-left:3px solid var(--amber);padding-left:.7rem}
+.provisional b{color:var(--amber-ink,var(--amber))}
 .term .cmd{color:var(--fg-faint)}
 details.ev{border-top:1px dashed var(--line);margin:.9rem 0 0;padding-top:.6rem}
 details.ev summary{font-family:var(--mono);font-size:.72rem;color:var(--fg-faint);cursor:pointer;
@@ -707,6 +710,7 @@ refusing tampered evidence by name. Every number read from a committed artifact.
 <div class="wrap">
 <p class="kicker">Verifiable Evaluation Suite &middot; Recorded proof run</p>
 <h1>{_e(claim.headline)}</h1>
+<p class="provisional"><b>Invocation witnesses: not captured per row.</b> This result is provisional. Wiring them may move the denominator, because a row with no witness is not a caught row and not a survivor, it is INCOMPLETE.</p>
 <div class="bounds">
 <p><b>Scope.</b> {_e(claim.scope)}</p>
 <p><b>Does not establish.</b> {_e(claim.not_established)}</p>
