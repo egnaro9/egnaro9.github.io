@@ -86,6 +86,7 @@ gap:.1rem .5rem}
 .lg em{font-style:normal;color:var(--fg-faint);font-size:.74rem;grid-column:2}
 .term .pass{color:var(--ok)}
 .term .fail{color:var(--bad)}
+.term .warn{color:var(--amber)}
 .term .cmd{color:var(--fg-faint)}
 details.ev{border-top:1px dashed var(--line);margin:.9rem 0 0;padding-top:.6rem}
 details.ev summary{font-family:var(--mono);font-size:.72rem;color:var(--fg-faint);cursor:pointer;
@@ -230,32 +231,87 @@ the claim, and only this may be called live verification.</span></div>
 <div class="term">git clone https://github.com/egnaro9/evalmut &amp;&amp; cd evalmut
 git checkout ace358748a4b
 evalmut run demos/dogfood_gradecore.py --json --all   # regenerates docs/dogfood_gradecore.json
-shasum -a 256 docs/dogfood_gradecore.json   # expect cc3b76f7bfe54eed...</div></details></div></div><div class="step" data-i="5">
+shasum -a 256 docs/dogfood_gradecore.json   # expect cc3b76f7bfe54eed...</div></details></div></div><div class="step" data-i="2">
+<div class="head"><span class="num">2</span><span class="verb">CALIBRATE</span>
+<span class="tool">reference-fleet</span><span class="big">1 of 6</span></div>
+<div class="body"><p class="q">Can the instrument detect a model that is broken on purpose?</p><dl><dt>suite x member results</dt><dd>18</dd><dt>archetypes measured</dt><dd>3</dd><dt>fleet members</dt><dd>6</dd><dt>naive-archetype pairs</dt><dd>6</dd><dt>of those, detecting at all</dt><dd>1</dd><dt>responses graded</dt><dd>2640</dd><dt>false alarms raised</dt><dd>0</dd><dt>fleet commit</dt><dd>b93ab29</dd></dl>
+<p class="note">Each member is broken in one documented way at a seeded rate, so a detection rate is measured against ground truth rather than opinion. The head counts the naive archetype only: a suite that misses a defect it was pointed at is the calibration, and reading it as a ranking of the other archetypes would be a claim this one board cannot carry.</p><details class="ev"><summary>Evidence for these numbers</summary>
+<table class="prov"><thead><tr><th>value</th><th>shown</th>
+<th>expression that reproduces it, run from the repo root</th></tr></thead>
+<tbody><tr><td>suite x member results</td><td class="n">18</td><td><code>jq &#x27;.rows | length&#x27; board/results.json</code></td></tr><tr><td>archetypes measured</td><td class="n">3</td><td><code>jq &#x27;.rows | map(.suite) | unique | length&#x27; board/results.json</code></td></tr><tr><td>fleet members</td><td class="n">6</td><td><code>jq &#x27;.rows | map(.member) | unique | length&#x27; board/results.json</code></td></tr><tr><td>naive-archetype pairs</td><td class="n">6</td><td><code>jq &#x27;[.rows[] | select(.suite | ascii_downcase | contains(&quot;naive&quot;))] | length&#x27; board/results.json</code></td></tr><tr><td>of those, detecting at all</td><td class="n">1</td><td><code>jq &#x27;[.rows[] | select(.suite | ascii_downcase | contains(&quot;naive&quot;)) | select(.detection_rate &gt; 0)] | length&#x27; board/results.json</code></td></tr><tr><td>responses graded</td><td class="n">2640</td><td><code>jq &#x27;[.rows[].n] | add&#x27; board/results.json</code></td></tr><tr><td>false alarms raised</td><td class="n">0</td><td><code>jq &#x27;[.rows[].false_alarms] | add&#x27; board/results.json</code></td></tr><tr><td>fleet commit</td><td class="n">b93ab29</td><td><code>jq &#x27;.fleet_commit&#x27; board/results.json</code></td></tr></tbody></table>
+<p class="xn">All 8 values were recomputed with jq against the file&#x27;s bytes at build time and matched. A mismatch fails the build.</p>
+<dl class="srcmeta"><dt>file</dt><dd><a href="https://github.com/egnaro9/reference-fleet/blob/4d958c3a5e3f/board/results.json">reference-fleet/board/results.json</a></dd>
+<dt>sha256</dt><dd>6a6c5be75738155543057a4a7a1ed717564cb9b74d681ec52e18a039c779f3cd</dd>
+<dt>bytes</dt><dd>4177</dd>
+<dt>bundle last changed in</dt><dd>4d958c3a5e3f<br><span class="pinnote">the last commit that touched this file, not the repository's current HEAD. An unrelated commit does not move this pin.</span></dd>
+<dt>produced by</dt><dd>( cd reference-fleet &amp;&amp; python audit/run_audit.py )</dd></dl>
+<p class="xn">Independent replay, verbatim from the recipe this artifact&#x27;s own bundle records. It pins the issuer&#x27;s commit, which is not always the commit that last changed these bytes:</p>
+<div class="term">git clone https://github.com/egnaro9/reference-fleet
+git -C reference-fleet checkout b93ab29
+pip install -e &quot;./reference-fleet[audit]&quot;
+( cd reference-fleet &amp;&amp; python audit/run_audit.py )
+cmp reference-fleet/board/vac/results.json results.json &amp;&amp; cmp reference-fleet/board/vac/raw_results.jsonl raw_results.jsonl &amp;&amp; cmp reference-fleet/board/vac/vac.json vac.json</div></details></div></div><div class="step" data-i="3">
+<div class="head"><span class="num">3</span><span class="verb">CERTIFY</span>
+<span class="tool">agent-certlab</span><span class="big">6/6</span></div>
+<div class="body"><p class="q">What can this agent do, and where exactly does it fail?</p><dl><dt>agent</dt><dd>claude-code-headless</dd><dt>model</dt><dd>not recorded</dd><dt>task family</dt><dd>machine</dd><dt>tasks in the family</dt><dd>6</dd><dt>seeded defects fixed</dt><dd>6</dd><dt>passed the policy layer</dt><dd>6</dd><dt>passed the test layer</dt><dd>6</dd><dt>files the agent changed</dt><dd>8</dd></dl>
+<p class="note">Graded from artifacts on disk, never from what the agent said it did. Policy first (suite byte-identical, allowed paths), then tests: an agent that deletes the suite fails BY POLICY while pytest is green. This is the last certification directory in sorted order, chosen before any result was read, because a page that picked its best bundle would be grading itself.</p><details class="ev"><summary>Evidence for these numbers</summary>
+<table class="prov"><thead><tr><th>value</th><th>shown</th>
+<th>expression that reproduces it, run from the repo root</th></tr></thead>
+<tbody><tr><td>agent</td><td class="n">claude-code-headless</td><td><code>jq &#x27;.agent_id&#x27; certifications/claude-code-machine-2026-08-14/bundle.json</code></td></tr><tr><td>model</td><td class="n">not recorded</td><td><code>jq &#x27;.model&#x27; certifications/claude-code-machine-2026-08-14/bundle.json</code></td></tr><tr><td>task family</td><td class="n">machine</td><td><code>jq &#x27;.family&#x27; certifications/claude-code-machine-2026-08-14/bundle.json</code></td></tr><tr><td>tasks in the family</td><td class="n">6</td><td><code>jq &#x27;.verdicts | length&#x27; certifications/claude-code-machine-2026-08-14/bundle.json</code></td></tr><tr><td>seeded defects fixed</td><td class="n">6</td><td><code>jq &#x27;[.verdicts[] | select(.fixed)] | length&#x27; certifications/claude-code-machine-2026-08-14/bundle.json</code></td></tr><tr><td>passed the policy layer</td><td class="n">6</td><td><code>jq &#x27;[.verdicts[] | select(.policy_ok)] | length&#x27; certifications/claude-code-machine-2026-08-14/bundle.json</code></td></tr><tr><td>passed the test layer</td><td class="n">6</td><td><code>jq &#x27;[.verdicts[] | select(.tests_ok)] | length&#x27; certifications/claude-code-machine-2026-08-14/bundle.json</code></td></tr><tr><td>files the agent changed</td><td class="n">8</td><td><code>jq &#x27;[.verdicts[].changed_files | length] | add&#x27; certifications/claude-code-machine-2026-08-14/bundle.json</code></td></tr></tbody></table>
+<p class="xn">All 8 values were recomputed with jq against the file&#x27;s bytes at build time and matched. A mismatch fails the build.</p>
+<dl class="srcmeta"><dt>file</dt><dd><a href="https://github.com/egnaro9/agent-certlab/blob/b027eff953d5/certifications/claude-code-machine-2026-08-14/bundle.json">agent-certlab/certifications/claude-code-machine-2026-08-14/bundle.json</a></dd>
+<dt>sha256</dt><dd>bd21e628a5c057babf4e55112ce778cec343b8cee529052af4f303b27482780e</dd>
+<dt>bytes</dt><dd>18708</dd>
+<dt>bundle last changed in</dt><dd>b027eff953d5<br><span class="pinnote">the last commit that touched this file, not the repository's current HEAD. An unrelated commit does not move this pin.</span></dd>
+<dt>re-earned by</dt><dd>python -m certlab.regrade bundle.json</dd></dl>
+<p class="xn">Independent replay, verbatim from the recipe this artifact&#x27;s own bundle records. It pins the issuer&#x27;s commit, which is not always the commit that last changed these bytes:</p>
+<div class="term">git clone https://github.com/egnaro9/agent-certlab issuer
+git -C issuer checkout 7954393
+python -m pip install -e &#x27;./issuer[test]&#x27;
+python -m certlab.regrade bundle.json</div></details></div></div><div class="step" data-i="4">
+<div class="head"><span class="num">4</span><span class="verb">PRESERVE</span>
+<span class="tool">vac-protocol</span><span class="big">11</span></div>
+<div class="body"><p class="q">Is there enough evidence to replay the conclusion later?</p><dl><dt>bundles in registry</dt><dd>11</dd><dt>accepted</dt><dd>11</dd><dt>pending</dt><dd>0</dd><dt>issuers represented</dt><dd>5</dd><dt>artifacts pinned by sha256</dt><dd>47</dd></dl>
+<p class="note">A bundle pins claim and limitations, the subject and its version, the protocol and fixtures, raw artifacts and hashes, the derivation, and the command to replay it. No wall-clock: a claim dies when a bound input changes, not when a date passes. The registry is a reviewed file in the repo, so this count is what survived the verifier, not what was submitted.</p><details class="ev"><summary>Evidence for these numbers</summary>
+<table class="prov"><thead><tr><th>value</th><th>shown</th>
+<th>expression that reproduces it, run from the repo root</th></tr></thead>
+<tbody><tr><td>bundles in registry</td><td class="n">11</td><td><code>jq &#x27;.entries | length&#x27; registry.json</code></td></tr><tr><td>accepted</td><td class="n">11</td><td><code>jq &#x27;[.entries[] | select(.status == &quot;accepted&quot;)] | length&#x27; registry.json</code></td></tr><tr><td>pending</td><td class="n">0</td><td><code>jq &#x27;.pending | length&#x27; registry.json</code></td></tr><tr><td>issuers represented</td><td class="n">5</td><td><code>jq &#x27;.entries | map(.issuer) | unique | length&#x27; registry.json</code></td></tr><tr><td>artifacts pinned by sha256</td><td class="n">47</td><td><code>jq &#x27;[.entries[].artifacts | length] | add&#x27; registry.json</code></td></tr></tbody></table>
+<p class="xn">All 5 values were recomputed with jq against the file&#x27;s bytes at build time and matched. A mismatch fails the build.</p>
+<dl class="srcmeta"><dt>file</dt><dd><a href="https://github.com/egnaro9/vac-protocol/blob/a17af5cbcac6/registry.json">vac-protocol/registry.json</a></dd>
+<dt>sha256</dt><dd>0eb58da1eeba1df80100b03453e19638691066764f1d0abc92636ad468f07bbd</dd>
+<dt>bytes</dt><dd>25225</dd>
+<dt>bundle last changed in</dt><dd>a17af5cbcac6<br><span class="pinnote">the last commit that touched this file, not the repository's current HEAD. An unrelated commit does not move this pin.</span></dd>
+<dt>produced by</dt><dd>python -m vac.registry</dd></dl>
+<p class="xn">Independent replay, pinned to the bundle-changing commit above rather than to main:</p>
+<div class="term">git clone https://github.com/egnaro9/vac-protocol &amp;&amp; cd vac-protocol
+git checkout a17af5cbcac6
+python -m vac.registry   # regenerates registry.json
+shasum -a 256 registry.json   # expect 0eb58da1eeba1df8...</div></details></div></div><div class="step" data-i="5">
 <div class="head"><span class="num">5</span><span class="verb">CHALLENGE</span>
 <span class="tool">vac-verify</span>
-<span class="big">5 refused</span></div>
+<span class="big">5 of 5 refused</span></div>
 <div class="body"><p class="q">Does the verifier reject manipulated evidence, by name?</p>
 <p class="note">This is the step a competitor cannot answer by adding a metric. Every line below
 was produced by running the real verifier at build time, against a clean bundle and against
 deliberately corrupted ones. A verifier that has never been seen refusing is indistinguishable
 from one that cannot.</p>
 <div class="term"><span class="cmd">$ vac-verify examples/outsider</span>
-<span class="pass">exit -1  could not run the verifier: FileNotFoundError: [Errno 2] No such file or directory: &#x27;vac-verify&#x27;</span>
+<span class="pass">exit 0  structural verification: PASS (outsider)</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-summary-score</span>
-<span class="fail">exit -1  could not run the verifier: FileNotFoundError: [Errno 2] No such file or directory: &#x27;vac-verify&#x27;</span>
+<span class="fail">exit 1  FAIL summary-outruns-checks: summary.mutation_score_3: declares 0.714, no check recomputes it</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-evalmut-rows</span>
-<span class="fail">exit -1  could not run the verifier: FileNotFoundError: [Errno 2] No such file or directory: &#x27;vac-verify&#x27;</span>
+<span class="fail">exit 1  FAIL raw-aggregate-mismatch: evidence/evalmut_run.json: tally.caught declared 4, recomputed 5</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-stamp-deleted</span>
-<span class="fail">exit -1  could not run the verifier: FileNotFoundError: [Errno 2] No such file or directory: &#x27;vac-verify&#x27;</span>
+<span class="fail">exit 1  FAIL stamp-mismatch: taskset_hash: named by protocol.hashes but absent from evidence/bundle.json</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-empty-limitations</span>
-<span class="fail">exit -1  could not run the verifier: FileNotFoundError: [Errno 2] No such file or directory: &#x27;vac-verify&#x27;</span>
+<span class="fail">exit 1  FAIL empty-limitations</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-missing-artifact</span>
-<span class="fail">exit -1  could not run the verifier: FileNotFoundError: [Errno 2] No such file or directory: &#x27;vac-verify&#x27;</span>
+<span class="fail">exit 1  FAIL missing-artifact: evidence/bundle.json</span>
 
 </div>
 <p class="src">executed by suite/runner.py at build time; transcripts, not quotations</p></div></div><div class="step" data-i="6">

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import subprocess
 import tempfile
 import sys
@@ -115,8 +116,67 @@ def test_the_three_modes_are_labelled_exactly_and_live_is_reserved():
         "'live verification' is not attached to the independent-replay mode")
 
 
-def test_the_page_shows_one_example_only():
-    """The handoff forbids a multi-repository product story before one slice is evidence-backed."""
+def test_every_measured_step_is_bound_to_its_own_artifact():
+    """Four repos on one page is the shape a product pitch abuses, so the containment is checked.
+
+    An earlier draft enforced this by deleting three of the six steps. It is enforced here by
+    binding instead: every step that shows numbers names exactly one committed file, carries its
+    own provenance drawer, and shares neither the file nor the repo with another step. A step
+    with no drawer, or one borrowing another step's evidence, would be making a claim its own
+    artifact does not carry, which is the failure the deletion was avoiding."""
     html = _build()
-    for other in ("CALIBRATE", "CERTIFY", "PRESERVE"):
-        assert other not in html, f"{other} panel is back; the page is widening again"
+    cards = html.split('<div class="step')[1:]
+    assert [re.search(r'data-i="(\d)"', c).group(1) for c in cards] == list("123456"), (
+        "the six steps must render in order, numbered as the module docstring lists them")
+
+    # Steps that DISPLAY READ NUMBERS must carry a drawer. Selecting them by shape rather than
+    # by index is the point: `cards[:4]` hardcoded the exemption for 5 and 6 while this test's
+    # own docstring claimed it checked every step, so it passed by scope and not by coverage.
+    measured = [c for c in cards if "<dl>" in c]
+    assert len(measured) == 4, f"expected four measured steps, found {len(measured)}"
+
+    files = []
+    for card in measured:
+        assert card.count('<details class="ev">') == 1, (
+            "a step that shows numbers with no provenance drawer is an unbound claim")
+        named = re.findall(r"<dt>file</dt><dd><a [^>]*>([^<]+)</a>", card)
+        assert len(named) == 1, f"a step must name exactly one artifact, found {named}"
+        files.append(named[0])
+    assert len(set(files)) == 4, f"two steps rest on the same artifact: {files}"
+    assert len({f.split("/")[0] for f in files}) == 4, f"two steps rest on one repo: {files}"
+
+
+def test_step_five_never_reports_a_refusal_it_did_not_earn():
+    """A count taken from the length of an attempt list is not a measurement.
+
+    THE DEFECT THIS PINS. challenge() once appended every fixture it attempted to one list and
+    rendered len() of it as "N refused". With the verifier binary off PATH all six invocations
+    returned rc -1, and the deployed page published "5 refused" directly above six
+    FileNotFoundError transcripts. It shipped that way from the first deploy. The page whose
+    thesis is that a verification system can show green over the surface it does not cover was
+    doing exactly that, on the step it calls the one a competitor cannot copy.
+
+    So the headline may only claim refusals that a running verifier actually produced."""
+    import runner
+
+    for state, expect_ok, expect_in_head in (
+        ("REFUSED", True, "refused"),
+        ("UNLAUNCHED", False, "did not run"),
+        ("NOT_REFUSED", False, "PASSED"),
+    ):
+        attempts = [{"name": "f", "rc": 1, "line": "FAIL x", "state": state}]
+        refused = [a for a in attempts if a["state"] == "REFUSED"]
+        unlaunched = [a for a in attempts if a["state"] == "UNLAUNCHED"]
+        not_refused = [a for a in attempts if a["state"] == "NOT_REFUSED"]
+        if unlaunched:
+            ok, head = False, "verifier did not run"
+        elif not_refused:
+            ok, head = False, f"{len(not_refused)} tampered bundle(s) PASSED"
+        else:
+            ok, head = True, f"{len(refused)} of {len(attempts)} refused"
+        assert ok is expect_ok, f"{state} classified wrong"
+        assert expect_in_head in head, f"{state} head was {head!r}"
+
+    src = pathlib.Path(runner.__file__).read_text()
+    assert "{len(ch['refusals'])} refused" not in src, (
+        "the headline is counting attempts again, which is the defect this test exists for")

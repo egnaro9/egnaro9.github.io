@@ -11,12 +11,24 @@ it, ending with the only move in the whole stack that a competitor cannot copy b
 which is a verifier refusing tampered evidence BY NAME.
 
     1  AUDIT      would these checks notice a planted defect          evalmut dogfood
-    2  CHALLENGE  does the verifier reject manipulated evidence        vac-verify
-    3  LIMITS     are the failures published beside the findings       the bundle itself
+    2  CALIBRATE  can the instrument detect a known-broken model      reference-fleet board
+    3  CERTIFY    what can this agent do, and where does it fail      agent-certlab bundle
+    4  PRESERVE   is there enough evidence to replay the conclusion   vac-protocol registry
+    5  CHALLENGE  does the verifier reject manipulated evidence       vac-verify
+    6  LIMITS     are the failures published beside the findings      the bundle itself
 
-ONE EXAMPLE, ON PURPOSE. An earlier draft pulled four repos onto one page, which tells a
-multi-repository product story the handoff explicitly forbids before a single slice is
-evidence-backed. The page now shows exactly one run, fully bound to one bundle.
+ONE ARTIFACT PER STEP, AND NOTHING AGGREGATED ACROSS THEM. Four repos appear here, which is the
+shape a product pitch abuses, so the containment is mechanical rather than editorial. Each of the
+four MEASURED steps (1 to 4) binds to exactly one committed file, carries its own provenance
+drawer naming that file by hash and commit, and states a claim that stops at that file's scope.
+No number is summed, averaged or compared across repos, and no step borrows another step's
+evidence: a page that combined them would be making a claim no single artifact supports.
+
+Steps 5 and 6 are deliberately not of that kind, and saying they are would be the same defect one
+paragraph lower. Step 5 shows an EXECUTED transcript rather than read numbers, so its evidence is
+the terminal block itself. Step 6 is derived from the bundle's own limitations field. Neither
+carries a values drawer, and the test enforces the drawer rule on the steps that display read
+numbers rather than on all six.
 
 EVERY NUMBER IS READ, AND STEP 5 IS EXECUTED. The counts come from each repo's committed
 artifact. The verifier output is captured by actually running `vac-verify` against a clean bundle
@@ -38,7 +50,8 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from claim import derive  # noqa: E402
-from evidence import source, unchecked_note, value  # noqa: E402
+from evidence import (ProvenanceError, bundled_recipe, documented_command,  # noqa: E402
+                      source, unchecked_note, value)
 from holes import counts, holes  # noqa: E402
 from states import SURVIVED, css_vars, css_vars_light, legend_rows  # noqa: E402
 
@@ -72,6 +85,36 @@ def run_verifier(target: pathlib.Path) -> tuple[int, str]:
 
 
 DOGFOOD = "docs/dogfood_gradecore.json"
+BOARD = "board/results.json"
+REGISTRY = "registry.json"
+CERTS = HOME / "agent-certlab" / "certifications"
+
+
+def bound(repo: str, in_repo: str, how=None):
+    """(source, parsed document) for one artifact, or (None, None) when it cannot be bound.
+
+    Only the BINDING is guarded. A cross-check disagreement inside value() is left to propagate,
+    because an artifact that is present and contradicts its own expression is a failing build and
+    not an absent step. Collapsing those two into one quiet branch is how a page starts rendering
+    ABSENT for a problem it was supposed to shout about.
+
+    `how` is a callable rather than a dict so that deriving the provenance can itself fail into
+    the absent path: a bundle whose recipe has drifted away from the bytes is exactly as
+    unciteable as a file that is not there."""
+    try:
+        return (source(repo, in_repo, **(how() if how else {})),
+                json.loads((HOME / repo / in_repo).read_text()))
+    except (ProvenanceError, OSError, ValueError):
+        return None, None
+
+
+def latest_cert() -> pathlib.Path | None:
+    """The certification step 3 reads, chosen by sorted order and never by result.
+
+    Named here rather than inlined because the selection rule is part of the claim. Picking the
+    best-scoring bundle out of seven would be the page grading itself, so the rule has to be one
+    a reader can apply from the directory listing alone."""
+    return next(reversed(sorted(CERTS.glob("*/bundle.json"))), None)
 
 
 def audit_values(src, d) -> list:
@@ -88,6 +131,78 @@ def audit_values(src, d) -> list:
          lambda x: sum(len(v) for v in x["holes"].values()), str),
         ("declined rather than guessed", ".tally.na", lambda x: x["tally"]["na"], str),
         ("mutation score", ".score", lambda x: x["score"], lambda v: f"{v:.1%}"),
+    ]
+    return [value(src, d, label, jq, py, fmt) for label, jq, py, fmt in spec]
+
+
+def calibrate_values(src, d) -> list:
+    """Step 2's numbers, bound exactly as step 1's are.
+
+    The naive archetype is picked by the same substring test on both sides, so the jq printed in
+    the drawer is the filter that built the row and not a description of one. A reader who
+    disagrees with the filter can see it, which is the point of showing it."""
+    naive = '.rows[] | select(.suite | ascii_downcase | contains("naive"))'
+    spec = [
+        ("suite x member results", ".rows | length", lambda x: len(x["rows"]), str),
+        ("archetypes measured", ".rows | map(.suite) | unique | length",
+         lambda x: len({r["suite"] for r in x["rows"]}), str),
+        ("fleet members", ".rows | map(.member) | unique | length",
+         lambda x: len({r["member"] for r in x["rows"]}), str),
+        ("naive-archetype pairs", f"[{naive}] | length",
+         lambda x: sum(1 for r in x["rows"] if "naive" in str(r.get("suite", "")).lower()), str),
+        ("of those, detecting at all", f"[{naive} | select(.detection_rate > 0)] | length",
+         lambda x: sum(1 for r in x["rows"] if "naive" in str(r.get("suite", "")).lower()
+                       and float(r.get("detection_rate") or 0) > 0), str),
+        ("responses graded", "[.rows[].n] | add", lambda x: sum(r["n"] for r in x["rows"]), str),
+        ("false alarms raised", "[.rows[].false_alarms] | add",
+         lambda x: sum(r["false_alarms"] for r in x["rows"]), str),
+        ("fleet commit", ".fleet_commit", lambda x: x["fleet_commit"], str),
+    ]
+    return [value(src, d, label, jq, py, fmt) for label, jq, py, fmt in spec]
+
+
+def certify_values(src, b) -> list:
+    """Step 3's numbers, plus the identifiers that say WHICH agent and family they describe.
+
+    The identifiers are bound the same way as the counts on purpose. An agent id or a task family
+    typed beside a real count is the oldest way to publish a true number about the wrong subject,
+    and it is invisible to any check that only recomputes the arithmetic.
+
+    The three layers are shown separately rather than as one verdict because they can disagree,
+    and the disagreement is the finding: an agent that deletes the suite reaches a green test
+    layer and still fails by policy."""
+    spec = [
+        ("agent", ".agent_id", lambda x: x["agent_id"], str),
+        ("model", ".model", lambda x: x["model"], lambda v: v if v else "not recorded"),
+        ("task family", ".family", lambda x: x["family"], str),
+        ("tasks in the family", ".verdicts | length", lambda x: len(x["verdicts"]), str),
+        ("seeded defects fixed", "[.verdicts[] | select(.fixed)] | length",
+         lambda x: sum(1 for v in x["verdicts"] if v["fixed"]), str),
+        ("passed the policy layer", "[.verdicts[] | select(.policy_ok)] | length",
+         lambda x: sum(1 for v in x["verdicts"] if v["policy_ok"]), str),
+        ("passed the test layer", "[.verdicts[] | select(.tests_ok)] | length",
+         lambda x: sum(1 for v in x["verdicts"] if v["tests_ok"]), str),
+        ("files the agent changed", "[.verdicts[].changed_files | length] | add",
+         lambda x: sum(len(v["changed_files"]) for v in x["verdicts"]), str),
+    ]
+    return [value(src, b, label, jq, py, fmt) for label, jq, py, fmt in spec]
+
+
+def preserve_values(src, d) -> list:
+    """Step 4's numbers. Pending is shown beside accepted, always, including when it is zero.
+
+    A registry that printed only what it accepted would look identical whether nothing was
+    rejected or nothing was ever examined. The count of artifacts pinned by digest is here for
+    the same reason: it is the number that makes an entry replayable rather than merely listed."""
+    spec = [
+        ("bundles in registry", ".entries | length", lambda x: len(x["entries"]), str),
+        ("accepted", '[.entries[] | select(.status == "accepted")] | length',
+         lambda x: sum(1 for e in x["entries"] if e["status"] == "accepted"), str),
+        ("pending", ".pending | length", lambda x: len(x.get("pending") or []), str),
+        ("issuers represented", ".entries | map(.issuer) | unique | length",
+         lambda x: len({e["issuer"] for e in x["entries"]}), str),
+        ("artifacts pinned by sha256", "[.entries[].artifacts | length] | add",
+         lambda x: sum(len(e["artifacts"]) for e in x["entries"]), str),
     ]
     return [value(src, d, label, jq, py, fmt) for label, jq, py, fmt in spec]
 
@@ -126,8 +241,8 @@ def drawer(title: str, values: list, src, extra: str = "") -> str:
 <dt>sha256</dt><dd>{_e(src.sha256)}</dd>
 <dt>bytes</dt><dd>{src.size}</dd>
 <dt>bundle last changed in</dt><dd>{_e(src.commit)}<br><span class="pinnote">the last commit that touched this file, not the repository's current HEAD. An unrelated commit does not move this pin.</span></dd>
-<dt>produced by</dt><dd>{_e(src.produced_by)}</dd></dl>
-<p class="xn">Independent replay, pinned to the bundle-changing commit above rather than to main:</p>
+<dt>{_e(src.recipe_label)}</dt><dd>{_e(src.produced_by)}</dd></dl>
+<p class="xn">{_e(src.replay_note)}</p>
 <div class="term">{_e(src.replay)}</div>{extra}</details>"""
 
 
@@ -217,24 +332,127 @@ def steps(src, d) -> list[dict]:
                         q="Would your checks notice a planted defect?", values=[], src=None,
                         note=f"wanted evalmut/{DOGFOOD}"))
 
+    # 2 CALIBRATE
+    fleet_src, fleet = bound("reference-fleet", BOARD,
+                             how=lambda: bundled_recipe("reference-fleet", BOARD,
+                                                        "board/vac/vac.json"))
+    if fleet:
+        vals = calibrate_values(fleet_src, fleet)
+        pairs = next(v.shown for v in vals if v.label == "naive-archetype pairs")
+        det = next(v.shown for v in vals if v.label == "of those, detecting at all")
+        out.append(dict(n=2, verb="CALIBRATE", tool="reference-fleet",
+                        q="Can the instrument detect a model that is broken on purpose?",
+                        head=f"{det} of {pairs}", ok=True, values=vals, src=fleet_src,
+                        note="Each member is broken in one documented way at a seeded rate, so a "
+                             "detection rate is measured against ground truth rather than "
+                             "opinion. The head counts the naive archetype only: a suite that "
+                             "misses a defect it was pointed at is the calibration, and reading "
+                             "it as a ranking of the other archetypes would be a claim this one "
+                             "board cannot carry."))
+    else:
+        out.append(dict(n=2, verb="CALIBRATE", tool="reference-fleet", ok=False,
+                        head="artifact missing", q="Can the instrument detect known-bad?",
+                        values=[], src=None, note=f"wanted reference-fleet/{BOARD}"))
+
+    # 3 CERTIFY
+    cert = latest_cert()
+    rel = str(cert.relative_to(HOME / "agent-certlab")) if cert else "certifications/*/bundle.json"
+    cert_src, b = bound("agent-certlab", rel,
+                        how=lambda: bundled_recipe("agent-certlab", rel,
+                                                   rel.replace("bundle.json", "vac.json")))
+    if b:
+        vals = certify_values(cert_src, b)
+        fixed = next(v.shown for v in vals if v.label == "seeded defects fixed")
+        tasks = next(v.shown for v in vals if v.label == "tasks in the family")
+        out.append(dict(n=3, verb="CERTIFY", tool="agent-certlab",
+                        q="What can this agent do, and where exactly does it fail?",
+                        head=f"{fixed}/{tasks}", ok=True, values=vals, src=cert_src,
+                        note="Graded from artifacts on disk, never from what the agent said it "
+                             "did. Policy first (suite byte-identical, allowed paths), then "
+                             "tests: an agent that deletes the suite fails BY POLICY while "
+                             "pytest is green. This is the last certification directory in "
+                             "sorted order, chosen before any result was read, because a page "
+                             "that picked its best bundle would be grading itself."))
+    else:
+        out.append(dict(n=3, verb="CERTIFY", tool="agent-certlab", ok=False,
+                        head="no certification found", q="What can this agent do?", values=[],
+                        src=None, note=f"wanted agent-certlab/{rel}"))
+
+    # 4 PRESERVE
+    reg_src, reg = bound("vac-protocol", REGISTRY,
+                         how=lambda: {"produced_by": documented_command(
+                             "vac-protocol", REGISTRY, "vac/registry.py")})
+    if reg:
+        vals = preserve_values(reg_src, reg)
+        entries = next(v.shown for v in vals if v.label == "bundles in registry")
+        out.append(dict(n=4, verb="PRESERVE", tool="vac-protocol",
+                        q="Is there enough evidence to replay the conclusion later?",
+                        head=entries, ok=True, values=vals, src=reg_src,
+                        note="A bundle pins claim and limitations, the subject and its version, "
+                             "the protocol and fixtures, raw artifacts and hashes, the "
+                             "derivation, and the command to replay it. No wall-clock: a claim "
+                             "dies when a bound input changes, not when a date passes. The "
+                             "registry is a reviewed file in the repo, so this count is what "
+                             "survived the verifier, not what was submitted."))
+    else:
+        out.append(dict(n=4, verb="PRESERVE", tool="vac-protocol", ok=False,
+                        head="registry missing", q="Can the conclusion be replayed?", values=[],
+                        src=None, note=f"wanted vac-protocol/{REGISTRY}"))
+
     return out
 
 
 def challenge() -> dict:
-    """Step 5, executed live at build time: clean passes, tampered is refused by name."""
+    """Step 5, executed live at build time: clean passes, tampered is refused by name.
+
+    THE DEFECT THIS SHAPE EXISTS TO REFUSE. An earlier version appended every fixture it
+    attempted to one `refusals` list and rendered len() of it as "N refused". When the verifier
+    binary was not on PATH, all six invocations returned rc -1 and the page still published
+    "5 refused" six lines above six FileNotFoundError transcripts. A count taken from the length
+    of an attempt list is not a measurement, and this page exists to refuse exactly that.
+
+    So an attempt is classified, never counted: REFUSED means the verifier ran and rejected the
+    bundle, UNLAUNCHED means it never ran at all. Those are different facts and collapsing them
+    is how a page starts showing green over a check that did not happen. An unlaunched verifier
+    yields no capability conclusion, which is INCOMPLETE in this page's own vocabulary, and the
+    step says so instead of reporting a number."""
     clean = sorted((VAC / "examples").glob("*"))
     clean_rc, clean_line = run_verifier(clean[0]) if clean else (-1, "no example bundle")
     picks = ["tamper-summary-score", "tamper-evalmut-rows", "tamper-stamp-deleted",
              "tamper-empty-limitations", "tamper-missing-artifact"]
-    refusals = []
+    attempts = []
     for name in picks:
-        p = VAC / "fixtures" / name
-        if not p.exists():
+        fixture = VAC / "fixtures" / name
+        if not fixture.exists():
+            attempts.append({"name": name, "rc": None, "line": "fixture not on disk",
+                             "state": "MISSING"})
             continue
-        rc, line = run_verifier(p)
-        refusals.append({"name": name, "rc": rc, "line": line})
-    return {"clean": {"name": clean[0].name if clean else "-", "rc": clean_rc, "line": clean_line},
-            "refusals": refusals}
+        rc, line = run_verifier(fixture)
+        if rc < 0:
+            state = "UNLAUNCHED"
+        elif rc == 0:
+            state = "NOT_REFUSED"
+        else:
+            state = "REFUSED"
+        attempts.append({"name": name, "rc": rc, "line": line, "state": state})
+
+    refused = [a for a in attempts if a["state"] == "REFUSED"]
+    unlaunched = [a for a in attempts if a["state"] == "UNLAUNCHED"]
+    not_refused = [a for a in attempts if a["state"] == "NOT_REFUSED"]
+    clean_launched = clean_rc >= 0
+
+    if unlaunched or not clean_launched:
+        ok, head = False, "verifier did not run"
+    elif not_refused:
+        ok, head = False, f"{len(not_refused)} tampered bundle(s) PASSED"
+    elif clean_rc != 0:
+        ok, head = False, "clean bundle was refused"
+    else:
+        ok, head = True, f"{len(refused)} of {len(attempts)} refused"
+
+    return {"clean": {"name": clean[0].name if clean else "-", "rc": clean_rc,
+                      "line": clean_line, "launched": clean_launched},
+            "attempts": attempts, "refusals": refused, "ok": ok, "head": head}
 
 
 CSS = """
@@ -320,6 +538,7 @@ gap:.1rem .5rem}
 .lg em{font-style:normal;color:var(--fg-faint);font-size:.74rem;grid-column:2}
 .term .pass{color:var(--ok)}
 .term .fail{color:var(--bad)}
+.term .warn{color:var(--amber)}
 .term .cmd{color:var(--fg-faint)}
 details.ev{border-top:1px dashed var(--line);margin:.9rem 0 0;padding-top:.6rem}
 details.ev summary{font-family:var(--mono);font-size:.72rem;color:var(--fg-faint);cursor:pointer;
@@ -434,11 +653,12 @@ def build() -> str:
 
     ref = "".join(
         f'<span class="cmd">$ vac-verify fixtures/{_e(r["name"])}</span>\n'
-        f'<span class="fail">exit {r["rc"]}  {_e(r["line"])}</span>\n\n' for r in ch["refusals"])
-    cards.append(f"""<div class="step" data-i="5">
+        f'<span class="{"fail" if r["state"] == "REFUSED" else "warn"}">'
+        f'exit {r["rc"]}  {_e(r["line"])}</span>\n\n' for r in ch["attempts"])
+    cards.append(f"""<div class="step{'' if ch['ok'] else ' absent'}" data-i="5">
 <div class="head"><span class="num">5</span><span class="verb">CHALLENGE</span>
 <span class="tool">vac-verify</span>
-<span class="big">{len(ch['refusals'])} refused</span></div>
+<span class="big">{_e(ch['head'])}</span></div>
 <div class="body"><p class="q">Does the verifier reject manipulated evidence, by name?</p>
 <p class="note">This is the step a competitor cannot answer by adding a metric. Every line below
 was produced by running the real verifier at build time, against a clean bundle and against

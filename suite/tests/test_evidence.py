@@ -82,15 +82,37 @@ def test_digest_matches_an_independent_hasher():
 
 # ---------------------------------------------------------------- the page a visitor reads
 
-def _rows(page: str) -> list[tuple[str, str]]:
-    """(shown value, command) for every provenance row in the rendered page."""
+def _rows(page: str) -> list[tuple[str, str, str]]:
+    """(repo, shown value, command) for every provenance row in the rendered page.
+
+    The repo comes from the same drawer the row sits in, because each drawer prints commands
+    relative to ITS repo root. Reading the rows without that context was safe only while the page
+    cited one repository; running a reference-fleet expression inside evalmut would fail for a
+    reason that has nothing to do with whether the page is telling the truth."""
     out = []
-    for tr in re.findall(r"<tr><td>.*?</tr>", page, re.S):
-        shown = re.search(r'<td class="n">(.*?)</td>', tr)
-        cmd = re.search(r"<code>(.*?)</code>", tr, re.S)
-        if shown and cmd:
-            out.append((html.unescape(shown.group(1)), html.unescape(cmd.group(1))))
+    for block in page.split('<details class="ev">')[1:]:
+        drawer = block.split("</details>")[0]
+        named = re.search(r"<dt>file</dt><dd><a [^>]*>([^<]+)</a>", drawer)
+        repo = html.unescape(named.group(1)).split("/")[0] if named else ""
+        for tr in re.findall(r"<tr><td>.*?</tr>", drawer, re.S):
+            shown = re.search(r'<td class="n">(.*?)</td>', tr)
+            cmd = re.search(r"<code>(.*?)</code>", tr, re.S)
+            if shown and cmd:
+                out.append((repo, html.unescape(shown.group(1)), html.unescape(cmd.group(1))))
     return out
+
+
+def _as_shown(raw):
+    """The page's formatters, restated so the test knows what a faithful render looks like.
+
+    Only two exist beyond str(): a rate is a percentage, and a field the artifact leaves null is
+    NAMED rather than rendered blank, because an empty cell reads as a value of zero length
+    instead of a fact the bundle never recorded."""
+    if raw is None:
+        return "not recorded"
+    if isinstance(raw, float):
+        return f"{raw:.1%}"
+    return str(raw)
 
 
 @pytest.mark.skipif(not PAGE.exists(), reason="page not built")
@@ -110,16 +132,16 @@ def test_rendered_commands_reproduce_the_shown_values():
     This is the assertion that closes the loop. It does not consult the generator, the Source
     object, or any Python derivation: it takes the command text out of the HTML, executes it in
     the repo the page points at, and compares to the number printed beside it."""
-    repo = HOME / "evalmut"
     checked = 0
-    for shown, cmd in _rows(PAGE.read_text()):
+    for repo, shown, cmd in _rows(PAGE.read_text()):
+        assert repo, f"a provenance row names no repository: {cmd!r}"
         m = re.fullmatch(r"jq '(.+)' (\S+)", cmd)
         assert m, f"row command is not runnable as printed: {cmd!r}"
         expr, target = m.group(1), m.group(2)
-        p = subprocess.run([JQ, "-e", expr, target], cwd=repo, capture_output=True, text=True)
-        assert p.returncode in (0, 1), f"{cmd} failed: {p.stderr.strip()}"
-        raw = json.loads(p.stdout)
-        rendered = f"{raw:.1%}" if isinstance(raw, float) else str(raw)
+        p = subprocess.run([JQ, "-e", expr, target], cwd=HOME / repo,
+                           capture_output=True, text=True)
+        assert p.returncode in (0, 1), f"{cmd} failed in {repo}: {p.stderr.strip()}"
+        rendered = _as_shown(json.loads(p.stdout))
         assert rendered == shown, f"page shows {shown!r} for `{cmd}` which returns {rendered!r}"
         checked += 1
     assert checked >= 9

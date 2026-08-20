@@ -26,6 +26,15 @@ presence" is the rule the whole estate is built on.
 THE RECORDED COMMAND IS ALSO NOT TYPED. It is extracted from the emitter's own argv table by
 parsing that source file, so a page can never advertise a command that no longer produces the
 artifact. If the table stops containing the artifact, this raises rather than guessing.
+
+THREE ROUTES TO THAT COMMAND, ONE RULE. An argv table is the common shape and `producing_command`
+parses it. Two other shapes exist in this estate and neither can be forced through that table
+honestly. Some repos record the replay recipe inside the VAC bundle that pins the artifact, which
+`bundled_recipe` reads and refuses unless the bundle names these exact bytes. Some document the
+generator in a usage block instead of a table, which `documented_command` reads and refuses
+unless the block names the artifact beside the command. The rule is identical in all three: the
+command is read out of the source repo, and its disappearance raises rather than falling back to
+a remembered string.
 """
 from __future__ import annotations
 
@@ -33,6 +42,7 @@ import ast
 import hashlib
 import json
 import pathlib
+import re
 import shutil
 import subprocess
 from dataclasses import dataclass
@@ -56,6 +66,8 @@ class Source:
     size: int
     commit: str       # last commit that TOUCHED this artifact, never the repo's HEAD
     produced_by: str  # the command that emits this artifact, read from the emitter
+    recipe: tuple[str, ...] = ()       # replay lines the artifact's own repo records for it
+    recipe_label: str = "produced by"  # "re-earned by" when the bytes cannot be regenerated
 
     @property
     def url(self) -> str:
@@ -63,11 +75,29 @@ class Source:
 
     @property
     def replay(self) -> str:
-        """Exactly what a stranger runs to get these bytes, pinned to a commit and not to main."""
+        """Exactly what a stranger runs to get these bytes, pinned to a commit and not to main.
+
+        A recorded recipe always wins over one composed here, because not every artifact is
+        regenerable. agent-certlab's bundle is the record of a live agent run and the issuer says
+        so plainly: replay of the AGENT is not claimed, replay of the GRADING is. Synthesizing a
+        "regenerates" line over that would be a false provenance claim, which is the one thing
+        this module exists to make impossible."""
+        if self.recipe:
+            return "\n".join(self.recipe)
         return (f"git clone https://github.com/egnaro9/{self.repo} && cd {self.repo}\n"
                 f"git checkout {self.commit}\n"
                 f"{self.produced_by}   # regenerates {self.in_repo}\n"
                 f"shasum -a 256 {self.in_repo}   # expect {self.sha256[:16]}...")
+
+    @property
+    def replay_note(self) -> str:
+        """The sentence introducing the route, so it cannot describe a route that is not there."""
+        if self.recipe:
+            return ("Independent replay, verbatim from the recipe this artifact's own bundle "
+                    "records. It pins the issuer's commit, which is not always the commit that "
+                    "last changed these bytes:")
+        return ("Independent replay, pinned to the bundle-changing commit above rather than to "
+                "main:")
 
 
 @dataclass(frozen=True)
@@ -146,14 +176,107 @@ def producing_command(repo: str, in_repo: str, emitter: str = "emit_vac.py",
     raise ProvenanceError(f"{src}: no ARTIFACTS table found")
 
 
-def source(repo: str, in_repo: str, **kw) -> Source:
+def _is_setup(cmd: str) -> bool:
+    """Clone, checkout and install get a stranger to the starting line. They produce nothing."""
+    t = cmd.split()
+    return bool(t) and (t[0] in ("git", "pip")
+                        or (t[0] in ("python", "python3") and t[1:3] == ["-m", "pip"]))
+
+
+def bundled_recipe(repo: str, in_repo: str, bundle: str) -> dict:
+    """The replay recipe an artifact's own committed VAC bundle records for it.
+
+    WHY THIS SITS BESIDE producing_command. That function reads an emitter's argv table, which
+    exists only where one command regenerates the bytes. Two artifacts on the runner are not like
+    that: reference-fleet's board is re-emitted by an audit run rather than by a CLI entry, and
+    agent-certlab's bundle records a live agent run that nobody can regenerate at all. Both repos
+    already commit the exact recipe beside the artifact, inside the VAC bundle that pins it, so
+    the recipe is READ from there rather than composed here.
+
+    The pairing is checked, not assumed. The bundle has to list this artifact at the sha256 of
+    the bytes on disk or this raises, because a recipe attached to different bytes is a caption,
+    and captions are what this module exists to refuse.
+
+    Whether the recipe REGENERATES the artifact is derived too, not asserted: it does exactly
+    when one of the recorded commands byte-compares the artifact. That decides the label the
+    drawer prints, so a bundle that can only re-earn its numbers is never shown as if it could
+    rebuild its bytes."""
+    p = HOME / repo / bundle
+    try:
+        doc = json.loads(p.read_text())
+        pinned = {e["path"]: e["sha256"] for e in doc["evidence"]}
+        commands = tuple(doc["replay"]["commands"])
+    except Exception as e:
+        raise ProvenanceError(
+            f"cannot read a replay recipe from {p}: {type(e).__name__}: {e}") from e
+
+    name = in_repo.rsplit("/", 1)[-1]
+    if name not in pinned:
+        raise ProvenanceError(
+            f"{p} records no evidence entry for {name!r}, so its recipe is not a recipe for this "
+            "artifact. Refusing to print a route that belongs to other bytes.")
+    digest, _ = _sha256(HOME / repo / in_repo)
+    if pinned[name] != digest:
+        raise ProvenanceError(
+            f"{p} pins {name} at {pinned[name][:16]} but the bytes on disk hash to {digest[:16]}. "
+            "The recipe and the artifact have drifted apart.")
+
+    work = [c for c in commands if not _is_setup(c) and c.split()[:1] != ["cmp"]]
+    if not work:
+        raise ProvenanceError(
+            f"{p}: the recorded replay is setup and comparison only, so it names no command that "
+            "produces or re-earns the artifact.")
+    regenerates = any(c.split()[:1] == ["cmp"] and name in c for c in commands)
+    return {"produced_by": work[-1], "recipe": commands,
+            "recipe_label": "produced by" if regenerates else "re-earned by"}
+
+
+def documented_command(repo: str, in_repo: str, module: str) -> str:
+    """The invocation a module's own usage block pairs with this artifact.
+
+    Same discipline as producing_command and for the same reason. vac-protocol documents its
+    registry generator as a usage block in the module docstring rather than as an argv table, so
+    that block is what gets parsed. A module that stops naming the artifact beside a command has
+    stopped documenting how to regenerate it, and this page must not paper over that with a
+    remembered string.
+
+    Exactly one pairing is accepted. Several would mean the page had to choose which command it
+    credits, and choosing is the step that turns evidence back into a caption."""
+    p = HOME / repo / module
+    try:
+        doc = ast.get_docstring(ast.parse(p.read_text())) or ""
+    except Exception as e:
+        raise ProvenanceError(f"cannot parse {p}: {type(e).__name__}: {e}") from e
+
+    name = in_repo.rsplit("/", 1)[-1]
+    found = []
+    for line in doc.splitlines():
+        cols = re.split(r"\s{2,}", line.strip())
+        if len(cols) >= 2 and cols[0] and name in " ".join(cols[1:]):
+            found.append(cols[0])
+    if len(found) != 1:
+        raise ProvenanceError(
+            f"{p}: its usage block names {name!r} beside {len(found)} commands. Refusing to guess "
+            "which one produces the artifact on this page.")
+    return found[0]
+
+
+def source(repo: str, in_repo: str, produced_by: str | None = None,
+           recipe: tuple[str, ...] = (), recipe_label: str = "produced by", **kw) -> Source:
+    """Bind one committed artifact to the bytes and the commit it actually came from.
+
+    `produced_by` stays None for the common case, where it is extracted from the emitter's argv
+    table. It is passed in only as the RESULT of another derivation in this module, never as a
+    string typed at a call site: the rule is that the command was read out of the source repo and
+    raises when the pairing is gone, not that one particular parser produced it."""
     p = HOME / repo / in_repo
     if not p.exists():
         raise ProvenanceError(f"{p} does not exist")
     digest, size = _sha256(p)
     return Source(rel=f"{repo}/{in_repo}", repo=repo, in_repo=in_repo, sha256=digest,
                   size=size, commit=_commit(HOME / repo, in_repo),
-                  produced_by=producing_command(repo, in_repo, **kw))
+                  produced_by=produced_by or producing_command(repo, in_repo, **kw),
+                  recipe=recipe, recipe_label=recipe_label)
 
 
 def _run_jq(expr: str, path: pathlib.Path):
