@@ -193,3 +193,77 @@ def test_step_five_never_reports_a_refusal_it_did_not_earn():
     src = pathlib.Path(runner.__file__).read_text()
     assert "{len(ch['refusals'])} refused" not in src, (
         "the headline is counting attempts again, which is the defect this test exists for")
+
+
+# --- the two live-page defects repaired in this commit ------------------------------
+
+def _page():
+    import subprocess, pathlib, os
+    env = dict(os.environ)
+    env["PATH"] = str(pathlib.Path.home() / "vac-protocol/.venv/bin") + os.pathsep + env["PATH"]
+    out = pathlib.Path("/tmp/_copytest.html")
+    subprocess.run(["python3", "runner.py", str(out)], cwd=str(pathlib.Path(__file__).parent.parent),
+                   check=True, capture_output=True, env=env)
+    return out.read_text()
+
+
+def test_a_truncated_transcript_says_how_many_lines_it_dropped():
+    """Each rendered count is checked against ITS OWN fixture's real FAIL line count.
+
+    Two earlier weaknesses, both found by mutating this test rather than by reading it. It began
+    `if not shown: return`, so removing every count made it vacuously green, which is the exact
+    C5 defect passing its own regression test. And it compared `shown <= real` as SETS, so
+    publishing a 9-reason fixture as "(first of 3 named reasons)" passed because 3 was a real
+    count for a DIFFERENT fixture. Pooling counts across fixtures cannot detect a mislabelled one."""
+    import re, subprocess, pathlib
+    html = _page()
+    assert "transcripts, not quotations" not in html, (
+        "the caption claims transcripts while truncating to the first line")
+
+    vac = pathlib.Path.home() / "vac-protocol"
+    verify = vac / ".venv/bin/vac-verify"
+
+    # pair each rendered fixture name with the count printed beside its line, if any
+    rendered = {}
+    for m in re.finditer(r"\$ vac-verify fixtures/([\w.-]+)</span>\s*<span[^>]*>(.*?)</span>",
+                         html, re.S):
+        name, body = m.group(1), m.group(2)
+        n = re.search(r"first of (\d+) named reasons", body)
+        rendered[name] = int(n.group(1)) if n else 1
+    assert rendered, "the page shows no fixture transcripts to check"
+
+    for name, shown in sorted(rendered.items()):
+        p = subprocess.run([str(verify), str(vac / "fixtures" / name)],
+                           cwd=str(vac), capture_output=True, text=True)
+        real = len([l for l in (p.stdout + p.stderr).splitlines()
+                    if l.strip().startswith("FAIL")])
+        assert shown == real, (
+            f"{name}: page says {shown} named reason(s), the verifier really prints {real}")
+
+
+
+
+def test_the_page_survives_an_unavailable_verifier():
+    """run_verifier's failure branch must return the same arity as its success branch.
+
+    Widening the return to carry the named-reason count left the except branch at two values, so
+    an unavailable verifier raised ValueError in the caller instead of degrading to UNLAUNCHED.
+    That silently reverted the honest degradation added the same day, and 95 tests missed it
+    because every one of them ran with the verifier present."""
+    import inspect, subprocess, pathlib, os
+    import runner
+    src = inspect.getsource(runner.run_verifier)
+    returns = [l.strip() for l in src.splitlines() if l.strip().startswith("return ")]
+    arities = {l.count(",") + 1 for l in returns}
+    assert len(arities) == 1, (
+        f"run_verifier returns differing arities across branches: {returns}")
+
+    root = pathlib.Path(__file__).parent.parent
+    out = pathlib.Path("/tmp/_noverif_test.html")
+    env = dict(os.environ, PATH="/usr/bin:/bin")
+    p = subprocess.run(["python3", "runner.py", str(out)], cwd=str(root),
+                       capture_output=True, text=True, env=env)
+    assert p.returncode == 0, f"the build died without a verifier: {p.stderr[-400:]}"
+    html = out.read_text()
+    assert "verifier did not run" in html, "step 5 must say so rather than report a count"
+    assert 'class="step absent"' in html, "step 5 must render absent when its verifier never ran"

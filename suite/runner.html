@@ -313,10 +313,10 @@ from one that cannot.</p>
 <span class="fail">exit 1  FAIL summary-outruns-checks: summary.mutation_score_3: declares 0.714, no check recomputes it</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-evalmut-rows</span>
-<span class="fail">exit 1  FAIL raw-aggregate-mismatch: evidence/evalmut_run.json: tally.caught declared 4, recomputed 5</span>
+<span class="fail">exit 1  FAIL raw-aggregate-mismatch: evidence/evalmut_run.json: tally.caught declared 4, recomputed 5   (first of 9 named reasons)</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-stamp-deleted</span>
-<span class="fail">exit 1  FAIL stamp-mismatch: taskset_hash: named by protocol.hashes but absent from evidence/bundle.json</span>
+<span class="fail">exit 1  FAIL stamp-mismatch: taskset_hash: named by protocol.hashes but absent from evidence/bundle.json   (first of 3 named reasons)</span>
 
 <span class="cmd">$ vac-verify fixtures/tamper-empty-limitations</span>
 <span class="fail">exit 1  FAIL empty-limitations</span>
@@ -325,7 +325,9 @@ from one that cannot.</p>
 <span class="fail">exit 1  FAIL missing-artifact: evidence/bundle.json</span>
 
 </div>
-<p class="src">executed by suite/runner.py at build time; transcripts, not quotations</p></div></div><div class="step" data-i="6">
+<p class="src">executed by suite/runner.py at build time. Each line is real output, not a
+quotation. Where a fixture printed more than one named reason the first is shown and the count
+says so; run the command yourself for the rest.</p></div></div><div class="step" data-i="6">
 <div class="head"><span class="num">6</span><span class="verb">LIMITS</span>
 <span class="tool">the bundle</span><span class="big">published</span></div>
 <div class="body"><p class="q">Are the failures published beside the findings?</p>

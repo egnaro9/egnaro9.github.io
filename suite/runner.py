@@ -72,16 +72,26 @@ def read(rel: str):
         return None
 
 
-def run_verifier(target: pathlib.Path) -> tuple[int, str]:
+def run_verifier(target: pathlib.Path) -> tuple[int, str, int]:
     """Actually run the verifier. The refusal on the page must be a transcript."""
     try:
         p = subprocess.run([VERIFY, str(target)], cwd=str(VAC),
                            capture_output=True, text=True, timeout=90)
-        line = next((l for l in (p.stdout + p.stderr).splitlines()
-                     if l.strip().startswith(("FAIL", "structural verification"))), "")
-        return p.returncode, line.strip()
+        # COUNT the named reasons, do not just take the first. The caption below calls this
+        # block a transcript. A transcript that silently drops eight of nine FAIL lines is a
+        # quotation wearing the word. tamper-evalmut-rows really prints 9 and
+        # tamper-stamp-deleted really prints 3; the page showed one, unmarked.
+        named = [l.strip() for l in (p.stdout + p.stderr).splitlines()
+                 if l.strip().startswith("FAIL")]
+        matched = [l.strip() for l in (p.stdout + p.stderr).splitlines()
+                   if l.strip().startswith(("FAIL", "structural verification"))]
+        return p.returncode, (matched[0] if matched else ""), len(named)
     except Exception as e:
-        return -1, f"could not run the verifier: {type(e).__name__}: {e}"
+        # THREE values, matching the success path. Widening the return for the named-reason
+        # count left this branch at two, so an unavailable verifier raised ValueError in the
+        # caller instead of degrading to UNLAUNCHED, silently un-fixing the honest degradation
+        # this function exists for. No test covered the path; one does now.
+        return -1, f"could not run the verifier: {type(e).__name__}: {e}", 0
 
 
 DOGFOOD = "docs/dogfood_gradecore.json"
@@ -422,7 +432,7 @@ def challenge() -> dict:
     yields no capability conclusion, which is INCOMPLETE in this page's own vocabulary, and the
     step says so instead of reporting a number."""
     clean = sorted((VAC / "examples").glob("*"))
-    clean_rc, clean_line = run_verifier(clean[0]) if clean else (-1, "no example bundle")
+    clean_rc, clean_line, _ = run_verifier(clean[0]) if clean else (-1, "no example bundle", 0)
     picks = ["tamper-summary-score", "tamper-evalmut-rows", "tamper-stamp-deleted",
              "tamper-empty-limitations", "tamper-missing-artifact"]
     attempts = []
@@ -432,14 +442,15 @@ def challenge() -> dict:
             attempts.append({"name": name, "rc": None, "line": "fixture not on disk",
                              "state": "MISSING"})
             continue
-        rc, line = run_verifier(fixture)
+        rc, line, n_named = run_verifier(fixture)
         if rc < 0:
             state = "UNLAUNCHED"
         elif rc == 0:
             state = "NOT_REFUSED"
         else:
             state = "REFUSED"
-        attempts.append({"name": name, "rc": rc, "line": line, "state": state})
+        attempts.append({"name": name, "rc": rc, "line": line, "state": state,
+                         "n_named": n_named})
 
     refused = [a for a in attempts if a["state"] == "REFUSED"]
     unlaunched = [a for a in attempts if a["state"] == "UNLAUNCHED"]
@@ -659,10 +670,14 @@ def build() -> str:
 <div class="body"><p class="q">{_e(s['q'])}</p>{f'<dl>{rows}</dl>' if rows else ''}
 <p class="note">{_e(s['note'])}</p>{ev}</div></div>""")
 
+    def _more(r):
+        n = r.get("n_named") or 0
+        return f"   (first of {n} named reasons)" if n > 1 else ""
+
     ref = "".join(
         f'<span class="cmd">$ vac-verify fixtures/{_e(r["name"])}</span>\n'
         f'<span class="{"fail" if r["state"] == "REFUSED" else "warn"}">'
-        f'exit {r["rc"]}  {_e(r["line"])}</span>\n\n' for r in ch["attempts"])
+        f'exit {r["rc"]}  {_e(r["line"])}{_more(r)}</span>\n\n' for r in ch["attempts"])
     cards.append(f"""<div class="step{'' if ch['ok'] else ' absent'}" data-i="5">
 <div class="head"><span class="num">5</span><span class="verb">CHALLENGE</span>
 <span class="tool">vac-verify</span>
@@ -676,7 +691,9 @@ from one that cannot.</p>
 <span class="pass">exit {ch['clean']['rc']}  {_e(ch['clean']['line'])}</span>
 
 {ref}</div>
-<p class="src">executed by suite/runner.py at build time; transcripts, not quotations</p></div></div>""")
+<p class="src">executed by suite/runner.py at build time. Each line is real output, not a
+quotation. Where a fixture printed more than one named reason the first is shown and the count
+says so; run the command yourself for the rest.</p></div></div>""")
 
     cards.append("""<div class="step" data-i="6">
 <div class="head"><span class="num">6</span><span class="verb">LIMITS</span>
