@@ -1,0 +1,262 @@
+{
+ "derived_from": {
+  "path": "vac/verify.py",
+  "sha256": "2712172bf0ad0b94d0ce3cb075c3e01b5013f4e9678a14739b38bdf34455f148",
+  "lines": 1623
+ },
+ "refusals": [
+  {
+   "name": "artifact-unparsable",
+   "const": "ARTIFACT_UNPARSABLE",
+   "sites": 36,
+   "first_line": 245,
+   "archive_only": false
+  },
+  {
+   "name": "check-artifact-not-listed",
+   "const": "CHECK_ARTIFACT_NOT_LISTED",
+   "sites": 1,
+   "first_line": 1467,
+   "archive_only": false
+  },
+  {
+   "name": "draft-incomplete",
+   "const": "DRAFT_INCOMPLETE",
+   "sites": 1,
+   "first_line": 94,
+   "archive_only": false
+  },
+  {
+   "name": "duplicate-artifact",
+   "const": "DUPLICATE_ARTIFACT",
+   "sites": 1,
+   "first_line": 161,
+   "archive_only": false
+  },
+  {
+   "name": "empty-limitations",
+   "const": "EMPTY_LIMITATIONS",
+   "sites": 1,
+   "first_line": 125,
+   "archive_only": false
+  },
+  {
+   "name": "evidence-unchecked",
+   "const": "EVIDENCE_UNCHECKED",
+   "sites": 1,
+   "first_line": 1492,
+   "archive_only": false
+  },
+  {
+   "name": "invalid-json",
+   "const": "INVALID_JSON",
+   "sites": 2,
+   "first_line": 1512,
+   "archive_only": false
+  },
+  {
+   "name": "issuer-commit-mismatch",
+   "const": "ISSUER_COMMIT_MISMATCH",
+   "sites": 1,
+   "first_line": 188,
+   "archive_only": false
+  },
+  {
+   "name": "missing-artifact",
+   "const": "MISSING_ARTIFACT",
+   "sites": 1,
+   "first_line": 213,
+   "archive_only": false
+  },
+  {
+   "name": "missing-issuer-commit",
+   "const": "MISSING_ISSUER_COMMIT",
+   "sites": 1,
+   "first_line": 186,
+   "archive_only": false
+  },
+  {
+   "name": "missing-manifest",
+   "const": "MISSING_MANIFEST",
+   "sites": 1,
+   "first_line": 1508,
+   "archive_only": false
+  },
+  {
+   "name": "raw-aggregate-mismatch",
+   "const": "RAW_AGGREGATE_MISMATCH",
+   "sites": 48,
+   "first_line": 365,
+   "archive_only": false
+  },
+  {
+   "name": "schema-violation",
+   "const": "SCHEMA_VIOLATION",
+   "sites": 24,
+   "first_line": 109,
+   "archive_only": false
+  },
+  {
+   "name": "sha256-mismatch",
+   "const": "SHA256_MISMATCH",
+   "sites": 1,
+   "first_line": 219,
+   "archive_only": false
+  },
+  {
+   "name": "stamp-mismatch",
+   "const": "STAMP_MISMATCH",
+   "sites": 12,
+   "first_line": 294,
+   "archive_only": false
+  },
+  {
+   "name": "summary-mismatch",
+   "const": "SUMMARY_MISMATCH",
+   "sites": 12,
+   "first_line": 280,
+   "archive_only": false
+  },
+  {
+   "name": "summary-outruns-checks",
+   "const": "SUMMARY_OUTRUNS_CHECKS",
+   "sites": 3,
+   "first_line": 1419,
+   "archive_only": false
+  },
+  {
+   "name": "unknown-profile",
+   "const": "UNKNOWN_PROFILE",
+   "sites": 1,
+   "first_line": 180,
+   "archive_only": false
+  },
+  {
+   "name": "unlisted-file",
+   "const": "UNLISTED_FILE",
+   "sites": 1,
+   "first_line": 228,
+   "archive_only": false
+  },
+  {
+   "name": "unsafe-archive",
+   "const": "UNSAFE_ARCHIVE",
+   "sites": 1,
+   "first_line": 1612,
+   "archive_only": true
+  }
+ ],
+ "constants": {
+  "VAC_VERSION": "0.1",
+  "PROFILES": [
+   "certlab-bundle-v1",
+   "fleet-board-v1",
+   "evalmut-run-v1",
+   "crashkit-battery-v1",
+   "crashkit-variance-v1",
+   "modeldrift-board-v1",
+   "rows-aggregate-v1"
+  ],
+  "_TODO_PREFIX": "TODO(",
+  "_EVALMUT_HOLES": [
+   [
+    "vacuous",
+    "missed",
+    "sanity"
+   ],
+   [
+    "blind",
+    "missed",
+    "kill"
+   ],
+   [
+    "error",
+    "error",
+    null
+   ],
+   [
+    "brittle",
+    "flagged",
+    null
+   ],
+   [
+    "coverage_gap",
+    "missed",
+    "diagnostic"
+   ]
+  ],
+  "_CRASHKIT_WEIGHTS": {
+   "none": 0,
+   "low": 1,
+   "med": 2,
+   "high": 4,
+   "critical": 8
+  },
+  "_CRASHKIT_ACC_ALIASES": [
+   "faithfulness",
+   "precision@k",
+   "recall@k",
+   "citation_rate"
+  ],
+  "_ROW_OPS": [
+   "count",
+   "sum",
+   "mean",
+   "rate_true",
+   "min",
+   "max"
+  ],
+  "_CHECK_REFS": {
+   "certlab-bundle-v1": [
+    "artifact"
+   ],
+   "fleet-board-v1": [
+    "aggregate",
+    "raw"
+   ],
+   "evalmut-run-v1": [
+    "artifact"
+   ],
+   "crashkit-battery-v1": [
+    "artifact"
+   ],
+   "crashkit-variance-v1": [
+    "artifact"
+   ],
+   "rows-aggregate-v1": [
+    "artifact"
+   ],
+   "modeldrift-board-v1": [
+    "metrics",
+    "registry",
+    "standings",
+    "flips",
+    "narrative",
+    "results_md",
+    "fingerprint"
+   ]
+  },
+  "_CHECK_OPT_REFS": {
+   "certlab-bundle-v1": [
+    "render"
+   ],
+   "evalmut-run-v1": [
+    "catalog",
+    "render"
+   ]
+  },
+  "_PATTERNS": {
+   "_CERTLAB_RENDER": "\\*\\*(\\d+)/(\\d+) seeded defects fixed\\*\\*",
+   "_EVALMUT_RENDER": "mutation score\\s+([\\d.]+)%\\s+\\((\\d+) caught / (\\d+) applied; (\\d+) n/a\\)",
+   "_NUMERIC_STR": "[+-]?(\\d+\\.?\\d*|\\.\\d+)([eE][+-]?\\d+)?%?"
+  }
+ },
+ "report_lines": [
+  "  proved offline: manifest schema, artifact presence + sha256, bundle closure,",
+  "  stated limitations, stamp agreement, declared results recomputed from artifacts.",
+  "semantic replay: NOT run by this tool. A structural PASS means the bundle is",
+  "  internally honest, not that the issuer's grader agrees. To re-earn the",
+  "  verdicts, run the bundle's replay block at the pinned issuer_commit:",
+  "    (replay block unreadable \u2014 see failures above)"
+ ]
+}

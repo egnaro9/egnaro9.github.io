@@ -49,6 +49,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from browserverify import panel as browser_panel  # noqa: E402
 from claim import derive  # noqa: E402
 from evidence import (ProvenanceError, bundled_recipe, documented_command,  # noqa: E402
                       source, unchecked_note, value)
@@ -89,8 +90,8 @@ def run_verifier(target: pathlib.Path) -> tuple[int, str, int]:
     except Exception as e:
         # THREE values, matching the success path. Widening the return for the named-reason
         # count left this branch at two, so an unavailable verifier raised ValueError in the
-        # caller instead of degrading to UNLAUNCHED, silently un-fixing the honest degradation
-        # this function exists for. No test covered the path; one does now.
+        # caller instead of degrading to UNLAUNCHED. That silently un-fixed the honest
+        # degradation this function exists for, and no test covered the path.
         return -1, f"could not run the verifier: {type(e).__name__}: {e}", 0
 
 
@@ -658,6 +659,7 @@ def build() -> str:
     claim = derive(HOME / f"evalmut/{DOGFOOD}")
     st = steps(src, d)
     ch = challenge()
+    bv = browser_panel()
     absent = sum(1 for s in st if not s["ok"])
 
     cards = []
@@ -716,7 +718,7 @@ re-run it.</p>
             "artifact</b> and are marked above. A missing source is shown, never replaced.</p>")
 
     css = (CSS.replace("%%STATEVARS%%", css_vars())
-          .replace("%%STATEVARSLIGHT%%", css_vars_light()))
+          .replace("%%STATEVARSLIGHT%%", css_vars_light()) + bv["css"])
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The Verifiable Evaluation Suite</title>
@@ -745,7 +747,7 @@ at build time. The build fails if that bundle contradicts itself.</p>
         start_open=True)}</div>
 <div class="modes">
 <span><b>Recorded proof run</b> replays a completed run's artifacts. Nothing is executed here.</span>
-<span><b>Browser tamper demo</b> alters a local copy to show one named rejection path.</span>
+<span>{bv['mode']}</span>
 <span><b>Independent replay</b> re-runs the real verifier outside this page. Only this re-earns
 the claim, and only this may be called live verification.</span></div>
 <div class="legend">{legend}</div>
@@ -753,6 +755,7 @@ the claim, and only this may be called live verification.</span></div>
 <button class="ghost" id="step">Step</button>
 <button class="ghost" id="rst">Reset</button></div>
 {"".join(cards)}
+{bv['html']}
 {note}
 {hole_explorer(src, d)}
 <footer>Every number is read from the artifact its repo commits, and step 5 is <b>executed</b>
