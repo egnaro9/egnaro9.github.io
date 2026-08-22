@@ -360,6 +360,8 @@
 
   <header>
     <nav class="contact" style="margin:0 0 30px" aria-label="Site">
+      <span class="chip"><a href="#evalmut">Start here</a></span>
+      <span class="chip"><a href="#program">Technical proof</a></span>
       <span class="chip"><a href="about/">About</a></span>
       <span class="chip"><a href="resume/">Résumé</a></span>
       <span class="chip"><a href="https://erikhill.dev/seraphlight-studios/">Games</a></span>
@@ -367,7 +369,8 @@
     </nav>
     <div class="eye">AI Evaluation &amp; Testing Engineer</div>
     <h1>Erik Hill</h1>
-    <p class="thesis">I make agent-release claims verifiable before CI trusts them: <b>capability contracts, certified defect models, replayable evidence</b>: and never a model grading itself.</p>
+    <p class="thesis">I build AI systems that can prove what they did.</p>
+    <p class="lede">I make agent-release claims verifiable before CI trusts them: <b>capability contracts, certified defect models, replayable evidence</b>: and never a model grading itself.</p>
 
     <div class="tldr">
       <div class="tldr-h">If you only read one thing</div>
@@ -383,6 +386,7 @@
     </div>
 
     <div class="cta" style="margin-top:18px; justify-content:flex-start; gap:10px; flex-wrap:wrap">
+      <a class="plive" href="https://erikhill.dev/suite/runner.html">&#9654; See Evalmut's proof console. A witnessed run, checked in your browser</a>
       <a class="plive" href="https://erikhill.dev/vac-protocol/">▶ Open the claim registry: 11 replayable bundles</a>
       <a class="plive" href="https://erikhill.dev/model-drift/">▶ Open the live board: 16 LLMs, 5 metrics</a>
       <a class="plive alt" href="https://crashkit.onrender.com">▶ Crash-test a model with your own key</a>
@@ -417,34 +421,6 @@
     </div>
   </header>
 
-  <section id="program">
-    <div class="label"><span class="tick">//</span> The Program</div>
-    <h2>Release claims a stranger can replay</h2>
-    <p class="lens-kicker">Agent Release Readiness. The discipline below, composed into one pipeline: test the graders, certify the benchmarks, contract the agents, register the evidence.</p>
-    <p class="intro">Everything on this page runs on one rule. Deterministic checks, never a model grading itself. In August that rule grew a spine. A claim about an AI system now ships as a <strong>capability contract</strong> backed by a <strong>replayable evidence bundle</strong>: artifacts pinned by sha256, every declared number recomputable offline, the grading re-runnable by someone who doesn't trust me. Not a safety guarantee. A checkable statement of what was demonstrated, under which conditions, with the limitations declared up front. A bundle that asks for faith at any step is invalid by construction.</p>
-
-    <div class="bridge">
-      <div class="bridge-row">
-        <span class="bridge-b">The registry</span>
-        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/vac-protocol" target="erikhill-out">vac-protocol</a></strong>: VAC, Verifiable Agent Claims. <strong>11 accepted entries, zero pending.</strong> All eleven are my own repos, which makes the registry one multi-repository fixture rather than five independent issuers. That is the honest weak point, and it is now open: <a href="https://github.com/egnaro9/vac-protocol/blob/main/ISSUING.md" target="erikhill-out">ISSUING.md</a> plus a generic <code>rows-aggregate-v1</code> profile mean an outsider can issue in their own artifact shape without adopting mine. Acceptance is two-gated: structural verification (<code>python -m vac.verify</code>: manifest, hashes, closure, mandatory limitations), then semantic replay by the issuer's own deterministic grader. The <a href="https://erikhill.dev/vac-protocol/">live registry page</a> re-verifies every bundle over fetched artifacts before each deploy.</span>
-      </div>
-      <div class="bridge-row">
-        <span class="bridge-b">The contracts</span>
-        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/agent-certlab" target="erikhill-out">agent-certlab</a></strong>: capability contracts for coding agents. <strong>Seven committed certifications</strong>: two agents &times; three task families with seeded, known defects, every run <strong>6/6</strong>, and one earned <strong>entirely inside GitHub Actions</strong> on an ephemeral runner. Grading reads only the artifacts on disk, never the agent's account of itself; CI independently re-grades every committed contract (<code>python -m certlab.regrade</code>), and the mechanically compiled <a href="https://github.com/egnaro9/agent-certlab/blob/main/COMPARISON.md" target="erikhill-out">COMPARISON.md</a> is diff-checked against the bundles it summarizes.</span>
-      </div>
-      <div class="bridge-row">
-        <span class="bridge-b">The answer key</span>
-        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/reference-fleet" target="erikhill-out">reference-fleet</a></strong>: six reference models broken in exactly <em>one documented way</em> each, at a stated, seeded rate, so pointing a benchmark at the fleet measures the benchmark. On the <a href="https://erikhill.dev/reference-fleet/">live audit board</a>: a naive substring suite caught <strong>1 of 6</strong>; a diligent deterministic suite caught 6 of 6. CI re-runs the full audit before the board deploys. A board it cannot reproduce goes red instead of live.</span>
-      </div>
-      <div class="bridge-row">
-        <span class="bridge-b">The gate</span>
-        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/vac-gate" target="erikhill-out">vac-gate</a></strong>: the integrity gate: a composite GitHub Action that holds a workflow to a verified contract, re-earning every declared number from the pinned artifacts. <strong>No verified contract, no green check.</strong></span>
-      </div>
-    </div>
-
-    <p class="compose-note" style="margin-top:16px">And the two lenses further down this page are members, not spectators: <a href="#board">the drift board</a> and <a href="#crash-test">the crash test</a> each emit their central claim into the registry as a bundle (<code>emit_vac.py</code>). The flagship that started the whole program is next.</p>
-  </section>
-
   <section id="evalmut">
     <div class="label"><span class="tick">//</span> The Mutation Tester</div>
     <h2>Your eval suite passes. Does it check anything?</h2>
@@ -475,6 +451,34 @@
       <track kind="captions" src="media/portfolio-tour.vtt" srclang="en" label="English" default>
       Your browser can't play embedded video: <a href="media/portfolio-tour.mp4">download the tour (mp4)</a>.
     </video>
+  </section>
+
+  <section id="program">
+    <div class="label"><span class="tick">//</span> Evidence Infrastructure</div>
+    <h2>Release claims a stranger can replay</h2>
+    <p class="lens-kicker">Agent Release Readiness. The discipline below, composed into one pipeline: test the graders, certify the benchmarks, contract the agents, register the evidence.</p>
+    <p class="intro">Everything on this page runs on one rule. Deterministic checks, never a model grading itself. In August that rule grew a spine. A claim about an AI system now ships as a <strong>capability contract</strong> backed by a <strong>replayable evidence bundle</strong>: artifacts pinned by sha256, every declared number recomputable offline, the grading re-runnable by someone who doesn't trust me. Not a safety guarantee. A checkable statement of what was demonstrated, under which conditions, with the limitations declared up front. A bundle that asks for faith at any step is invalid by construction.</p>
+
+    <div class="bridge">
+      <div class="bridge-row">
+        <span class="bridge-b">The registry</span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/vac-protocol" target="erikhill-out">vac-protocol</a></strong>: VAC, Verifiable Agent Claims. <strong>11 accepted entries, zero pending.</strong> All eleven are my own repos, which makes the registry one multi-repository fixture rather than five independent issuers. That is the honest weak point, and it is now open: <a href="https://github.com/egnaro9/vac-protocol/blob/main/ISSUING.md" target="erikhill-out">ISSUING.md</a> plus a generic <code>rows-aggregate-v1</code> profile mean an outsider can issue in their own artifact shape without adopting mine. Acceptance is two-gated: structural verification (<code>python -m vac.verify</code>: manifest, hashes, closure, mandatory limitations), then semantic replay by the issuer's own deterministic grader. The <a href="https://erikhill.dev/vac-protocol/">live registry page</a> re-verifies every bundle over fetched artifacts before each deploy.</span>
+      </div>
+      <div class="bridge-row">
+        <span class="bridge-b">The contracts</span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/agent-certlab" target="erikhill-out">agent-certlab</a></strong>: capability contracts for coding agents. <strong>Seven committed certifications</strong>: two agents &times; three task families with seeded, known defects, every run <strong>6/6</strong>, and one earned <strong>entirely inside GitHub Actions</strong> on an ephemeral runner. Grading reads only the artifacts on disk, never the agent's account of itself; CI independently re-grades every committed contract (<code>python -m certlab.regrade</code>), and the mechanically compiled <a href="https://github.com/egnaro9/agent-certlab/blob/main/COMPARISON.md" target="erikhill-out">COMPARISON.md</a> is diff-checked against the bundles it summarizes.</span>
+      </div>
+      <div class="bridge-row">
+        <span class="bridge-b">The answer key</span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/reference-fleet" target="erikhill-out">reference-fleet</a></strong>: six reference models broken in exactly <em>one documented way</em> each, at a stated, seeded rate, so pointing a benchmark at the fleet measures the benchmark. On the <a href="https://erikhill.dev/reference-fleet/">live audit board</a>: a naive substring suite caught <strong>1 of 6</strong>; a diligent deterministic suite caught 6 of 6. CI re-runs the full audit before the board deploys. A board it cannot reproduce goes red instead of live.</span>
+      </div>
+      <div class="bridge-row">
+        <span class="bridge-b">The gate</span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/vac-gate" target="erikhill-out">vac-gate</a></strong>: the integrity gate: a composite GitHub Action that holds a workflow to a verified contract, re-earning every declared number from the pinned artifacts. <strong>No verified contract, no green check.</strong></span>
+      </div>
+    </div>
+
+    <p class="compose-note" style="margin-top:16px">And the two lenses further down this page are members, not spectators: <a href="#board">the drift board</a> and <a href="#crash-test">the crash test</a> each emit their central claim into the registry as a bundle (<code>emit_vac.py</code>). The flagship that started the whole program is next.</p>
   </section>
 
   <section id="crash-test">
@@ -589,7 +593,6 @@
     </figure>
   </section>
 
-
   <section id="board">
     <div class="label"><span class="tick">//</span> The Board</div>
     <h2>A public board watching 16 models for drift</h2>
@@ -625,8 +628,8 @@
   </section>
 
   <section id="system">
-    <div class="label"><span class="tick">//</span> One System</div>
-    <h2>One system that calls itself</h2>
+    <div class="label"><span class="tick">//</span> Systems Integration</div>
+    <h2>Five real tools, integrated end to end</h2>
     <p class="lens-kicker">Don't read them. Run them. The same discipline, turned inward: a pipeline that grades its own answer before it speaks.</p>
     <p class="intro">Five of them here, <strong>all five live right now</strong>: no install, no signup, no API key. Four run in your browser; three of those are the <em>real compiled Python</em> that runs in CI, installed from the wheel CI built. The fifth is a <strong>deployed service on a real Postgres</strong>, and you can ask it a question.</p>
     <p class="intro">They aren't five separate exercises: <strong>they're one system that calls itself</strong>. The grounding check <a href="#crash-test">the crash test</a> above runs against your model is literally this stack's own; <em>this</em> is where it does its day job. (The other two turn up in <a href="#oracle">The Oracle</a>.)</p>
@@ -824,60 +827,6 @@
     </figure>
   </section>
 
-  <section id="harness">
-    <div class="label"><span class="tick">//</span> The Harness</div>
-    <h2>A loop that reviews itself before it lands</h2>
-    <p class="intro">Agents that build unsupervised are easy. Agents you'd <em>let</em> build unsupervised are the problem. And the answer isn't a better model, it's knowing which steps a machine may never take alone. Here's the loop, how far it runs on its own, and exactly what stops it.</p>
-    <p class="intro">Work moves through five stages, and each leg arms the next through a hook rather than a hand-run command. Judgment runs on a different, colder model than execution, so the critic isn't grading its own homework.</p>
-
-    <div class="pipe-scroll">
-      <div class="pipe" role="img" aria-label="Pipeline: Strategy to Execution to Critic to Evaluation to Ops">
-        <div class="signal" aria-hidden="true"></div>
-        <div class="node"><span class="bead"></span><span class="nlab">Strategy</span><span class="nsub">plan</span></div>
-        <div class="node"><span class="bead"></span><span class="nlab">Execution</span><span class="nsub">build</span></div>
-        <div class="node"><span class="bead"></span><span class="nlab">Critic</span><span class="nsub">review</span></div>
-        <div class="node"><span class="bead"></span><span class="nlab">Evaluation</span><span class="nsub">verify</span></div>
-        <div class="node"><span class="bead"></span><span class="nlab">Ops</span><span class="nsub">commit</span></div>
-      </div>
-    </div>
-
-    <div class="pipe-note">
-      <div><b>Per-role model routing</b><span>Reasoning-heavy judgment and routine execution run on different models, matched to the job.</span></div>
-      <div><b>Hook-based handoff</b><span>Each stage arms the next leg through a Stop hook. Wiring, not a human, carries the work between stages.</span></div>
-      <div><b>Cold, independent critic</b><span>Review runs in fresh context so it catches what the builder rationalized away.</span></div>
-    </div>
-
-
-    <h3 class="subhead">Automate the launches. Never the approval.</h3>
-    <p class="intro">Trust is earned in named steps. Higher rungs remove <em>clicks</em>, never <em>gates</em>: a human still approves anything irreversible or outward-facing (deploys, commits, anything a user would see).</p>
-
-    <div class="ladder" role="list">
-      <div class="rung" role="listitem"><span class="lv">L4</span><span class="rt"><b>Lights-out</b>: a doctrine amendment, not a default. Operator's call, never self-granted.</span><span class="tag">gated</span></div>
-      <div class="rung" role="listitem"><span class="lv">L3</span><span class="rt"><b>Auto-advance launches</b>: the safe clicks fire on their own; write-gates still stop for a human.</span><span class="tag">gated</span></div>
-      <div class="rung here" role="listitem"><span class="lv">L2</span><span class="rt"><b>Hands-off relay</b>: each leg arms the next on its own; every irreversible act still waits for approval.</span><span class="tag">◀ current</span></div>
-      <div class="rung" role="listitem"><span class="lv">L1</span><span class="rt"><b>Assisted</b>: humans drive; the harness proposes and prepares each step.</span><span class="tag">manual</span></div>
-      <div class="rung" role="listitem"><span class="lv">L0</span><span class="rt"><b>Manual</b>: every action is a human keystroke.</span><span class="tag">manual</span></div>
-    </div>
-    <p class="ladder-note"><b>Rule:</b> reliability earns launch-automation. It never earns gate-removal.</p>
-
-    <div class="oracle" style="margin-top:26px; border-left-color:var(--teal)">
-      <p class="big" style="margin-bottom:2px">Here's the loop catching <em>itself</em>: one real arc.</p>
-      <p class="intro" style="margin-top:14px">The builder reported a number and called it the minimum achievable. The cold critic refused the claim, re-derived the truth from source, proved the real floor was <strong>38% lower</strong>, and blocked the work. Then it ran the check the arc had just installed and watched the arc's own output trip it. Five stages, click through what actually happened.</p>
-      <a class="plive" style="margin-top:16px; display:inline-flex" href="https://erikhill.dev/loop/">▶ Walk through a real arc</a>
-    </div>
-    <p class="intro" style="margin-top:20px">This is the loop behind everything else on this page. And even its critic doesn't get the last word: it re-derives the number from source, then hands the verdict to a <strong>deterministic check</strong> the arc just installed. The same no-LLM-judge discipline the board and the oracle run on.</p>
-  
-    <figure class="cast">
-      <img src="media/harness-git-gate.gif" alt="The real commit gate refusing a commit, a push, five ways of hiding the command, and two attempts to forge the approval file. Then allowing exactly one operator-approved commit" loading="lazy">
-      <figcaption><strong>Exactly what stops it.</strong> The real PreToolUse gate, driven with
-        crafted payloads in a sandbox. Commit and push are refused; five ways of hiding the command
-        inside another one are refused; two attempts to write the approval file are refused. An
-        approval typed by the operator then works <em>once</em> and is spent. The gate reads a file
-        only an operator-driven hook may write. Never the agent's own words.
-        <a href="https://asciinema.org/a/BRkqfTu5mbqrVZ8h" target="erikhill-out">play it as a terminal session</a>: the text is selectable.</figcaption>
-    </figure>
-  </section>
-
   <section id="oracle">
     <div class="label"><span class="tick">//</span> The Oracle</div>
     <h2>Correctness it can prove. Not vibe-check</h2>
@@ -981,8 +930,59 @@
     </figure>
   </section>
 
+  <section id="harness">
+    <div class="label"><span class="tick">//</span> The Harness</div>
+    <h2>A loop that reviews itself before it lands</h2>
+    <p class="intro">Agents that build unsupervised are easy. Agents you'd <em>let</em> build unsupervised are the problem. And the answer isn't a better model, it's knowing which steps a machine may never take alone. Here's the loop, how far it runs on its own, and exactly what stops it.</p>
+    <p class="intro">Work moves through five stages, and each leg arms the next through a hook rather than a hand-run command. Judgment runs on a different, colder model than execution, so the critic isn't grading its own homework.</p>
+
+    <div class="pipe-scroll">
+      <div class="pipe" role="img" aria-label="Pipeline: Strategy to Execution to Critic to Evaluation to Ops">
+        <div class="signal" aria-hidden="true"></div>
+        <div class="node"><span class="bead"></span><span class="nlab">Strategy</span><span class="nsub">plan</span></div>
+        <div class="node"><span class="bead"></span><span class="nlab">Execution</span><span class="nsub">build</span></div>
+        <div class="node"><span class="bead"></span><span class="nlab">Critic</span><span class="nsub">review</span></div>
+        <div class="node"><span class="bead"></span><span class="nlab">Evaluation</span><span class="nsub">verify</span></div>
+        <div class="node"><span class="bead"></span><span class="nlab">Ops</span><span class="nsub">commit</span></div>
+      </div>
+    </div>
+
+    <div class="pipe-note">
+      <div><b>Per-role model routing</b><span>Reasoning-heavy judgment and routine execution run on different models, matched to the job.</span></div>
+      <div><b>Hook-based handoff</b><span>Each stage arms the next leg through a Stop hook. Wiring, not a human, carries the work between stages.</span></div>
+      <div><b>Cold, independent critic</b><span>Review runs in fresh context so it catches what the builder rationalized away.</span></div>
+    </div>
 
 
+    <h3 class="subhead">Automate the launches. Never the approval.</h3>
+    <p class="intro">Trust is earned in named steps. Higher rungs remove <em>clicks</em>, never <em>gates</em>: a human still approves anything irreversible or outward-facing (deploys, commits, anything a user would see).</p>
+
+    <div class="ladder" role="list">
+      <div class="rung" role="listitem"><span class="lv">L4</span><span class="rt"><b>Lights-out</b>: a doctrine amendment, not a default. Operator's call, never self-granted.</span><span class="tag">gated</span></div>
+      <div class="rung" role="listitem"><span class="lv">L3</span><span class="rt"><b>Auto-advance launches</b>: the safe clicks fire on their own; write-gates still stop for a human.</span><span class="tag">gated</span></div>
+      <div class="rung here" role="listitem"><span class="lv">L2</span><span class="rt"><b>Hands-off relay</b>: each leg arms the next on its own; every irreversible act still waits for approval.</span><span class="tag">◀ current</span></div>
+      <div class="rung" role="listitem"><span class="lv">L1</span><span class="rt"><b>Assisted</b>: humans drive; the harness proposes and prepares each step.</span><span class="tag">manual</span></div>
+      <div class="rung" role="listitem"><span class="lv">L0</span><span class="rt"><b>Manual</b>: every action is a human keystroke.</span><span class="tag">manual</span></div>
+    </div>
+    <p class="ladder-note"><b>Rule:</b> reliability earns launch-automation. It never earns gate-removal.</p>
+
+    <div class="oracle" style="margin-top:26px; border-left-color:var(--teal)">
+      <p class="big" style="margin-bottom:2px">Here's the loop catching <em>itself</em>: one real arc.</p>
+      <p class="intro" style="margin-top:14px">The builder reported a number and called it the minimum achievable. The cold critic refused the claim, re-derived the truth from source, proved the real floor was <strong>38% lower</strong>, and blocked the work. Then it ran the check the arc had just installed and watched the arc's own output trip it. Five stages, click through what actually happened.</p>
+      <a class="plive" style="margin-top:16px; display:inline-flex" href="https://erikhill.dev/loop/">▶ Walk through a real arc</a>
+    </div>
+    <p class="intro" style="margin-top:20px">This is the loop behind everything else on this page. And even its critic doesn't get the last word: it re-derives the number from source, then hands the verdict to a <strong>deterministic check</strong> the arc just installed. The same no-LLM-judge discipline the board and the oracle run on.</p>
+  
+    <figure class="cast">
+      <img src="media/harness-git-gate.gif" alt="The real commit gate refusing a commit, a push, five ways of hiding the command, and two attempts to forge the approval file. Then allowing exactly one operator-approved commit" loading="lazy">
+      <figcaption><strong>Exactly what stops it.</strong> The real PreToolUse gate, driven with
+        crafted payloads in a sandbox. Commit and push are refused; five ways of hiding the command
+        inside another one are refused; two attempts to write the approval file are refused. An
+        approval typed by the operator then works <em>once</em> and is spent. The gate reads a file
+        only an operator-driven hook may write. Never the agent's own words.
+        <a href="https://asciinema.org/a/BRkqfTu5mbqrVZ8h" target="erikhill-out">play it as a terminal session</a>: the text is selectable.</figcaption>
+    </figure>
+  </section>
 
   <section>
     <div class="label"><span class="tick">//</span> The Toolkit</div>
