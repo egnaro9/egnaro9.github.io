@@ -62,6 +62,12 @@ async function readManifest(repo) {
   return { wheel: pick("WHEEL_URL"), gradecore: pick("GRADECORE_WHEEL_URL") };
 }
 
+// A visitor must never read a Python traceback on this page. Failures get one
+// plain sentence in the UI and the full object in the console, where it belongs.
+function reportFailure(where, err) {
+  console.error(`[stack] ${where}`, err);
+}
+
 let py = null;
 const setStatus = (t, s) => { $("statusText").textContent = t; $("status").className = "status" + (s ? " " + s : ""); };
 const lit = (id, on = true) => $(id)?.classList.toggle("lit", on);
@@ -317,8 +323,11 @@ def build_eval_run(cases_json):
     const docs = JSON.parse(await py.runPythonAsync("corpus_json()"));
     $("corpusBox").value = Object.entries(docs).map(([k, v]) => `${k}: ${v}`).join("\n");
   } catch (err) {
-    setStatus("Failed to boot: " + err, "err");
-    console.error(err);
+    reportFailure("boot", err);
+    setStatus(
+      "This demo could not start. It installs each project's published wheel when the " +
+      "page loads, and one of them did not answer. Details are in the browser console.",
+      "err");
   }
 }
 
@@ -570,7 +579,8 @@ async function runMine() {
       </div>
       <div class="handoff-note">Ask the <b>same question again</b> and the gateway serves the agent's LLM call from cache. Or hit <b>Run the whole stack</b> for the full four-case run that produces an eval_run.json for the dashboard.</div>`;
   } catch (err) {
-    $("flow").innerHTML = `<div class="hop bad"><div class="hopnum">!</div><div class="hopbody">Error: ${esc(err)}</div></div>`;
+    reportFailure("run", err);
+    $("flow").innerHTML = `<div class="hop bad"><div class="hopnum">!</div><div class="hopbody">That run did not finish. Details are in the browser console.</div></div>`;
   }
   document.querySelectorAll("button").forEach((b) => (b.disabled = false));
 }
