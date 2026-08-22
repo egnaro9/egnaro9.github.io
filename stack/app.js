@@ -36,11 +36,31 @@ const CORPORA = {
   ].join("\n"),
 };
 
-const WHEELS = {
-  "rag-eval-lab": "https://egnaro9.github.io/rag-eval-lab/ragevallab-0.1.0-py3-none-any.whl",
-  "llm-gateway": "https://egnaro9.github.io/llm-gateway/llmgateway-0.1.0-py3-none-any.whl",
-  "agent-graph": "https://egnaro9.github.io/agent-graph/agentgraph-0.1.0-py3-none-any.whl",
-};
+// Every project's Pages deploy writes a wheel.js naming the exact wheel it just
+// built, because the version moves and a hardcoded filename does not. Hardcoding
+// them here is what took this page down: gradecore went 0.1.0 to 0.10.0, rag-eval-lab
+// republished under the new name, and the pinned URL started 404ing. Ask each
+// publisher what it actually shipped instead of guessing.
+//
+// The manifests are fetched and parsed rather than loaded as <script>, because all
+// three set the same global (window.WHEEL_URL) and would overwrite each other.
+// erikhill.dev, not egnaro9.github.io: the github.io host 301s here, and that 301
+// carries no Access-Control-Allow-Origin, so a cross-origin fetch dies on the hop.
+// Served from this origin it is same-origin anyway, and one fewer round trip.
+const PAGES = "https://erikhill.dev/";
+const REPOS = ["rag-eval-lab", "llm-gateway", "agent-graph"];
+
+async function readManifest(repo) {
+  const base = PAGES + repo + "/";
+  const res = await fetch(base + "wheel.js", { cache: "no-store" });
+  if (!res.ok) throw new Error(`${repo}: wheel.js returned ${res.status}`);
+  const txt = await res.text();
+  const pick = (key) => {
+    const m = txt.match(new RegExp(String.raw`window\.` + key + String.raw`\s*=\s*['"]([^'"]+\.whl)['"]`));
+    return m ? new URL(m[1], base).href : null;
+  };
+  return { wheel: pick("WHEEL_URL"), gradecore: pick("GRADECORE_WHEEL_URL") };
+}
 
 let py = null;
 const setStatus = (t, s) => { $("statusText").textContent = t; $("status").className = "status" + (s ? " " + s : ""); };
@@ -68,20 +88,32 @@ async function boot() {
     }
     await micropip.install(["langchain-core", "pydantic", "xxhash", "fastapi"]);
 
-    // rag-eval-lab's faithfulness metric is gradecore's grounding_score — shared, not
-    // copied — so its wheel imports gradecore at module load. The wheels below install
+    setStatus("Asking each project which wheel it published…");
+    const manifests = {};
+    for (const repo of REPOS) manifests[repo] = await readManifest(repo);
+
+    const missing = REPOS.filter((r) => !manifests[r].wheel);
+    if (missing.length) {
+      throw new Error(`no wheel named in wheel.js for: ${missing.join(", ")}`);
+    }
+
+    // rag-eval-lab's faithfulness metric is gradecore's grounding_score: shared, not
+    // copied, so its wheel imports gradecore at module load. The wheels below install
     // with deps:false (their metadata declares gradecore as a git URL, which micropip
     // cannot resolve), so gradecore has to be installed explicitly or every panel on
-    // this page dies at boot with ModuleNotFoundError.
+    // this page dies at boot with ModuleNotFoundError. rag-eval-lab's deploy builds
+    // that wheel too and names it in the same manifest.
+    const gradecoreUrl = manifests["rag-eval-lab"].gradecore;
+    if (!gradecoreUrl) {
+      throw new Error("rag-eval-lab's wheel.js names no gradecore wheel");
+    }
     setStatus("Installing gradecore, the shared grading engine…");
-    await micropip.install.callKwargs(
-      "https://egnaro9.github.io/rag-eval-lab/gradecore-0.1.0-py3-none-any.whl",
-      { deps: false });
+    await micropip.install.callKwargs(gradecoreUrl, { deps: false });
 
-    for (const [name, url] of Object.entries(WHEELS)) {
-      setStatus(`Installing ${name}'s published wheel…`);
-      await micropip.install.callKwargs(url, { deps: false });
-      lit(`chip-${name}`);
+    for (const repo of REPOS) {
+      setStatus(`Installing ${repo}'s published wheel…`);
+      await micropip.install.callKwargs(manifests[repo].wheel, { deps: false });
+      lit(`chip-${repo}`);
     }
 
     setStatus("Wiring them together…");
