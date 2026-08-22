@@ -752,7 +752,7 @@ re-run it.</p>
 <meta name="description" content="Six steps that test each other, ending with a verifier
 refusing tampered evidence by name. Every number read from a committed artifact.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>{css}</style></head><body>
-<div class="nav"><a href="/">&larr; Portfolio</a></div>
+<div class="nav"><a href="/">&larr; Portfolio</a><span class="navsep"> &middot; </span><a href="https://agent-hub-exiz.onrender.com" target="erikhill-out">the constellation</a></div>
 <div class="wrap">
 <p class="kicker">Verifiable Evaluation Suite &middot; Recorded proof run</p>
 <h1>{_e(claim.headline)}</h1>

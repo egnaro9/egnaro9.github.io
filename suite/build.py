@@ -219,7 +219,7 @@ sha256 {_e(sha8(rel))} &middot; {_e(repo)}@{_e(commit(repo))}</p></div>""")
 <meta name="description" content="Six eval tools, one page. Every number read from the artifact
 its repo commits, with the file and its hash beside it.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>{CSS}</style></head><body>
-<div class="nav"><a href="/">&larr; Portfolio</a></div>
+<div class="nav"><a href="/">&larr; Portfolio</a><span class="navsep"> &middot; </span><a href="https://agent-hub-exiz.onrender.com" target="erikhill-out">the constellation</a></div>
 <div class="wrap">
 <p class="kicker">One system</p>
 <h1>Six tools that only mean something together</h1>
