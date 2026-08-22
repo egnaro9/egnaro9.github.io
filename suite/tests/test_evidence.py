@@ -153,11 +153,23 @@ def test_page_digest_matches_the_file_on_disk_now():
     """A stale drawer is the failure mode this whole module exists to prevent, so it is asserted
     against the current bytes rather than against the value captured at build time."""
     page = PAGE.read_text()
-    shown = re.search(r"<dt>sha256</dt><dd>([0-9a-f]{64})</dd>", page)
-    assert shown, "the drawer must publish a digest"
-    live = subprocess.run(["shasum", "-a", "256", str(HOME / "evalmut" / BUNDLE)],
-                          capture_output=True, text=True, check=True).stdout.split()[0]
-    assert shown.group(1) == live, "the page's digest no longer matches the artifact; rebuild"
+
+    # EVERY published digest, against the file named beside it. This checked only the first
+    # sha256 on the page and compared it to one hardcoded bundle. When a second provenance block
+    # was added above it, the test silently began checking the new block's digest against the old
+    # block's file, and failed for a reason that had nothing to do with staleness. A page that
+    # publishes N digests needs N comparisons, each to its own named artifact.
+    pairs = re.findall(
+        r"<dt>(?:file|artifact)</dt><dd>(?:<a[^>]*>)?([^<]+)(?:</a>)?</dd>\s*"
+        r"<dt>sha256</dt><dd>([0-9a-f]{64})</dd>", page)
+    assert pairs, "the page publishes no artifact/digest pair"
+    for rel, shown in pairs:
+        path = HOME / rel
+        assert path.exists(), f"the page names {rel} which is not on disk"
+        live = subprocess.run(["shasum", "-a", "256", str(path)],
+                              capture_output=True, text=True, check=True).stdout.split()[0]
+        assert shown == live, (
+            f"{rel}: page publishes {shown[:16]}, file is {live[:16]}; rebuild")
 
 
 @pytest.mark.skipif(not PAGE.exists(), reason="page not built")

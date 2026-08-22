@@ -205,36 +205,43 @@ word-break:break-word}
 <div class="nav"><a href="/">&larr; Portfolio</a></div>
 <div class="wrap">
 <p class="kicker">Verifiable Evaluation Suite &middot; Recorded proof run</p>
-<h1>Recorded evalmut dogfood run: 42 of 46 declared mutations were labelled caught; 4 survived (2 blind, 2 coverage gap).</h1>
+<h1>Witnessed evalmut dogfood run: 42 of 46 declared mutations were caught; 4 survived (2 blind, 2 coverage gap).</h1>
 <p class="provisional"><b>Invocation witnesses: not captured per row.</b> This result is provisional. Wiring them may move the denominator, because a row with no witness is not a caught row and not a survivor, it is INCOMPLETE.</p>
 <div class="bounds">
 <p><b>Scope.</b> evalmut&#x27;s own Corpus A protocol and tooling corpus, under the recorded environment, at the commit this bundle names.</p>
 <p><b>Does not establish.</b> independent operator validity, external evaluation-suite detection power, or production reliability of anything.</p>
-<p><b>Invocation status.</b> The grader package is imported and its labels are recorded, but
-this bundle carries no per-row proof that the upstream scorer ran. evalmut ships that proof
-(<code>evalmut/sentinel.py</code> for in-process graders, <code>evalmut/witnessed.py</code> for
-subprocess ones, which refuses a row that arrives without a witness) and
-<code>demos/dogfood_gradecore.py</code> does not use either. A row with a clean verdict and no
-witness is indistinguishable from a row the harness answered for itself, so read every outcome
-here as label-recorded rather than invocation-proven.</p>
+<p><b>Invocation status.</b> These counts come from a pinned evalmut invocation-witness
+artifact (evalmut-invocation-witness-v1) for gradecore 0.10.2. Every counted row carries a recorded entry into
+the named grader closure for both its clean control and its defective form, and each outcome
+recomputes from the raw value that came back. Rows that cannot show that evidence are not counted
+as outcomes: this run has 0 such rows out of 269.
+This page's build rejects a missing, hash-mismatched, incomplete or dirty-stamped artifact rather
+than showing a weaker number.</p>
+<p><b>What that is not.</b> A dogfood run against evalmut's own corpus. It is not an independent
+benchmark, not a measurement of gradecore's quality, and not a claim about detection power on any
+suite but this one. The witness proves the grader was entered and what it returned. It proves
+nothing about what happened inside it.</p>
+<dl class="srcmeta"><dt>artifact</dt><dd><a href="https://github.com/egnaro9/evalmut/blob/772bd93/docs/dogfood_gradecore_witnessed.json">evalmut/docs/dogfood_gradecore_witnessed.json</a></dd>
+<dt>sha256</dt><dd>779b0b565670d80b1aebcc45c26cfaaf3e9c48005f1425dba55cbe702e215e9f</dd>
+<dt>issuer commit</dt><dd>772bd93</dd></dl>
 <p class="derived">Every number above is derived from
 <a href="https://github.com/egnaro9/evalmut/blob/ace358748a4b/docs/dogfood_gradecore.json">docs/dogfood_gradecore.json</a>
 at build time. The build fails if that bundle contradicts itself.</p>
 <details class="ev" open><summary>Where each number in that sentence comes from</summary>
 <table class="prov"><thead><tr><th>value</th><th>shown</th>
 <th>expression that reproduces it, run from the repo root</th></tr></thead>
-<tbody><tr><td>caught</td><td class="n">42</td><td><code>jq &#x27;.tally.caught&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>applied</td><td class="n">46</td><td><code>jq &#x27;.tally | .caught + .missed + .flagged&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>survived</td><td class="n">4</td><td><code>jq &#x27;[.holes[] | length] | add&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>blind</td><td class="n">2</td><td><code>jq &#x27;.holes.blind | length&#x27; docs/dogfood_gradecore.json</code></td></tr><tr><td>coverage gap</td><td class="n">2</td><td><code>jq &#x27;.holes.coverage_gap | length&#x27; docs/dogfood_gradecore.json</code></td></tr></tbody></table>
+<tbody><tr><td>caught</td><td class="n">42</td><td><code>jq &#x27;.tally.caught&#x27; docs/dogfood_gradecore_witnessed.json</code></td></tr><tr><td>applied</td><td class="n">46</td><td><code>jq &#x27;.tally | .caught + .missed + .flagged&#x27; docs/dogfood_gradecore_witnessed.json</code></td></tr><tr><td>survived</td><td class="n">4</td><td><code>jq &#x27;[.holes[] | length] | add&#x27; docs/dogfood_gradecore_witnessed.json</code></td></tr><tr><td>blind</td><td class="n">2</td><td><code>jq &#x27;.holes.blind | length&#x27; docs/dogfood_gradecore_witnessed.json</code></td></tr><tr><td>coverage gap</td><td class="n">2</td><td><code>jq &#x27;.holes.coverage_gap | length&#x27; docs/dogfood_gradecore_witnessed.json</code></td></tr></tbody></table>
 <p class="xn">All 5 values were recomputed with jq against the file&#x27;s bytes at build time and matched. A mismatch fails the build.</p>
-<dl class="srcmeta"><dt>file</dt><dd><a href="https://github.com/egnaro9/evalmut/blob/ace358748a4b/docs/dogfood_gradecore.json">evalmut/docs/dogfood_gradecore.json</a></dd>
-<dt>sha256</dt><dd>cc3b76f7bfe54eed1b2c95e5c1c68df1a718c63a141229aab5004c86b9ddbbc8</dd>
-<dt>bytes</dt><dd>221426</dd>
-<dt>bundle last changed in</dt><dd>ace358748a4b<br><span class="pinnote">the last commit that touched this file, not the repository's current HEAD. An unrelated commit does not move this pin.</span></dd>
-<dt>produced by</dt><dd>evalmut run demos/dogfood_gradecore.py --json --all</dd></dl>
+<dl class="srcmeta"><dt>file</dt><dd><a href="https://github.com/egnaro9/evalmut/blob/7ea9ddc6ad12/docs/dogfood_gradecore_witnessed.json">evalmut/docs/dogfood_gradecore_witnessed.json</a></dd>
+<dt>sha256</dt><dd>779b0b565670d80b1aebcc45c26cfaaf3e9c48005f1425dba55cbe702e215e9f</dd>
+<dt>bytes</dt><dd>601989</dd>
+<dt>bundle last changed in</dt><dd>7ea9ddc6ad12<br><span class="pinnote">the last commit that touched this file, not the repository's current HEAD. An unrelated commit does not move this pin.</span></dd>
+<dt>produced by</dt><dd>evalmut witness demos/dogfood_gradecore.py --json</dd></dl>
 <p class="xn">Independent replay, pinned to the bundle-changing commit above rather than to main:</p>
 <div class="term">git clone https://github.com/egnaro9/evalmut &amp;&amp; cd evalmut
-git checkout ace358748a4b
-evalmut run demos/dogfood_gradecore.py --json --all   # regenerates docs/dogfood_gradecore.json
-shasum -a 256 docs/dogfood_gradecore.json   # expect cc3b76f7bfe54eed...</div></details></div>
+git checkout 7ea9ddc6ad12
+evalmut witness demos/dogfood_gradecore.py --json   # regenerates docs/dogfood_gradecore_witnessed.json
+shasum -a 256 docs/dogfood_gradecore_witnessed.json   # expect 779b0b565670d80b...</div></details></div>
 <div class="modes">
 <span><b>Recorded proof run</b> replays a completed run's artifacts. Nothing is executed here.</span>
 <span><b>Browser tamper demo</b> alters an in-memory copy of the embedded bundle and prints the named refusals its own verifier returns. It never writes to the served bytes and it never replays anything.</span>

@@ -34,6 +34,7 @@ class Claim:
     holes_total: int
     holes_by_kind: dict[str, int]
     source: str
+    witnessed: bool = False
 
     @property
     def headline(self) -> str:
@@ -42,8 +43,14 @@ class Claim:
                           for k, n in sorted(self.holes_by_kind.items()))
         survived = (f"{self.holes_total} survived ({kinds})" if self.holes_total
                     else "none survived")
-        return (f"Recorded evalmut dogfood run: {self.caught} of {self.applied} declared "
-                f"mutations were labelled caught; {survived}.")
+        # THE VERB IS A FUNCTION OF THE EVIDENCE, never a constant. Hardcoding "Witnessed" made
+        # the UNWITNESSED export render "Witnessed ... were caught" too, which is the claim
+        # asserting evidence its own source does not carry. An export without per-row invocation
+        # evidence gets the weaker verb, and gets it automatically.
+        kind = "Witnessed" if self.witnessed else "Recorded"
+        verb = "caught" if self.witnessed else "labelled caught"
+        return (f"{kind} evalmut dogfood run: {self.caught} of {self.applied} declared "
+                f"mutations were {verb}; {survived}.")
 
     @property
     def scope(self) -> str:
@@ -56,13 +63,22 @@ class Claim:
                 "production reliability of anything.")
 
 
-def derive(path: str | pathlib.Path) -> Claim:
-    """Read one dogfood export and recompute the headline's numbers from its own rows."""
+def derive(path: str | pathlib.Path, obj: dict | None = None) -> Claim:
+    """Recompute the headline's numbers from one dogfood export's own rows.
+
+    `obj` lets a caller hand over an export that has ALREADY been accepted, rather than having
+    this function read the file a second time. That matters for the witnessed artifact: the
+    publication gate hashes exact bytes, and a second independent read is a second chance for the
+    thing on disk to differ from the thing that was checked. `path` is still required, because
+    every refusal message names the file a reader would open."""
     p = pathlib.Path(path)
-    try:
-        d = json.loads(p.read_text())
-    except Exception as e:
-        raise UnderivableClaim(f"cannot read {p}: {type(e).__name__}: {e}") from e
+    if obj is not None:
+        d = obj
+    else:
+        try:
+            d = json.loads(p.read_text())
+        except Exception as e:
+            raise UnderivableClaim(f"cannot read {p}: {type(e).__name__}: {e}") from e
 
     for field in ("tally", "holes", "score"):
         if field not in d:
@@ -98,5 +114,9 @@ def derive(path: str | pathlib.Path) -> Claim:
             f"{p}: declared score {score:.1f}% does not match {caught}/{applied} = "
             f"{recomputed:.1f}%. The summary outran its own rows.")
 
+    # Present only on an export carrying per-row invocation evidence. Read from the object
+    # itself so the verb cannot outrun the file it came from.
+    witnessed = isinstance(d.get("witness_protocol"), dict)
     return Claim(caught=caught, applied=applied, score_pct=round(score, 1),
-                 holes_total=holes_total, holes_by_kind=by_kind, source=str(p))
+                 holes_total=holes_total, holes_by_kind=by_kind, source=str(p),
+                 witnessed=witnessed)

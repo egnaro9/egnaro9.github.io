@@ -50,6 +50,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from browserverify import panel as browser_panel  # noqa: E402
+from witness_gate import accept as accept_witness  # noqa: E402
 from claim import derive  # noqa: E402
 from evidence import (ProvenanceError, bundled_recipe, documented_command,  # noqa: E402
                       source, unchecked_note, value)
@@ -96,6 +97,7 @@ def run_verifier(target: pathlib.Path) -> tuple[int, str, int]:
 
 
 DOGFOOD = "docs/dogfood_gradecore.json"
+WITNESS_ARTIFACT = "evalmut/docs/dogfood_gradecore_witnessed.json"
 BOARD = "board/results.json"
 REGISTRY = "registry.json"
 CERTS = HOME / "agent-certlab" / "certifications"
@@ -654,9 +656,34 @@ footer a{color:var(--amber)}
 
 
 def build() -> str:
+    # The publication boundary, run BEFORE anything is emitted. The console may only make an
+    # invocation claim from the artifact its manifest pins, so a build that cannot accept that
+    # evidence stops here rather than producing a page. Nothing is caught: there is no degraded
+    # output to fall back to, by design.
+    #
+    # The accepted object is not yet rendered. Wiring the display is a separate, reviewable
+    # change, and putting the gate in first means the boundary exists before anything depends
+    # on it rather than being invented at the moment a claim gets upgraded.
+    witness = accept_witness()
+
     src = source("evalmut", DOGFOOD)
     d = read(f"evalmut/{DOGFOOD}")
-    claim = derive(HOME / f"evalmut/{DOGFOOD}")
+    # Derived from the ACCEPTED witness object, not from a second read of the unwitnessed
+    # export. The two agree today, verified row by row, but only one of them has been hashed
+    # against the manifest, and the headline may only come from that one.
+    claim = derive(HOME / WITNESS_ARTIFACT, obj=witness)
+    wp = witness["witness_protocol"]
+    rc, stamp = wp["row_counts"], wp["stamp"]
+    lib = ", ".join(f'{x["name"]} {x["version"]}' for x in wp["libraries"])
+    # The headline derives from the witnessed artifact, so its drawer must cite THAT file. A
+    # drawer naming a different export than the numbers came from is the cross-artifact mismatch
+    # the publication gate exists to refuse, reproduced one layer up in the presentation.
+    wsrc = source("evalmut", WITNESS_ARTIFACT.split("/", 1)[1],
+                  produced_by=documented_command("evalmut", WITNESS_ARTIFACT.split("/", 1)[1],
+                                                 "evalmut/invocation_witness.py"))
+    _pin = json.loads((pathlib.Path(__file__).resolve().parent / "witness.manifest.json").read_text())
+    art, sha, pub = _pin["artifact"], _pin["sha256"], _pin["public_url"]
+
     st = steps(src, d)
     ch = challenge()
     bv = browser_panel()
@@ -733,17 +760,24 @@ refusing tampered evidence by name. Every number read from a committed artifact.
 <div class="bounds">
 <p><b>Scope.</b> {_e(claim.scope)}</p>
 <p><b>Does not establish.</b> {_e(claim.not_established)}</p>
-<p><b>Invocation status.</b> The grader package is imported and its labels are recorded, but
-this bundle carries no per-row proof that the upstream scorer ran. evalmut ships that proof
-(<code>evalmut/sentinel.py</code> for in-process graders, <code>evalmut/witnessed.py</code> for
-subprocess ones, which refuses a row that arrives without a witness) and
-<code>demos/dogfood_gradecore.py</code> does not use either. A row with a clean verdict and no
-witness is indistinguishable from a row the harness answered for itself, so read every outcome
-here as label-recorded rather than invocation-proven.</p>
+<p><b>Invocation status.</b> These counts come from a pinned evalmut invocation-witness
+artifact ({_e(wp["protocol"])}) for {_e(lib)}. Every counted row carries a recorded entry into
+the named grader closure for both its clean control and its defective form, and each outcome
+recomputes from the raw value that came back. Rows that cannot show that evidence are not counted
+as outcomes: this run has {_e(str(rc["incomplete"]))} such rows out of {_e(str(rc["rows"]))}.
+This page's build rejects a missing, hash-mismatched, incomplete or dirty-stamped artifact rather
+than showing a weaker number.</p>
+<p><b>What that is not.</b> A dogfood run against evalmut's own corpus. It is not an independent
+benchmark, not a measurement of gradecore's quality, and not a claim about detection power on any
+suite but this one. The witness proves the grader was entered and what it returned. It proves
+nothing about what happened inside it.</p>
+<dl class="srcmeta"><dt>artifact</dt><dd><a href="{_e(pub)}">{_e(art)}</a></dd>
+<dt>sha256</dt><dd>{_e(sha)}</dd>
+<dt>issuer commit</dt><dd>{_e(stamp["issuer_commit"])}</dd></dl>
 <p class="derived">Every number above is derived from
 <a href="{_e(src.url)}">{_e(DOGFOOD)}</a>
 at build time. The build fails if that bundle contradicts itself.</p>
-{drawer("Where each number in that sentence comes from", claim_values(src, d), src,
+{drawer("Where each number in that sentence comes from", claim_values(wsrc, witness), wsrc,
         start_open=True)}</div>
 <div class="modes">
 <span><b>Recorded proof run</b> replays a completed run's artifacts. Nothing is executed here.</span>

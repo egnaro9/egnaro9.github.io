@@ -21,7 +21,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from claim import UnderivableClaim, derive  # noqa: E402
 
-BUNDLE = pathlib.Path.home() / "evalmut/docs/dogfood_gradecore.json"
+BUNDLE = pathlib.Path.home() / "evalmut/docs/dogfood_gradecore_witnessed.json"
+PLAIN = pathlib.Path.home() / "evalmut/docs/dogfood_gradecore.json"
 
 
 def test_the_live_bundle_still_says_what_the_page_claims():
@@ -36,21 +37,35 @@ def test_the_live_bundle_still_says_what_the_page_claims():
 
 def test_the_headline_is_generated_from_those_fields():
     c = derive(BUNDLE)
-    assert c.headline == ("Recorded evalmut dogfood run: 42 of 46 declared mutations were "
-                          "labelled caught; 4 survived (2 blind, 2 coverage gap).")
+    assert c.headline == ("Witnessed evalmut dogfood run: 42 of 46 declared mutations were "
+                          "caught; 4 survived (2 blind, 2 coverage gap).")
 
 
-def test_the_headline_does_not_claim_the_grader_decided():
-    """'caught' asserts the scorer ran and decided. The bundle cannot support that.
+def test_the_headline_claims_exactly_what_the_evidence_now_supports():
+    """The verb moved because the evidence did, and it may only move once, in that order.
 
-    demos/dogfood_gradecore.py wraps neither sentinel() nor witnessed(), and no result row carries
-    a witness field, so the run proves the package was imported and these labels were emitted. It
-    does not prove the intended upstream scoring path decided any given row. The verb has to stop
-    where the evidence stops."""
+    This test previously asserted the OPPOSITE: that 'caught' must not appear, because the run
+    proved only that the package was imported and labels were emitted. That was correct then.
+    demos/dogfood_gradecore.py now records a per-row entry into the grader closure for both the
+    clean control and the defective form, and every outcome recomputes from the raw return, so
+    the grader demonstrably decided each counted row.
+
+    Kept rather than deleted, inverted rather than removed, so the history of the claim is
+    readable: 'caught' is licensed by a witnessed artifact, and if that artifact ever stops being
+    the source, this line is where the licence should be revisited."""
     c = derive(BUNDLE)
-    assert "labelled caught" in c.headline
-    assert "mutations were caught" not in c.headline, (
-        "the headline is asserting the grader decided, which this bundle cannot support")
+    assert "mutations were caught" in c.headline
+    assert "labelled caught" not in c.headline
+    assert c.headline.startswith("Witnessed "), (
+        "the headline must name the evidence class it rests on")
+
+    # And the weaker source must still get the weaker verb, automatically. Hardcoding the strong
+    # verb made the UNWITNESSED export render "Witnessed ... were caught" as well, which is the
+    # claim asserting evidence its own source does not carry.
+    plain = derive(PLAIN)
+    assert plain.headline.startswith("Recorded ")
+    assert "labelled caught" in plain.headline
+    assert "mutations were caught" not in plain.headline
 
 
 def test_a_bundle_that_contradicts_itself_stops_the_build(tmp_path):
