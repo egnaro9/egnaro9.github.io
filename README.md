@@ -89,9 +89,11 @@ contract** backed by a **replayable evidence bundle**.
   committed contract independently re-graded in CI; one certification earned
   entirely inside GitHub Actions.
 - **[vac-protocol](https://github.com/egnaro9/vac-protocol)** — the VAC spec
-  and [registry](https://egnaro9.github.io/vac-protocol/) (11 accepted
-  bundles, two-gated acceptance: structural verification, then semantic
-  replay by the issuer's own deterministic grader).
+  and [registry](https://egnaro9.github.io/vac-protocol/) (9 accepted
+  bundles and 2 pending, two-gated acceptance: structural verification, then
+  semantic replay by the issuer's own deterministic grader). Accepted bundles
+  replay from sha256 pins addressed to a commit; the two pending are refused by
+  the verifier over their own evidence and are not replayable until repaired.
 - **[vac-gate](https://github.com/egnaro9/vac-gate)** — a composite GitHub
   Action: no verified contract, no green check.
 
