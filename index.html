@@ -377,7 +377,7 @@
       <ul>
         <li><a href="#program"><strong>Nine claims replay from a public registry</strong></a>, each pinned by sha256 to a specific commit, with a grading recipe a stranger can re-run. Two more are held pending, refused by the verifier over their own evidence. The registry page re-verifies every bundle before it deploys.</li>
         <li><a href="#program"><strong>Six models are broken on purpose, exactly</strong></a>: point a benchmark at them and it grades the benchmark. A naive suite caught 1 of 6.</li>
-        <li><a href="#board"><strong>A live board</strong></a> has tracked 16 LLMs across 5 labs for drift, every day, on a frozen suite. No model grading anything.</li>
+        <li><a href="#board"><strong>A live board</strong></a> has tracked 16 LLMs for drift, every day, on a frozen suite; the latest run graded 10 of them across 3 labs, and says so. No model grading anything.</li>
         <li><a href="#crash-test"><strong>My own grader was wrong once</strong></a> and its fail cards caught it: a real model read 29% vulnerable, re-graded to 0%.</li>
         <li><a href="#harness-builder"><strong>I measured my own architecture assumption and it was wrong</strong></a>: more scaffolding scored worse, for 22&times; the cost.</li>
         <li><a href="#harness"><strong>The agent cannot approve its own commits.</strong></a> It has tried. There is a recording of it being refused.</li>
@@ -708,7 +708,7 @@
         <text class="nm dim" x="631" y="334" text-anchor="middle">Postgres</text>
         <text class="ns" x="631" y="352" text-anchor="middle">every run, kept</text>
       </svg>
-      <div class="arch-legend">Every box is live, click one. Every arrow is a real call, not a decoration, most in-process, the last two over the wire. Everything above the last row runs in your tab; <b>eval-history is a real server</b>.</div>
+      <div class="arch-legend">Five of the eight boxes are live, click one. The dashed three are what the live ones talk to. Every arrow is a real call, not a decoration, most in-process, the last two over the wire. Everything above the last row runs in your tab; <b>eval-history is a real server</b>.</div>
     </div>
 
     <p class="compose-note">An agent that retrieves, a gateway governing its model calls, a harness grading its answers, a dashboard showing what failed, and a database that remembers every run. One button runs a question through <b>all five</b> and hands you the result. Including the case that's <b>perfectly faithful and completely wrong</b>, which is the case that matters most. The last stage leaves your tab: it asks the <b>live Postgres service</b> what changed versus a run it really has stored, using <b>the same <code>compare.py</code> the server runs</b>, fetched from GitHub and executed in front of you.</p>
@@ -767,7 +767,7 @@
           <span class="pname">rag-eval-lab</span>
           <span class="pci live">live</span>
         </div>
-        <p>A dependency-free RAG pipeline with a deterministic eval harness that <strong>catches a planted hallucination</strong>, re-checked on every push. The demo <strong>pip-installs the real wheel into your browser</strong>: write a false answer and watch it get caught, word by word. And it's <strong>measured</strong>: a from-scratch <strong>BM25 that matches the published SciFact baseline</strong> (nDCG@10 <strong>0.664</strong> vs 0.665). Plus <strong>hybrid retrieval and a reranker</strong> it benchmarks honestly and shows <em>don't</em> beat BM25 here, with the mechanism. Knowing when a technique doesn't help is the point.</p>
+        <p>A stdlib-core RAG pipeline, one dependency, the shared <code>gradecore</code> grading engine, with a deterministic eval harness that <strong>catches a planted hallucination</strong>, re-checked on every push. The demo <strong>pip-installs the real wheel into your browser</strong>: write a false answer and watch it get caught, word by word. And it's <strong>measured</strong>: a from-scratch <strong>BM25 that matches the published SciFact baseline</strong> (nDCG@10 <strong>0.664</strong> vs 0.665). Plus <strong>hybrid retrieval and a reranker</strong> it benchmarks honestly and shows <em>don't</em> beat BM25 here, with the mechanism. Knowing when a technique doesn't help is the point.</p>
         <div class="ptags"><a class="ptag mcp" href="https://github.com/egnaro9/mcp-tools" target="erikhill-out" title="Exposed by mcp-tools, a Model Context Protocol server built from the spec">MCP tools · search + grade_answer</a><span class="ptag">RAG</span><span class="ptag">evals · nDCG</span><span class="ptag">BM25 · hybrid · reranker</span><span class="ptag">SciFact</span><span class="ptag">WebAssembly</span></div>
         </div>
         <div class="pside">

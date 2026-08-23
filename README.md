@@ -2,7 +2,7 @@
 
 Portfolio site for **Erik Hill** — AI evaluation & testing engineer.
 
-**Live:** https://egnaro9.github.io · Hand-written HTML/CSS, no framework, no build.
+**Live:** https://egnaro9.github.io · Hand-written HTML/CSS, no framework, nothing compiled at deploy time. The pages under `suite/` are the exception: they are generated from committed artifacts by `suite/build.py`, `suite/runner.py` and `suite/refusals.py`, and the output is checked in.
 
 This repo is the site's source, but it's also the **hub of a working system**: a
 set of small, single-purpose repos that probe LLMs for regressions, store the
@@ -127,7 +127,7 @@ The canonical, always-current map is the site itself:
 
 ## About this repo specifically
 
-Hand-written HTML/CSS — no framework, no build step. It showcases an autonomous
+Hand-written HTML/CSS, no framework, and nothing compiled at deploy time. The pages under `suite/` are generated from committed artifacts by `suite/build.py`, `suite/runner.py` and `suite/refusals.py`; the output is checked in. It showcases an autonomous
 development harness (a self-reviewing agent loop: Strategy → Execution → Critic →
 Evaluation → Ops), a differential oracle that proves correctness across two
 independent implementations, and a human-in-the-loop autonomy ladder.

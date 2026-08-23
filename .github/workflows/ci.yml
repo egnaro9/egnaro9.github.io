@@ -1,5 +1,6 @@
-# The site is hand-written and has no build, so there's little to compile — but
-# two things here can still silently go false: the refresh-drift script that
+# The site has no deploy-time build, so there's little to compile. The pages under
+# suite/ are generated locally by suite/*.py and committed. Two things here can
+# still silently go false: the refresh-drift script that
 # rewrites the homepage, and the outbound links that make the portfolio a hub.
 # This job guards both.
 #
