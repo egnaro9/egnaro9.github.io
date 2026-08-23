@@ -1,0 +1,94 @@
+#!/bin/bash
+# pre-commit — the authoritative claim gate.
+#
+# WHY HERE. This started as a PreToolUse hook in the agent harness. That layer runs
+# BEFORE the command, so it can only inspect state the command has not created yet: a
+# single `echo > index.html && git add index.html && git commit` sailed through, because
+# at hook time the tree was clean. Measured, not theorised. A pre-commit hook runs inside
+# git with the final staged index, so the timing gap does not exist, and it also covers
+# commits made from a terminal, an editor, or a script rather than only from a session.
+#
+# WHAT IT DOES. Deterministic, and it never decides whether a claim is true. It decides
+# which staged files are claim-bearing per .claim-paths, and whether each is covered by a
+# receipt in .claim-review-ack. EVIDENCE pointers are RESOLVED (a local path must exist,
+# an https pointer must return 2xx), so a receipt cannot be satisfied by writing prose.
+# OVERRIDE is permitted, requires a reason, and is appended to .claim-review-audit.log.
+#
+# FAILS CLOSED on a malformed receipt line or an unreadable .claim-paths.
+#
+# RESIDUAL, and it is not small: `git commit --no-verify` skips every client-side hook.
+# No local hook can be a complete policy boundary. If enforcement must survive a
+# deliberate bypass, the publish path has to check receipts independently before deploy.
+
+set -u
+REPO=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+[ -f "$REPO/.claim-paths" ] || exit 0
+
+if ! PATTERNS=$(grep -v '^[[:space:]]*#' "$REPO/.claim-paths" 2>/dev/null | grep -v '^[[:space:]]*$'); then
+    echo "claim gate: .claim-paths is unreadable. Refusing rather than guessing." >&2
+    exit 1
+fi
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null)
+[ -z "$STAGED" ] && exit 0
+
+MATCHED=""
+while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    while IFS= read -r p; do
+        [ -z "$p" ] && continue
+        case "$f" in $p) MATCHED="$MATCHED$f"$'\n'; break;; esac
+        case "$(basename "$f")" in $p) MATCHED="$MATCHED$f"$'\n'; break;; esac
+    done <<< "$PATTERNS"
+done <<< "$STAGED"
+MATCHED=$(printf '%s' "$MATCHED" | grep -v '^$' | sort -u)
+[ -z "$MATCHED" ] && exit 0
+
+ACK="$REPO/.claim-review-ack"
+MISSING="" ; UNRESOLVED="" ; OVERRIDES=""
+while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    LINE=$(grep -F -- "$f ::" "$ACK" 2>/dev/null | head -1)
+    if [ -z "$LINE" ]; then MISSING="$MISSING  $f"$'\n'; continue; fi
+    KIND=$(printf '%s' "$LINE" | sed -E 's/.*:: *([A-Z]+).*/\1/')
+    REF=$(printf '%s' "$LINE" | sed -E 's/.*:: *[A-Z]+ *//')
+    case "$KIND" in
+      OVERRIDE)
+        if [ -z "$REF" ]; then
+            UNRESOLVED="$UNRESOLVED  $f -> OVERRIDE with no reason"$'\n'
+        else
+            OVERRIDES="$OVERRIDES  $f -> $REF"$'\n'
+        fi ;;
+      EVIDENCE)
+        if [ -z "$REF" ]; then
+            UNRESOLVED="$UNRESOLVED  $f -> EVIDENCE with no pointer"$'\n'
+        elif printf '%s' "$REF" | grep -qE '^https://'; then
+            code=$(curl -s -o /dev/null -m 20 -w '%{http_code}' "$REF" 2>/dev/null)
+            case "$code" in 2*) ;; *) UNRESOLVED="$UNRESOLVED  $f -> $REF (HTTP $code)"$'\n';; esac
+        elif [ ! -e "$REF" ] && [ ! -e "$REPO/$REF" ]; then
+            UNRESOLVED="$UNRESOLVED  $f -> $REF (no such path)"$'\n'
+        fi ;;
+      *) UNRESOLVED="$UNRESOLVED  $f -> malformed receipt line"$'\n' ;;
+    esac
+done <<< "$MATCHED"
+
+if [ -n "$OVERRIDES" ]; then
+    printf '%s  commit OVERRIDE\n%s' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$OVERRIDES" \
+        >> "$REPO/.claim-review-audit.log"
+fi
+
+if [ -n "$MISSING" ] || [ -n "$UNRESOLVED" ]; then
+    {
+      echo "claim gate: commit blocked. Claim-bearing files staged with no resolved receipt."
+      [ -n "$MISSING" ]    && { echo; echo "No receipt line in .claim-review-ack for:"; printf '%s' "$MISSING"; }
+      [ -n "$UNRESOLVED" ] && { echo; echo "Receipt present but the evidence pointer did not resolve:"; printf '%s' "$UNRESOLVED"; }
+      echo
+      echo "Add one line per file to .claim-review-ack:"
+      echo "  <path> :: EVIDENCE <existing-path-or-200-url>"
+      echo "  <path> :: OVERRIDE <reason>"
+      echo
+      echo "EVIDENCE is resolved by this hook. Verify the claim against the artifact, not a note."
+    } >&2
+    exit 1
+fi
+exit 0

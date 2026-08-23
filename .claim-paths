@@ -14,3 +14,5 @@ docs/*.json
 registry.json
 *results*.json
 *manifest*.json
+
+# installed via: git config core.hooksPath .githooks
