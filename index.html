@@ -375,7 +375,7 @@
     <div class="tldr">
       <div class="tldr-h">If you only read one thing</div>
       <ul>
-        <li><a href="#program"><strong>Eleven claims sit in a public registry</strong></a>, each with hash-pinned evidence and a grading recipe a stranger can re-run. The registry page re-verifies every bundle before it deploys.</li>
+        <li><a href="#program"><strong>Nine claims replay from a public registry</strong></a>, each pinned by sha256 to a specific commit, with a grading recipe a stranger can re-run. Two more are held pending, refused by the verifier over their own evidence. The registry page re-verifies every bundle before it deploys.</li>
         <li><a href="#program"><strong>Six models are broken on purpose, exactly</strong></a>: point a benchmark at them and it grades the benchmark. A naive suite caught 1 of 6.</li>
         <li><a href="#board"><strong>A live board</strong></a> has tracked 16 LLMs across 5 labs for drift, every day, on a frozen suite. No model grading anything.</li>
         <li><a href="#crash-test"><strong>My own grader was wrong once</strong></a> and its fail cards caught it: a real model read 29% vulnerable, re-graded to 0%.</li>
@@ -387,7 +387,7 @@
 
     <div class="cta" style="margin-top:18px; justify-content:flex-start; gap:10px; flex-wrap:wrap">
       <a class="plive" href="https://erikhill.dev/suite/runner.html">&#9654; See Evalmut's proof console. A witnessed run, checked in your browser</a>
-      <a class="plive" href="https://erikhill.dev/vac-protocol/">▶ Open the claim registry: 11 replayable bundles</a>
+      <a class="plive" href="https://erikhill.dev/vac-protocol/">▶ Open the claim registry: 9 replayable bundles, 2 held pending</a>
       <a class="plive" href="https://erikhill.dev/model-drift/">▶ Open the live board: 16 LLMs, 5 metrics</a>
       <a class="plive alt" href="https://crashkit.onrender.com">▶ Crash-test a model with your own key</a>
       <span class="pnote">free tier. The first click can take up to a minute to wake</span>
@@ -462,7 +462,7 @@
     <div class="bridge">
       <div class="bridge-row">
         <span class="bridge-b">The registry</span>
-        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/vac-protocol" target="erikhill-out">vac-protocol</a></strong>: VAC, Verifiable Agent Claims. <strong>11 accepted entries, zero pending.</strong> All eleven are my own repos, which makes the registry one multi-repository fixture rather than five independent issuers. That is the honest weak point, and it is now open: <a href="https://github.com/egnaro9/vac-protocol/blob/main/ISSUING.md" target="erikhill-out">ISSUING.md</a> plus a generic <code>rows-aggregate-v1</code> profile mean an outsider can issue in their own artifact shape without adopting mine. Acceptance is two-gated: structural verification (<code>python -m vac.verify</code>: manifest, hashes, closure, mandatory limitations), then semantic replay by the issuer's own deterministic grader. The <a href="https://erikhill.dev/vac-protocol/">live registry page</a> re-verifies every bundle over fetched artifacts before each deploy.</span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/vac-protocol" target="erikhill-out">vac-protocol</a></strong>: VAC, Verifiable Agent Claims. <strong>9 accepted entries, 2 pending.</strong> Accepted entries replay from sha256-pinned, commit-addressed artifacts. The two pending are refused by the verifier over their own evidence, not by hash drift, and are not replayable until their issuers repair them. All are my own repos, which makes the registry one multi-repository fixture rather than five independent issuers. That is the honest weak point, and it is now open: <a href="https://github.com/egnaro9/vac-protocol/blob/main/ISSUING.md" target="erikhill-out">ISSUING.md</a> plus a generic <code>rows-aggregate-v1</code> profile mean an outsider can issue in their own artifact shape without adopting mine. Acceptance is two-gated: structural verification (<code>python -m vac.verify</code>: manifest, hashes, closure, mandatory limitations), then semantic replay by the issuer's own deterministic grader. The <a href="https://erikhill.dev/vac-protocol/">live registry page</a> re-verifies every bundle over fetched artifacts before each deploy.</span>
       </div>
       <div class="bridge-row">
         <span class="bridge-b">The contracts</span>
