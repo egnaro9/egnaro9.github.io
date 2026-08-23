@@ -1,0 +1,16 @@
+# Claim-bearing paths. A change to any of these blocks git commit/push until
+# .claim-review-ack accounts for the file with a resolving EVIDENCE pointer or
+# a recorded OVERRIDE. One glob per line; matched against full path and basename.
+index.html
+about/index.html
+resume/index.html
+suite/*.html
+suite/*.py
+stack/*.html
+stack/*.js
+eval-compare/index.html
+*.md
+docs/*.json
+registry.json
+*results*.json
+*manifest*.json
