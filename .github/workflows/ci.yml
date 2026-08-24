@@ -54,6 +54,7 @@ jobs:
             --retry-wait-time 2
             --timeout 40
             --max-concurrency 8
+            --root-dir ${{ github.workspace }}
             --exclude asciinema\.org
             --exclude reddit\.com
             --exclude linkedin\.com
