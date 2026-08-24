@@ -27,6 +27,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # actions/checkout resolves `ref` as a branch or tag unless it is a FULL 40-char sha, so
+      # an abbreviated one fails with "could not be found". A local `git clone` accepts short
+      # shas, which is why a local clean-environment run cannot equivalence-test this: any future
+      # sibling-pin change needs a real Actions run before it is called proven.
+      #
       # runner.py needs more than fetchable artifacts: it runs the five tamper cases through
       # vac-verify against vac-protocol's own examples/ and fixtures/ TREES, and it reads git
       # history in each issuer repo to report which commit last touched an artifact. So the
@@ -34,11 +39,11 @@ jobs:
       # authority: every artifact is still hash-checked against its pin, and a checkout whose
       # bytes stop matching fails the build rather than quietly changing a public number.
       - uses: actions/checkout@v4
-        with: { repository: egnaro9/evalmut, ref: 7ea9ddc6ad12, path: home/evalmut, fetch-depth: 0 }
+        with: { repository: egnaro9/evalmut, ref: 7ea9ddc6ad12289e965b4873d4e25b7b695b48d1, path: home/evalmut, fetch-depth: 0 }
       - uses: actions/checkout@v4
-        with: { repository: egnaro9/reference-fleet, ref: 4d958c3a5e3f, path: home/reference-fleet, fetch-depth: 0 }
+        with: { repository: egnaro9/reference-fleet, ref: 4d958c3a5e3f3ef2c6c713c465d959a9940b3f52, path: home/reference-fleet, fetch-depth: 0 }
       - uses: actions/checkout@v4
-        with: { repository: egnaro9/agent-certlab, ref: fc0244b44bf0, path: home/agent-certlab, fetch-depth: 0 }
+        with: { repository: egnaro9/agent-certlab, ref: fc0244b44bf0abd1e5aba045dfd379f2b17bd520, path: home/agent-certlab, fetch-depth: 0 }
       - uses: actions/checkout@v4
         with: { repository: egnaro9/vac-protocol, ref: 50e613e29f2c47fbb3022dae17ecb70048c63b32, path: home/vac-protocol, fetch-depth: 0 }
 
