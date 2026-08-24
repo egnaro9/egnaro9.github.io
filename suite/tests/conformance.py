@@ -26,11 +26,15 @@ the reference's, so an abstaining run cannot smuggle in an invented refusal.
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import shutil
 import subprocess
 
-VAC_ROOT = pathlib.Path("/Users/lonimua/vac-protocol")
+# An absolute path to one person's home directory, committed to a public repo. It survived
+# because the skipif above hid every test that used it, so the harness never ran anywhere
+# that path did not exist. VAC_DIR lets CI point at its own checkout.
+VAC_ROOT = pathlib.Path(os.environ.get("VAC_DIR") or pathlib.Path.home() / "vac-protocol")
 SUITE = pathlib.Path(__file__).resolve().parent.parent
 # Resolve from PATH first, exactly as runner.py and the other suite tests do. Hardcoding a
 # .venv inside a sibling repo made all 16 conformance tests skip in CI while passing on a
