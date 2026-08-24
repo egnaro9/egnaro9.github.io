@@ -77,10 +77,13 @@ jobs:
       - name: Validate every source pin
         run: .venv/bin/python suite/check_pins.py --pins
 
+      # -rs prints the reason for every skip. A test that silently skips in CI is indistinguishable
+      # in the summary line from one that ran and passed, which is the failure this whole job
+      # exists to refuse.
       - name: Run the suite and tools tests
         run: |
           export PATH="$PWD/.venv/bin:$PATH" HOME="$PWD/home"
-          .venv/bin/python -m pytest tools/ suite/ -q
+          .venv/bin/python -m pytest tools/ suite/ -q -rs
 
       - name: Regenerate both pages from the manifest
         run: |
