@@ -756,7 +756,7 @@ refusing tampered evidence by name. Every number read from a committed artifact.
 <div class="wrap">
 <p class="kicker">Verifiable Evaluation Suite &middot; Recorded proof run</p>
 <h1>{_e(claim.headline)}</h1>
-<p class="provisional"><b>Invocation witnesses: not captured per row.</b> This result is provisional. Wiring them may move the denominator, because a row with no witness is not a caught row and not a survivor, it is INCOMPLETE.</p>
+<p class="provisional"><b>Invocation witnesses: captured for all {_e(str(rc["witnessed"]))} counted rows</b> ({_e(str(rc["incomplete"]))} incomplete of {_e(str(rc["rows"]))}). The witness records that the named grader closure was entered and what it returned; it does not establish what happened inside it.</p>
 <div class="bounds">
 <p><b>Scope.</b> {_e(claim.scope)}</p>
 <p><b>Does not establish.</b> {_e(claim.not_established)}</p>

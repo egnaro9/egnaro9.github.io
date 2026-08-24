@@ -206,7 +206,7 @@ word-break:break-word}
 <div class="wrap">
 <p class="kicker">Verifiable Evaluation Suite &middot; Recorded proof run</p>
 <h1>Witnessed evalmut dogfood run: 42 of 46 declared mutations were caught; 4 survived (2 blind, 2 coverage gap).</h1>
-<p class="provisional"><b>Invocation witnesses: not captured per row.</b> This result is provisional. Wiring them may move the denominator, because a row with no witness is not a caught row and not a survivor, it is INCOMPLETE.</p>
+<p class="provisional"><b>Invocation witnesses: captured for all 46 counted rows</b> (0 incomplete of 269). The witness records that the named grader closure was entered and what it returned; it does not establish what happened inside it.</p>
 <div class="bounds">
 <p><b>Scope.</b> evalmut&#x27;s own Corpus A protocol and tooling corpus, under the recorded environment, at the commit this bundle names.</p>
 <p><b>Does not establish.</b> independent operator validity, external evaluation-suite detection power, or production reliability of anything.</p>
@@ -308,23 +308,23 @@ git -C issuer checkout 7954393
 python -m pip install -e &#x27;./issuer[test]&#x27;
 python -m certlab.regrade bundle.json</div></details></div></div><div class="step" data-i="4">
 <div class="head"><span class="num">4</span><span class="verb">PRESERVE</span>
-<span class="tool">vac-protocol</span><span class="big">11</span></div>
-<div class="body"><p class="q">Is there enough evidence to replay the conclusion later?</p><dl><dt>bundles in registry</dt><dd>11</dd><dt>accepted</dt><dd>11</dd><dt>pending</dt><dd>0</dd><dt>issuers represented</dt><dd>5</dd><dt>artifacts pinned by sha256</dt><dd>47</dd></dl>
+<span class="tool">vac-protocol</span><span class="big">9</span></div>
+<div class="body"><p class="q">Is there enough evidence to replay the conclusion later?</p><dl><dt>bundles in registry</dt><dd>9</dd><dt>accepted</dt><dd>9</dd><dt>pending</dt><dd>2</dd><dt>issuers represented</dt><dd>3</dd><dt>artifacts pinned by sha256</dt><dd>33</dd></dl>
 <p class="note">A bundle pins claim and limitations, the subject and its version, the protocol and fixtures, raw artifacts and hashes, the derivation, and the command to replay it. No wall-clock: a claim dies when a bound input changes, not when a date passes. The registry is a reviewed file in the repo, so this count is what survived the verifier, not what was submitted.</p><details class="ev"><summary>Evidence for these numbers</summary>
 <table class="prov"><thead><tr><th>value</th><th>shown</th>
 <th>expression that reproduces it, run from the repo root</th></tr></thead>
-<tbody><tr><td>bundles in registry</td><td class="n">11</td><td><code>jq &#x27;.entries | length&#x27; registry.json</code></td></tr><tr><td>accepted</td><td class="n">11</td><td><code>jq &#x27;[.entries[] | select(.status == &quot;accepted&quot;)] | length&#x27; registry.json</code></td></tr><tr><td>pending</td><td class="n">0</td><td><code>jq &#x27;.pending | length&#x27; registry.json</code></td></tr><tr><td>issuers represented</td><td class="n">5</td><td><code>jq &#x27;.entries | map(.issuer) | unique | length&#x27; registry.json</code></td></tr><tr><td>artifacts pinned by sha256</td><td class="n">47</td><td><code>jq &#x27;[.entries[].artifacts | length] | add&#x27; registry.json</code></td></tr></tbody></table>
+<tbody><tr><td>bundles in registry</td><td class="n">9</td><td><code>jq &#x27;.entries | length&#x27; registry.json</code></td></tr><tr><td>accepted</td><td class="n">9</td><td><code>jq &#x27;[.entries[] | select(.status == &quot;accepted&quot;)] | length&#x27; registry.json</code></td></tr><tr><td>pending</td><td class="n">2</td><td><code>jq &#x27;.pending | length&#x27; registry.json</code></td></tr><tr><td>issuers represented</td><td class="n">3</td><td><code>jq &#x27;.entries | map(.issuer) | unique | length&#x27; registry.json</code></td></tr><tr><td>artifacts pinned by sha256</td><td class="n">33</td><td><code>jq &#x27;[.entries[].artifacts | length] | add&#x27; registry.json</code></td></tr></tbody></table>
 <p class="xn">All 5 values were recomputed with jq against the file&#x27;s bytes at build time and matched. A mismatch fails the build.</p>
-<dl class="srcmeta"><dt>file</dt><dd><a href="https://github.com/egnaro9/vac-protocol/blob/a17af5cbcac6/registry.json">vac-protocol/registry.json</a></dd>
-<dt>sha256</dt><dd>0eb58da1eeba1df80100b03453e19638691066764f1d0abc92636ad468f07bbd</dd>
-<dt>bytes</dt><dd>25225</dd>
-<dt>bundle last changed in</dt><dd>a17af5cbcac6<br><span class="pinnote">the last commit that touched this file, not the repository's current HEAD. An unrelated commit does not move this pin.</span></dd>
+<dl class="srcmeta"><dt>file</dt><dd><a href="https://github.com/egnaro9/vac-protocol/blob/98fa81daf45e/registry.json">vac-protocol/registry.json</a></dd>
+<dt>sha256</dt><dd>23f90dfcbd10adeda711a6e1faf5e68bfb070f333853acf4eeb8f967d964fd56</dd>
+<dt>bytes</dt><dd>22951</dd>
+<dt>bundle last changed in</dt><dd>98fa81daf45e<br><span class="pinnote">the last commit that touched this file, not the repository's current HEAD. An unrelated commit does not move this pin.</span></dd>
 <dt>produced by</dt><dd>python -m vac.registry</dd></dl>
 <p class="xn">Independent replay, pinned to the bundle-changing commit above rather than to main:</p>
 <div class="term">git clone https://github.com/egnaro9/vac-protocol &amp;&amp; cd vac-protocol
-git checkout a17af5cbcac6
+git checkout 98fa81daf45e
 python -m vac.registry   # regenerates registry.json
-shasum -a 256 registry.json   # expect 0eb58da1eeba1df8...</div></details></div></div><div class="step" data-i="5">
+shasum -a 256 registry.json   # expect 23f90dfcbd10aded...</div></details></div></div><div class="step" data-i="5">
 <div class="head"><span class="num">5</span><span class="verb">CHALLENGE</span>
 <span class="tool">vac-verify</span>
 <span class="big">5 of 5 refused</span></div>
