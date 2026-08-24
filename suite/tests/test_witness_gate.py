@@ -171,3 +171,41 @@ def test_the_gate_has_no_fallback_branch():
     assert "except WitnessRejected" not in src, "the gate catches its own refusal somewhere"
     assert body.count("return ") == 1, (
         "accept() has more than one return; a second one is a fallback path")
+
+
+# ---------------------------------------------------------- B2b: the url must serve the bytes
+def test_the_pinned_url_must_serve_the_declared_bytes():
+    """Field agreement is not verification.
+
+    The shipped manifest once addressed public_url at issuer_commit (772bd93), the code state the
+    run was stamped at, rather than at the commit whose tree holds the artifact. Every field agreed
+    with every other field, so the old check passed, while the url served 62834d45 next to a
+    published sha256 of 779b0b56. A reader who clicked the link and hashed it would have caught
+    what the gate could not, because nothing fetched anything.
+
+    This is the negative case that check could not fail on."""
+    import copy
+
+    real = json.loads(REAL_MANIFEST.read_text())
+
+    # the corrected pin: the commit that actually serves the declared bytes
+    assert real["pinned_commit"].startswith("7ea9ddc6ad12")
+    assert real["pinned_commit"] in real["public_url"]
+    assert real["issuer_commit"] != real["pinned_commit"], (
+        "issuer_commit and pinned_commit are different facts and must not be collapsed")
+
+    def check(manifest):
+        G._check_url_agrees(manifest)          # fields
+        G._check_url_serves_declared_bytes(manifest)   # and the bytes themselves
+
+    check(real)  # the corrected manifest verifies against the bytes GitHub serves
+
+    # the exact defect, restored: url addressed at issuer_commit
+    old = copy.deepcopy(real)
+    old["pinned_commit"] = "772bd93"
+    old["public_url"] = ("https://github.com/egnaro9/evalmut/blob/772bd93/"
+                         "docs/dogfood_gradecore_witnessed.json")
+    with pytest.raises(G.WitnessRejected) as e:
+        check(old)
+    assert "public_url bytes" in str(e.value), (
+        f"the old url must be refused for its BYTES, not merely its fields: {e.value}")

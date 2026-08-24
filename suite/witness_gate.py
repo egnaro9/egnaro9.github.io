@@ -22,6 +22,7 @@ import hashlib
 import json
 import pathlib
 import re
+import urllib.request
 
 HOME = pathlib.Path.home()
 MANIFEST = pathlib.Path(__file__).resolve().parent / "witness.manifest.json"
@@ -49,14 +50,46 @@ def _check_url_agrees(m: dict) -> None:
     parsed = re.match(r"https://github\.com/([^/]+)/([^/]+)/blob/([0-9a-f]{7,40})/(.+)$", u)
     if not parsed:
         _reject("public_url", "a github blob url pinned to a commit", u)
-    _owner, repo, commit, path = parsed.groups()
+    owner, repo, commit, path = parsed.groups()
     art = m["artifact"]
     if not art.startswith(repo + "/"):
         _reject("public_url repo", f"{art.split('/')[0]!r} to match artifact path", repo)
     if path != art.split("/", 1)[1]:
         _reject("public_url path", art.split("/", 1)[1], path)
-    if not commit.startswith(m["issuer_commit"]) and not m["issuer_commit"].startswith(commit):
-        _reject("public_url commit", m["issuer_commit"], commit)
+
+    # The url is addressed at pinned_commit, NOT issuer_commit. issuer_commit is the code state
+    # the run was stamped at; the artifact is committed afterwards, so its bytes live in a later
+    # tree. Checking the url against issuer_commit sent readers to a commit where this file did
+    # not yet hold these bytes, and the mismatch was invisible because nothing fetched it.
+    pin = m.get("pinned_commit")
+    if not pin:
+        _reject("manifest.pinned_commit", "present", "absent")
+    if not commit.startswith(pin) and not pin.startswith(commit):
+        _reject("public_url commit", pin, commit)
+
+
+
+def _check_url_serves_declared_bytes(m: dict) -> None:
+    """Fetch the pinned url and hash what it serves.
+
+    FIELD AGREEMENT IS NOT VERIFICATION. Every field can agree perfectly while the url serves
+    different bytes than the sha256 beside it, which is exactly what happened: the page printed
+    779b0b56 next to a link resolving to 62834d45, because the url was addressed at issuer_commit
+    instead of the commit that holds the artifact. Nothing fetched it, so nothing noticed.
+
+    This runs LAST, after every local check. A reader who clicks the link and hashes it is running
+    this by hand; running it earlier would mask a local failure behind a network one.
+    """
+    owner, repo, commit, path = re.match(
+        r"https://github\.com/([^/]+)/([^/]+)/blob/([0-9a-f]{7,40})/(.+)$", m["public_url"]).groups()
+    raw = f"https://raw.githubusercontent.com/{owner}/{repo}/{commit}/{path}"
+    try:
+        with urllib.request.urlopen(raw, timeout=30) as r:
+            served = hashlib.sha256(r.read()).hexdigest()
+    except Exception as e:
+        _reject("public_url fetch", f"readable at {raw}", f"{type(e).__name__}: {e}")
+    if served != m["sha256"]:
+        _reject("public_url bytes", f"sha256 {m['sha256']}", f"sha256 {served} served by {raw}")
 
 
 def accept(manifest_path: pathlib.Path | None = None, home: pathlib.Path | None = None) -> dict:
@@ -124,6 +157,7 @@ def accept(manifest_path: pathlib.Path | None = None, home: pathlib.Path | None 
         _reject("unattributed invocation calls", 0, unattributed)
 
     _reconcile(a)
+    _check_url_serves_declared_bytes(m)
     return a
 
 
