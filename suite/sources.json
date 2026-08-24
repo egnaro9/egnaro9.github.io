@@ -1,0 +1,67 @@
+{
+  "_": "The evidence this page is willing to publish. A sibling checkout is byte transport; THIS is the pin. Every panel names the artifact, the immutable issuer commit its bytes came from, the sha256 those bytes must have, and a commit-pinned public URL a reader can fetch and hash themselves. A source whose bytes stop matching its pin renders STALE and loses its number: it never keeps yesterday's value. Bumping a pin is a deliberate edit here, never a side effect of someone else's push.",
+  "manifest_version": 1,
+  "pinned_as_of": "2026-08-24",
+  "sources": [
+    {
+      "panel": "evalmut",
+      "label": "evalmut dogfood mutation score against its own corpus",
+      "question": "Does your eval suite actually check anything?",
+      "artifact": "evalmut/docs/dogfood_gradecore.json",
+      "issuer_commit": "ace358748a4b",
+      "sha256": "cc3b76f7bfe54eed1b2c95e5c1c68df1a718c63a141229aab5004c86b9ddbbc8",
+      "public_url": "https://github.com/egnaro9/evalmut/blob/ace358748a4b/docs/dogfood_gradecore.json",
+      "derivation": "evalmut_dogfood@1"
+    },
+    {
+      "panel": "reference-fleet",
+      "label": "Suite-by-member detection results against a seeded answer key",
+      "question": "Which defect classes does a suite catch, against a known answer key?",
+      "artifact": "reference-fleet/board/results.json",
+      "issuer_commit": "4d958c3a5e3f",
+      "sha256": "6a6c5be75738155543057a4a7a1ed717564cb9b74d681ec52e18a039c779f3cd",
+      "public_url": "https://github.com/egnaro9/reference-fleet/blob/4d958c3a5e3f/board/results.json",
+      "derivation": "fleet_board@1"
+    },
+    {
+      "panel": "model-drift",
+      "label": "Models tracked by the frozen daily drift suite",
+      "question": "Did a model move, or is that inside the noise floor?",
+      "artifact": "model-drift/dashboard/metrics.json",
+      "issuer_commit": "e596720c7909",
+      "sha256": "4493bbc9c5a52a5e975868f7e770092f10603752ea0972ef79cc6ed15b883ee2",
+      "public_url": "https://github.com/egnaro9/model-drift/blob/e596720c7909/dashboard/metrics.json",
+      "derivation": "drift_metrics@1"
+    },
+    {
+      "panel": "agent-certlab",
+      "label": "Seeded defects repaired under a stated certification policy",
+      "question": "Can this agent repair seeded defects under a stated policy?",
+      "artifact": "agent-certlab/certifications/claude-code-cloud-2026-08-14/vac.json",
+      "issuer_commit": "fc0244b44bf0",
+      "sha256": "70c89e63e46e2c163b255585fcbce5bb4cf624e7297cb1c76e5d2c17e288fb1e",
+      "public_url": "https://github.com/egnaro9/agent-certlab/blob/fc0244b44bf0/certifications/claude-code-cloud-2026-08-14/vac.json",
+      "derivation": "certlab_bundle@1"
+    },
+    {
+      "panel": "crashkit",
+      "label": "Deterministic checks declared in the crashkit evidence bundle",
+      "question": "Do the graders bite, with no LLM judge anywhere?",
+      "artifact": "crashkit/vac/vac.json",
+      "issuer_commit": "d08d756b1100",
+      "sha256": "7e3ebeaee89a185e543cedf80a09536f617e39d03e17728b9db38783dc56b6e3",
+      "public_url": "https://github.com/egnaro9/crashkit/blob/d08d756b1100/vac/vac.json",
+      "derivation": "crashkit_bundle@1"
+    },
+    {
+      "panel": "vac-protocol",
+      "label": "VAC registry acceptance state, including bundles the verifier refused",
+      "question": "Can a stranger verify these bundles offline?",
+      "artifact": "vac-protocol/registry.json",
+      "issuer_commit": "98fa81daf45e",
+      "sha256": "23f90dfcbd10adeda711a6e1faf5e68bfb070f333853acf4eeb8f967d964fd56",
+      "public_url": "https://github.com/egnaro9/vac-protocol/blob/98fa81daf45e/registry.json",
+      "derivation": "vac_registry@1"
+    }
+  ]
+}

@@ -258,8 +258,14 @@ def test_a_truncated_transcript_says_how_many_lines_it_dropped():
 
 
 
-def test_the_page_survives_an_unavailable_verifier():
-    """run_verifier's failure branch must return the same arity as its success branch.
+def test_an_unavailable_verifier_refuses_the_build():
+    """A missing verifier is a preflight failure, not a weaker page.
+
+    run_verifier still degrades honestly, and the arity check below keeps that branch callable,
+    because defence in depth is cheap. But the CLI must never reach it: the five named refusals
+    ARE step 5, so a page rendering five "could not run the verifier" rows reads to a visitor as
+    five demonstrations when it is five failures to demonstrate. Publishing that is worse than
+    publishing nothing, so the generator exits nonzero and leaves the committed page alone.
 
     Widening the return to carry the named-reason count left the except branch at two values, so
     an unavailable verifier raised ValueError in the caller instead of degrading to UNLAUNCHED.
@@ -275,10 +281,14 @@ def test_the_page_survives_an_unavailable_verifier():
 
     root = pathlib.Path(__file__).parent.parent
     out = pathlib.Path("/tmp/_noverif_test.html")
+    sentinel = "<!-- page that must survive a refused build -->"
+    out.write_text(sentinel)
     env = dict(os.environ, PATH="/usr/bin:/bin")
     p = subprocess.run(["python3", "runner.py", str(out)], cwd=str(root),
                        capture_output=True, text=True, env=env)
-    assert p.returncode == 0, f"the build died without a verifier: {p.stderr[-400:]}"
-    html = out.read_text()
-    assert "verifier did not run" in html, "step 5 must say so rather than report a count"
-    assert 'class="step absent"' in html, "step 5 must render absent when its verifier never ran"
+    assert p.returncode != 0, "a missing verifier must refuse the build, not degrade it"
+    assert out.read_text() == sentinel, (
+        "the generator overwrote an existing page while refusing: a refused build must leave "
+        "the previous page exactly as it found it")
+    assert "not on PATH" in p.stderr, "the refusal must name the missing dependency"
+    assert "pip install -e" in p.stderr, "the refusal must carry a remediation command"

@@ -16,6 +16,12 @@ Each panel therefore carries three things: the number, the exact file it came fr
 that file on GitHub so a reader can check it in one click. The claim and the evidence never travel
 separately.
 
+THE PIN, NOT THE CHECKOUT. Every source is declared in sources.json with an immutable issuer
+commit, the sha256 its bytes must have, and a commit-pinned public URL. A sibling checkout is
+only byte transport: bytes that do not hash to the pin are refused, and the panel renders STALE
+naming expected and found rather than keeping the value it printed yesterday. Nothing here reads
+a local HEAD or links a mutable branch, because both go false silently on someone else's push.
+
     python3 build.py            # writes index.html next to this file
 """
 from __future__ import annotations
@@ -24,41 +30,83 @@ import hashlib
 import html
 import json
 import pathlib
-import subprocess
+import re
+import urllib.error
+import urllib.request
 
+HERE = pathlib.Path(__file__).resolve().parent
 HOME = pathlib.Path.home()
-OUT = pathlib.Path(__file__).resolve().parent / "index.html"
-GH = "https://github.com/egnaro9"
+OUT = HERE / "index.html"
+MANIFEST = HERE / "sources.json"
+RAW = "https://raw.githubusercontent.com/"
 
 
 def _e(v) -> str:
     return html.escape("" if v is None else str(v))
 
 
-def read(rel: str):
-    """Load a repo artifact, or return None. Never raises: a broken source must become a visible
-    ABSENT panel rather than a traceback that stops the whole page from building."""
-    p = HOME / rel
+class Resolved:
+    """One source, resolved to exactly one of three states. There is no fourth."""
+
+    def __init__(self, state, data=None, found=None, detail=""):
+        self.state, self.data, self.found, self.detail = state, data, found, detail
+
+
+def _raw_url(entry: dict) -> str:
+    """The pinned blob url rewritten to the bytes endpoint. Same commit, same path."""
+    m = re.match(r"https://github\.com/([^/]+)/([^/]+)/blob/([0-9a-f]{7,40})/(.+)$",
+                 entry["public_url"])
+    if not m:
+        return ""
+    owner, repo, commit, path = m.groups()
+    return f"{RAW}{owner}/{repo}/{commit}/{path}"
+
+
+def _fetch(url: str):
     try:
-        return json.loads(p.read_text())
+        with urllib.request.urlopen(url, timeout=30) as r:
+            return r.read()
     except Exception:
         return None
 
 
-def sha8(rel: str) -> str:
-    p = HOME / rel
-    try:
-        return hashlib.sha256(p.read_bytes()).hexdigest()[:8]
-    except Exception:
-        return "missing"
+def resolve(entry: dict) -> Resolved:
+    """Obtain the pinned bytes, from anywhere, and prove they are the pinned bytes.
 
+    The local checkout is tried first because it is fast and works offline, but it carries no
+    authority: it is accepted only when it hashes to the pin. Otherwise the commit-pinned URL is
+    fetched, which is the copy a reader would check. If neither yields the pinned bytes and some
+    bytes did arrive, that is STALE and the panel loses its number. Nothing arriving is ABSENT."""
+    want = entry["sha256"]
+    attempts, saw = [], None
 
-def commit(repo: str) -> str:
+    local = HOME / entry["artifact"]
     try:
-        return subprocess.run(["git", "-C", str(HOME / repo), "rev-parse", "--short", "HEAD"],
-                              capture_output=True, text=True, check=True).stdout.strip()
+        attempts.append(("local checkout", local.read_bytes()))
     except Exception:
-        return "unknown"
+        pass
+
+    url = _raw_url(entry)
+    if not url:
+        return Resolved("ABSENT", detail=f"public_url is not pinned to a commit: {entry['public_url']}")
+    if not attempts or hashlib.sha256(attempts[0][1]).hexdigest() != want:
+        got = _fetch(url)
+        if got is not None:
+            attempts.append(("pinned url", got))
+
+    for origin, raw in attempts:
+        got = hashlib.sha256(raw).hexdigest()
+        if got == want:
+            try:
+                return Resolved("VALID", data=json.loads(raw), found=got)
+            except Exception as e:
+                return Resolved("ABSENT", detail=f"pinned bytes are not JSON: {type(e).__name__}")
+        saw = (origin, got)
+
+    if saw:
+        return Resolved("STALE", found=saw[1],
+                        detail=f"{saw[0]} has sha256 {saw[1][:8]}, pin declares {want[:8]}")
+    return Resolved("ABSENT", detail=f"no bytes from {local} or {url}")
 
 
 # Each panel is (title, what the tool answers, repo, artifact path, extractor).
@@ -122,20 +170,27 @@ def _vac(d):
     ])
 
 
-PANELS = [
-    ("evalmut", "Does your eval suite actually check anything?",
-     "evalmut", "evalmut/docs/dogfood_gradecore.json", _evalmut),
-    ("reference-fleet", "Which defect classes does a suite catch, against a known answer key?",
-     "reference-fleet", "reference-fleet/board/results.json", _fleet),
-    ("model-drift", "Did a model move, or is that inside the noise floor?",
-     "model-drift", "model-drift/dashboard/metrics.json", _drift),
-    ("agent-certlab", "Can this agent repair seeded defects under a stated policy?",
-     "agent-certlab", "agent-certlab/certifications/claude-code-cloud-2026-08-14/vac.json", _certlab),
-    ("crashkit", "Do the graders bite, with no LLM judge anywhere?",
-     "crashkit", "crashkit/vac/vac.json", _crashkit),
-    ("vac-protocol", "Can a stranger verify these bundles offline?",
-     "vac-protocol", "vac-protocol/registry.json", _vac),
-]
+# A derivation is a named, versioned reader for ONE artifact shape. sources.json names the
+# derivation per panel, so a later refactor cannot silently point a reader at a different
+# artifact: an unknown name is a hard build failure, not a quietly empty panel.
+DERIVATIONS = {
+    "evalmut_dogfood@1": _evalmut,
+    "fleet_board@1": _fleet,
+    "drift_metrics@1": _drift,
+    "certlab_bundle@1": _certlab,
+    "crashkit_bundle@1": _crashkit,
+    "vac_registry@1": _vac,
+}
+
+
+def load_manifest() -> dict:
+    m = json.loads(MANIFEST.read_text())
+    for e in m["sources"]:
+        if e["derivation"] not in DERIVATIONS:
+            raise SystemExit(f"sources.json: unknown derivation {e['derivation']!r} "
+                             f"for panel {e['panel']!r}. Known: {sorted(DERIVATIONS)}")
+    return m
+
 
 CSS = """
 :root{color-scheme:dark light;--ink:#0e1316;--panel:#141c21;--raised:#1b252b;
@@ -168,6 +223,11 @@ border-top:1px solid var(--line);padding-top:.8rem;margin:1.6rem 0 2rem}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:1.1rem 1.2rem;
 display:flex;flex-direction:column}
 .card.absent{border-color:var(--hot);border-style:dashed}
+.card.stale{border-color:var(--hot);border-style:dashed}
+.card.stale .big,.card.absent .big{color:var(--hot);font-size:1.1rem}
+.state{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+color:var(--hot);border:1px solid var(--hot);border-radius:2px;padding:1px 5px;margin-left:.5rem}
+.why{font-family:var(--mono);font-size:.68rem;color:var(--hot);margin:.6rem 0 0;word-break:break-all}
 .card h2{font-family:var(--mono);font-size:.92rem;margin:0;color:var(--fg);font-weight:600}
 .card .q{color:var(--fg-faint);font-size:.8rem;margin:.35rem 0 .9rem;min-height:2.4em}
 .big{font-size:2rem;font-weight:650;letter-spacing:-.02em;color:var(--amber);
@@ -188,49 +248,70 @@ footer b{color:var(--fg-dim)}
 
 
 def build() -> str:
-    cards, absent = [], 0
-    for title, question, repo, rel, extract in PANELS:
-        d = read(rel)
-        ok = d is not None
-        if ok:
+    man = load_manifest()
+    cards, bad = [], []
+    for e in man["sources"]:
+        r = resolve(e)
+        big, pairs, why = "", [], ""
+        if r.state == "VALID":
             try:
-                big, pairs = extract(d)
-            except Exception as e:
-                ok, big, pairs = False, f"unreadable: {type(e).__name__}", []
-        else:
-            big, pairs = "artifact not found", []
-        if not ok:
-            absent += 1
+                big, pairs = DERIVATIONS[e["derivation"]](r.data)
+            except Exception as ex:
+                r = Resolved("ABSENT", detail=f"{e['derivation']} could not read the pinned "
+                                              f"artifact: {type(ex).__name__}")
+        if r.state == "STALE":
+            big, why = "source moved off its pin", r.detail
+        elif r.state == "ABSENT":
+            big, why = "artifact not obtainable", r.detail
+        if r.state != "VALID":
+            bad.append((e["panel"], r.state))
+
+        cls = "" if r.state == "VALID" else f" {r.state.lower()}"
+        badge = "" if r.state == "VALID" else f'<span class="state">{r.state}</span>'
         rows = "".join(f"<dt>{_e(k)}</dt><dd>{_e(v)}</dd>" for k, v in pairs)
-        cards.append(f"""<div class="card{'' if ok else ' absent'}">
-<h2>{_e(title)}</h2><p class="q">{_e(question)}</p>
+        short = e["artifact"].split("/", 1)[1]
+        cards.append(f"""<div class="card{cls}">
+<h2>{_e(e['panel'])}{badge}</h2><p class="q">{_e(e['question'])}</p>
 <div class="big">{_e(big)}</div>
 {f'<dl>{rows}</dl>' if rows else ''}
-<p class="src">read from <a href="{GH}/{_e(repo)}/blob/main/{_e(rel.split('/',1)[1])}">{_e(rel.split('/',1)[1])}</a><br>
-sha256 {_e(sha8(rel))} &middot; {_e(repo)}@{_e(commit(repo))}</p></div>""")
+{f'<p class="why">{_e(why)}</p>' if why else ''}
+<p class="src">{_e(e['label'])}<br>
+pinned to <a href="{_e(e['public_url'])}">{_e(short)}</a><br>
+sha256 {_e(e['sha256'][:8])} &middot; {_e(e['artifact'].split('/')[0])}@{_e(e['issuer_commit'][:7])}
+&middot; {_e(e['derivation'])}</p></div>""")
 
-    note = ("Every panel read cleanly." if not absent else
-            f"<b>{absent} panel(s) could not read their artifact</b> and say so above. "
-            "A missing source is shown, never hidden and never replaced with a remembered value.")
+    if not bad:
+        note = ("Every panel matched its pin. Each number below was recomputed from bytes that "
+                "hash to the sha256 printed beside it.")
+    else:
+        listed = ", ".join(f"{n} ({st})" for n, st in bad)
+        note = (f"<b>{len(bad)} panel(s) did not match their pin</b> and say so above: {listed}. "
+                "A source that moved off its pin loses its number here rather than keeping the "
+                "one it printed before.")
+
+    gen = hashlib.sha256(pathlib.Path(__file__).resolve().read_bytes()).hexdigest()[:8]
+    mfst = hashlib.sha256(MANIFEST.read_bytes()).hexdigest()[:8]
 
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The eval suite, as one system</title>
-<meta name="description" content="Six eval tools, one page. Every number read from the artifact
-its repo commits, with the file and its hash beside it.">
+<meta name="description" content="Six eval tools, one page. Every number recomputed from bytes
+pinned by sha256 to a named issuer commit.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>{CSS}</style></head><body>
 <div class="nav"><a href="/">&larr; Portfolio</a><span class="navsep"> &middot; </span><a href="https://agent-hub-exiz.onrender.com" target="erikhill-out">the constellation</a></div>
 <div class="wrap">
 <p class="kicker">One system</p>
 <h1>Six tools that only mean something together</h1>
 <p class="lede">Each answers a different question about whether an evaluation can be trusted, and
-each one's number below is <b>read from the artifact that repo commits</b>, at build time. Nothing
-here is typed by hand, because a page of copied numbers is true on the day it is written and
-quietly wrong afterwards.</p>
-<p class="lede">If a source cannot be read, its panel says so in red rather than falling back to a
-remembered value. Absence is louder than presence, or the word verified means nothing.</p>
-<div class="stamp">generated by suite/build.py &middot; each panel cites its file and that file's
-sha256</div>
+each one's number below is <b>recomputed from bytes pinned by sha256</b> to the issuer commit
+named on that panel. Nothing here is typed by hand, because a page of copied numbers is true on
+the day it is written and quietly wrong afterwards.</p>
+<p class="lede">If a source stops matching its pin it renders STALE and loses its number; if it
+cannot be obtained at all it renders ABSENT. Neither one keeps the value it printed yesterday,
+or the word verified means nothing.</p>
+<div class="stamp">generated by suite/build.py (build {gen}, manifest {mfst}) &middot; sources
+pinned as of {_e(man['pinned_as_of'])}, each to the issuer commit on its panel and not to
+current main &middot; fetch any link and hash it: it must match the sha256 beside it</div>
 <div class="grid">{''.join(cards)}</div>
 <footer>{note}<br><br>
 These pages keep their own homes: each tool still has its own board, its own README and its own

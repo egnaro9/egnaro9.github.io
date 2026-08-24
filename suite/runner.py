@@ -45,6 +45,7 @@ from __future__ import annotations
 import html
 import json
 import pathlib
+import shutil
 import subprocess
 import sys
 
@@ -814,7 +815,26 @@ g('rst').onclick=()=>{{ stop(); i=0; S.forEach(s=>s.classList.remove('on'));
 </script></body></html>"""
 
 
+def preflight() -> None:
+    """Refuse to build rather than publish a page whose challenge panel could not run.
+
+    The five refusal cases are the point of this page. When vac-verify is missing the generator
+    still renders, but every case degrades to "could not run the verifier", which reads to a
+    visitor as five demonstrations rather than five failures to demonstrate. A weaker page is
+    worse than no new page, so this exits nonzero and leaves the committed one alone."""
+    if shutil.which(VERIFY) is None:
+        raise SystemExit(
+            f"preflight: {VERIFY!r} is not on PATH, so the challenge panel would render five\n"
+            f"'could not run the verifier' rows instead of five named refusals.\n"
+            f"Refusing to overwrite the committed page with a weaker one.\n\n"
+            f"Install it into the environment that runs this generator:\n"
+            f"    python3 -m venv ~/.venvs/suite-build\n"
+            f"    ~/.venvs/suite-build/bin/pip install -e ~/vac-protocol\n"
+            f"    PATH=~/.venvs/suite-build/bin:$PATH ~/.venvs/suite-build/bin/python runner.py\n")
+
+
 if __name__ == "__main__":
+    preflight()
     # An optional destination so tests can build to a scratch path and COMPARE, instead of
     # overwriting the committed page. Without this the rendered-page tests silently regenerate
     # the artifact they claim to inspect, which means a stale committed runner.html passes every
