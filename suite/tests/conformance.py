@@ -32,7 +32,11 @@ import subprocess
 
 VAC_ROOT = pathlib.Path("/Users/lonimua/vac-protocol")
 SUITE = pathlib.Path(__file__).resolve().parent.parent
-VAC_VERIFY = VAC_ROOT / ".venv" / "bin" / "vac-verify"
+# Resolve from PATH first, exactly as runner.py and the other suite tests do. Hardcoding a
+# .venv inside a sibling repo made all 16 conformance tests skip in CI while passing on a
+# machine that happened to have that layout, so the two verifier implementations were only
+# ever compared where it was least necessary.
+VAC_VERIFY = pathlib.Path(shutil.which("vac-verify") or VAC_ROOT / ".venv" / "bin" / "vac-verify")
 HARNESS = SUITE / "bv_harness.js"
 REFUSALS_JSON = SUITE / "refusals.json"
 
