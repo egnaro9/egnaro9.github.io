@@ -33,7 +33,11 @@ import browserverify  # noqa: E402
 import refusals  # noqa: E402
 
 VAC = pathlib.Path.home() / "vac-protocol"
-VERIFY = VAC / ".venv" / "bin" / "vac-verify"
+# Resolve the verifier the way every other caller does: from PATH. Hardcoding a .venv inside
+# a sibling repo made these six tests skip silently anywhere that layout was not reproduced,
+# CI included, so the second implementation of the verifier went unchecked exactly where an
+# unchecked one matters most. The old path stays as a fallback for existing checkouts.
+VERIFY = pathlib.Path(shutil.which("vac-verify") or VAC / ".venv" / "bin" / "vac-verify")
 BUNDLE = VAC / "examples" / "outsider"
 NODE = shutil.which("node")
 HANDWRITTEN_JS = ("vacbrowser.js", "bv_ui.js", "bv_harness.js")

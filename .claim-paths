@@ -6,6 +6,7 @@ about/index.html
 resume/index.html
 suite/*.html
 suite/*.py
+suite/sources.json
 stack/*.html
 stack/*.js
 eval-compare/index.html

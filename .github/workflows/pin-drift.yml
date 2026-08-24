@@ -1,0 +1,46 @@
+# Weekly: has any pinned source moved, and does every pin still resolve?
+#
+# A pin is a promise that the bytes behind a public number cannot change underneath it. That
+# promise holds by construction, which is precisely why it goes quietly out of date: the page
+# stays true about an artifact the issuer has since moved past. Nothing on the page is wrong,
+# and nothing tells anyone to look.
+#
+# This job looks. It reports, and it fails on drift so the failure is visible. It does not bump
+# a pin, touch pinned_as_of, regenerate a page, or deploy, because each of those republishes a
+# public claim and that stays a decision a person makes after reading the upstream change.
+name: pin-drift
+
+on:
+  schedule:
+    - cron: "17 13 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # check_pins.py uses only the standard library, so this job needs no install step and
+      # cannot be broken by a dependency resolving differently than it did last week.
+      - name: Resolve and validate every manifest pin
+        run: python suite/check_pins.py
+
+      - name: Say what a failure means
+        if: failure()
+        run: |
+          echo "::warning::A pin is BROKEN or BEHIND. Nothing was changed."
+          echo "BROKEN means the pinned URL stopped resolving or its bytes stopped hashing to the"
+          echo "declared sha256: that is a fault here and the page may be publishing an"
+          echo "unverifiable claim."
+          echo "BEHIND means the pin is intact but the issuer shipped past it. Review the upstream"
+          echo "change, decide whether the claim still holds, then update issuer_commit, sha256,"
+          echo "public_url and pinned_as_of in suite/sources.json, rerun suite/build.py, and commit"
+          echo "the regenerated page with a claim receipt."

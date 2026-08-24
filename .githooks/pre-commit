@@ -44,6 +44,13 @@ done <<< "$STAGED"
 MATCHED=$(printf '%s' "$MATCHED" | grep -v '^$' | sort -u)
 [ -z "$MATCHED" ] && exit 0
 
+# suite/sources.json defines what every public number on the suite pages is derived from, so a
+# pointer-style receipt is not enough: this check re-fetches the new pin and hashes it itself.
+# It exempts a formatting-only edit by comparing semantic tuples, not text.
+if printf '%s' "$STAGED" | grep -qx 'suite/sources.json'; then
+    if ! python3 "$REPO/.githooks/sources_receipt.py"; then exit 1; fi
+fi
+
 ACK="$REPO/.claim-review-ack"
 MISSING="" ; UNRESOLVED="" ; OVERRIDES=""
 while IFS= read -r f; do

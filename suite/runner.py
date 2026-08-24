@@ -827,10 +827,10 @@ def preflight() -> None:
             f"preflight: {VERIFY!r} is not on PATH, so the challenge panel would render five\n"
             f"'could not run the verifier' rows instead of five named refusals.\n"
             f"Refusing to overwrite the committed page with a weaker one.\n\n"
-            f"Install it into the environment that runs this generator:\n"
-            f"    python3 -m venv ~/.venvs/suite-build\n"
-            f"    ~/.venvs/suite-build/bin/pip install -e ~/vac-protocol\n"
-            f"    PATH=~/.venvs/suite-build/bin:$PATH ~/.venvs/suite-build/bin/python runner.py\n")
+            f"Install the declared environment (see suite/README.md):\n"
+            f"    python3 -m venv .venv\n"
+            f"    .venv/bin/pip install -r suite/requirements-dev.txt\n"
+            f"    PATH=\"$PWD/.venv/bin:$PATH\" .venv/bin/python suite/runner.py\n")
 
 
 if __name__ == "__main__":

@@ -215,7 +215,9 @@ def test_step_five_never_reports_a_refusal_it_did_not_earn():
 def _page():
     import subprocess, pathlib, os
     env = dict(os.environ)
-    env["PATH"] = str(pathlib.Path.home() / "vac-protocol/.venv/bin") + os.pathsep + env["PATH"]
+    # Keep the legacy sibling .venv reachable, but do not depend on it: vac-verify is normally
+    # already on PATH from the declared environment in suite/requirements-dev.txt.
+    env["PATH"] = env["PATH"] + os.pathsep + str(pathlib.Path.home() / "vac-protocol/.venv/bin")
     out = pathlib.Path("/tmp/_copytest.html")
     subprocess.run(["python3", "runner.py", str(out)], cwd=str(pathlib.Path(__file__).parent.parent),
                    check=True, capture_output=True, env=env)
@@ -235,8 +237,9 @@ def test_a_truncated_transcript_says_how_many_lines_it_dropped():
     assert "transcripts, not quotations" not in html, (
         "the caption claims transcripts while truncating to the first line")
 
+    import shutil
     vac = pathlib.Path.home() / "vac-protocol"
-    verify = vac / ".venv/bin/vac-verify"
+    verify = pathlib.Path(shutil.which("vac-verify") or vac / ".venv/bin/vac-verify")
 
     # pair each rendered fixture name with the count printed beside its line, if any
     rendered = {}
@@ -291,4 +294,5 @@ def test_an_unavailable_verifier_refuses_the_build():
         "the generator overwrote an existing page while refusing: a refused build must leave "
         "the previous page exactly as it found it")
     assert "not on PATH" in p.stderr, "the refusal must name the missing dependency"
-    assert "pip install -e" in p.stderr, "the refusal must carry a remediation command"
+    assert "requirements-dev.txt" in p.stderr, (
+        "the refusal must point at the declared environment, not an ad hoc one")

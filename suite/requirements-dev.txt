@@ -1,0 +1,19 @@
+# Everything needed to run suite/build.py, suite/runner.py and the suite tests.
+#
+# vac-verify is MANDATORY for runner generation. It is not a soft dependency: without it the
+# challenge panel degrades to five "could not run the verifier" rows, which reads as five
+# demonstrations when it is five failures to demonstrate. suite/runner.py preflights for it and
+# exits nonzero rather than overwrite the committed page, so a missing vac-verify is a hard
+# build failure by design, both locally and in CI.
+#
+# The vac-protocol pin is a commit, not a branch: a floating dependency would let the verifier
+# change underneath a page whose whole claim is that its evidence cannot change underneath it.
+#
+#   python3 -m venv .venv
+#   .venv/bin/pip install -r suite/requirements-dev.txt
+#   PATH="$PWD/.venv/bin:$PATH" .venv/bin/python -m pytest tools/ suite/ -q
+#   PATH="$PWD/.venv/bin:$PATH" .venv/bin/python suite/build.py
+#   PATH="$PWD/.venv/bin:$PATH" .venv/bin/python suite/runner.py
+
+pytest>=8
+vac-protocol @ git+https://github.com/egnaro9/vac-protocol@50e613e29f2c47fbb3022dae17ecb70048c63b32

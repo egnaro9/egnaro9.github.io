@@ -1,0 +1,104 @@
+# Authority for the suite pages.
+#
+# Everything suite/ promises was, until this job existed, true on one laptop. The generators ran
+# by hand, the 124 tests ran by hand, and the committed pages were whatever the last hand-run
+# produced. A page that says "recomputed from bytes pinned by sha256" while nothing re-checks the
+# committed output is the same shape as a gate nobody wired: it reads exactly like a working one.
+#
+# So this job rebuilds both pages from the manifest in a clean environment and refuses any diff
+# against what is committed. It never commits, never bumps a pin, and never deploys. Its only
+# power is to say no.
+name: suite
+
+on:
+  push:
+    branches: [main]
+    paths: ["suite/**", ".github/workflows/suite.yml"]
+  pull_request:
+    paths: ["suite/**", ".github/workflows/suite.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # runner.py needs more than fetchable artifacts: it runs the five tamper cases through
+      # vac-verify against vac-protocol's own examples/ and fixtures/ TREES, and it reads git
+      # history in each issuer repo to report which commit last touched an artifact. So the
+      # siblings are checked out at fixed commits with full history. This is byte transport, not
+      # authority: every artifact is still hash-checked against its pin, and a checkout whose
+      # bytes stop matching fails the build rather than quietly changing a public number.
+      - uses: actions/checkout@v4
+        with: { repository: egnaro9/evalmut, ref: 7ea9ddc6ad12, path: home/evalmut, fetch-depth: 0 }
+      - uses: actions/checkout@v4
+        with: { repository: egnaro9/reference-fleet, ref: 4d958c3a5e3f, path: home/reference-fleet, fetch-depth: 0 }
+      - uses: actions/checkout@v4
+        with: { repository: egnaro9/agent-certlab, ref: fc0244b44bf0, path: home/agent-certlab, fetch-depth: 0 }
+      - uses: actions/checkout@v4
+        with: { repository: egnaro9/vac-protocol, ref: 50e613e29f2c47fbb3022dae17ecb70048c63b32, path: home/vac-protocol, fetch-depth: 0 }
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Create an isolated environment
+        run: python -m pip install --quiet virtualenv && python -m venv .venv
+
+      - name: Install the declared build dependencies
+        run: .venv/bin/pip install --quiet -r suite/requirements-dev.txt
+
+      # A missing verifier must stop the job here, with a named reason, rather than surface
+      # later as a mysterious page diff. Probe presence the same way runner.py does
+      # (shutil.which), not by running the tool with a flag: vac-verify prints usage and exits
+      # 2 for --help, so a --help probe would fail a healthy environment. Test what the code
+      # actually tests.
+      - name: Require vac-verify
+        run: |
+          export PATH="$PWD/.venv/bin:$PATH"
+          if ! command -v vac-verify >/dev/null 2>&1; then
+            echo "::error::vac-verify is not on PATH. Runner generation is a hard failure without it."
+            exit 1
+          fi
+          echo "vac-verify: $(command -v vac-verify)"
+
+      # Pins must resolve publicly and hash to their declared sha256. --pins ignores a pin that
+      # is merely BEHIND upstream: that is the scheduled job's business, not a reason to fail a
+      # pull request that never touched it.
+      - name: Validate every source pin
+        run: .venv/bin/python suite/check_pins.py --pins
+
+      - name: Run the suite and tools tests
+        run: |
+          export PATH="$PWD/.venv/bin:$PATH" HOME="$PWD/home"
+          .venv/bin/python -m pytest tools/ suite/ -q
+
+      - name: Regenerate both pages from the manifest
+        run: |
+          export PATH="$PWD/.venv/bin:$PATH" HOME="$PWD/home"
+          .venv/bin/python suite/build.py
+          .venv/bin/python suite/runner.py
+
+      # No panel may be STALE or ABSENT in a deployable build. The page renders those states on
+      # purpose so a reader can see them, but shipping a new one in that condition would be
+      # accepting silently what the state exists to make loud.
+      - name: Refuse a STALE or ABSENT panel
+        run: |
+          if grep -qE 'class="state">(STALE|ABSENT)' suite/index.html; then
+            echo "::error::a source panel is STALE or ABSENT; suite/index.html is not deployable"
+            grep -oE 'class="state">(STALE|ABSENT)</span>' suite/index.html
+            exit 1
+          fi
+          echo "all panels VALID"
+
+      - name: Refuse a generated page that differs from what is committed
+        run: |
+          if ! git diff --exit-code -- suite/index.html suite/runner.html; then
+            echo "::error::a committed page does not match a fresh build. Run suite/build.py and suite/runner.py, then commit the result."
+            exit 1
+          fi
+          echo "committed pages match a fresh build"
