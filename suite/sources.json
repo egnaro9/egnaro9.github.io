@@ -28,9 +28,9 @@
       "label": "Models tracked by the frozen daily drift suite",
       "question": "Did a model move, or is that inside the noise floor?",
       "artifact": "model-drift/dashboard/metrics.json",
-      "issuer_commit": "e596720c7909",
-      "sha256": "4493bbc9c5a52a5e975868f7e770092f10603752ea0972ef79cc6ed15b883ee2",
-      "public_url": "https://github.com/egnaro9/model-drift/blob/e596720c7909/dashboard/metrics.json",
+      "issuer_commit": "b05175032282",
+      "sha256": "18c84386524c30aca576d78a839e405362faf71455fdca75170d68d125fe6d35",
+      "public_url": "https://github.com/egnaro9/model-drift/blob/b05175032282/dashboard/metrics.json",
       "derivation": "drift_metrics@1"
     },
     {
