@@ -126,13 +126,12 @@
 
   <section>
     <h2>Summary</h2>
-    <p>Self-taught AI evaluation and testing engineer. In under a year, career-changing from professional kitchens, I
-    built a <strong>verifiable-evaluation suite</strong>: seeded-defect task families with provable answer keys, a
+    <p>Self-taught AI evaluation and testing engineer building deterministic, replayable systems for measuring coding agents and LLM applications.</p>
+  <p>Career-changing from professional kitchens in under a year, I built a <strong>verifiable-evaluation suite</strong>: seeded-defect task families with provable answer keys, a
     <strong>certification lab for coding agents</strong>, a <strong>published mutation-tester for eval graders</strong>,
-    and an evidence protocol under which <strong>eleven published evaluation claims are independently replayed in
+    and an evidence protocol under which <strong>nine published evaluation claims are independently replayed in
     CI</strong>, deterministic, no LLM judges, failures published by design. Also <strong>shipped a game to Google
-    Play</strong>; <strong>twenty-plus public repos, two PyPI packages, one npm package, a merged fix to a 12-year-old
-    compiler, and an open fix to a widely-used eval framework.</strong></p>
+    Play</strong>; <strong>30+ public repos, two PyPI packages, one npm package, a merged fix to TeaVM (a 12-year-old compiler), and an open PR to Promptfoo.</strong></p>
   </section>
 
   <section class="skills">
@@ -146,13 +145,13 @@
   </section>
 
   <section>
-    <h2>Selected Projects <span class="hnote">, all public at <a href="https://github.com/egnaro9" target="erikhill-out">github.com/egnaro9</a></span></h2>
+    <h2>Selected Projects<span class="hnote">, all public at <a href="https://github.com/egnaro9" target="erikhill-out">github.com/egnaro9</a></span></h2>
     <div class="proj">&bull; <b>agent-certlab</b>: <strong>Certification lab for coding agents</strong>: three <strong>seeded-defect task families</strong> with provable answer keys (incl. <strong>coordinated two-file defects</strong> no single-file patch can pass), a <strong>precondition prover</strong> (clean passes, every seed fails, it refused one of my own defects), and <strong>calibration agents</strong> the harness must separate before certifying. Two real agents certified; every verdict <strong>regradeable from artifacts</strong>.</div>
     <div class="proj">&bull; <b>reference-fleet</b>: <strong>An answer key for eval suites</strong>: six models each broken <strong>one documented way at an exact seeded rate</strong>, so detection rates are measurable against ground truth, a naive suite detects <strong>1 of 6</strong> (paired protocol). Plus a <strong>LoRA-trained native defect</strong>: mixture 0.507 &rarr; realized <strong>0.200</strong>, training's rate control is lossy, measured.</div>
-    <div class="proj">&bull; <b>vac-protocol</b>: <strong>Verifiable Agent Claims</strong>: an evidence-bundle format + <strong>offline verifier</strong>; a registry where <strong>eleven real claims are hash-checked and re-earned in CI</strong>, with a <strong>public record of it rejecting my own evidence</strong>. Plus <b>vac-gate</b>: replayable evidence or no green check.</div>
+    <div class="proj">&bull; <b>vac-protocol</b>: <strong>Verifiable Agent Claims</strong>: an evidence-bundle format + <strong>offline verifier</strong>; a registry where <strong>nine real claims are hash-checked and re-earned in CI</strong>, two more pending, with a <strong>public record of it rejecting my own evidence</strong>. Plus <b>vac-gate</b>: replayable evidence or no green check.</div>
     <div class="proj">&bull; <b>evalmut</b>: <strong>Mutation testing for eval graders</strong> (<strong>PyPI</strong>, with its <strong>gradecore</strong> engine): inject known defects, report which checks stayed green. Found <strong>3 holes in its own engine's suite</strong>, <strong>6 in ports of a widely-used framework's assertions</strong>. <strong>No LLM judge</strong>; every operator tied to a documented real failure. <span class="tests">90 tests.</span></div>
     <div class="proj">&bull; <b>rag-eval-lab</b>, deterministic RAG <strong>eval harness</strong> that catches a planted hallucination in CI; from-scratch <strong>BM25 matching the published SciFact baseline (0.664 vs 0.665)</strong>. <span class="tests">38 tests.</span></div>
-    <div class="proj">&bull; <b>Also:</b> <b>crashkit</b>, live (<code>crashkit.onrender.com</code>) deterministic adversarial stress-test &middot; <b>model-drift</b>, public board re-running a <strong>frozen, hash-fingerprinted suite</strong> across <strong>16 models / 5 labs</strong>, with a derived minimum-detectable-regression floor &middot; <b>eval-history</b>, deployed FastAPI/Postgres eval store &middot; <b>mcp-tools</b>. MCP server from the spec, no SDK &middot; <b>llm-wire-stub</b> (npm) &middot; a merged <strong>TeaVM</strong> compiler fix &middot; an <strong>open PR to promptfoo</strong>.</div>
+    <div class="proj">&bull; <b>Also:</b> <b>crashkit</b>, live (<code>crashkit.onrender.com</code>) deterministic adversarial stress-test &middot; <b>model-drift</b>, public board re-running a <strong>frozen, hash-fingerprinted suite</strong> across <strong>16 models / 5 labs</strong>, with a derived minimum-detectable-regression floor &middot; <b>eval-history</b>, deployed FastAPI/Postgres eval store &middot; <b>mcp-tools</b>. MCP server from the spec, no SDK &middot; <b>llm-wire-stub</b> (npm) &middot; a merged <strong>TeaVM</strong> compiler fix &middot; an <strong>open PR to Promptfoo</strong>.</div>
   </section>
 
   <section>
