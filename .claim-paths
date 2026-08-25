@@ -6,7 +6,12 @@ about/index.html
 resume/index.html
 suite/*.html
 suite/*.py
-suite/sources.json
+# suite/sources.json is deliberately NOT listed. It is claim-bearing, and it is gated by
+# .githooks/sources_receipt.py, which re-fetches the new pinned url and compares its sha256
+# to the manifest. Listing it here as well policed one file under two grammars: the generic
+# loop accepts only EVIDENCE/OVERRIDE, so the PIN receipt that checker demands was rejected
+# as malformed, and passing required two receipt lines in a specific order. The stronger
+# checker owns the file, including its audit record.
 stack/*.html
 stack/*.js
 eval-compare/index.html

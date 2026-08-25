@@ -32,6 +32,16 @@ fi
 STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null)
 [ -z "$STAGED" ] && exit 0
 
+# suite/sources.json owns its own gate: .githooks/sources_receipt.py re-fetches the new pinned
+# url and hashes it, which is strictly stronger than the EVIDENCE pointer the loop below can
+# check. It is therefore NOT listed in .claim-paths, which means MATCHED can be empty on a commit
+# that changes nothing else. This must run BEFORE the `[ -z "$MATCHED" ] && exit 0` early exit, or
+# a lone manifest change sails through unchecked: exempting the file from one gate silently
+# exempted it from both.
+if printf '%s' "$STAGED" | grep -qx 'suite/sources.json'; then
+    if ! python3 "$REPO/.githooks/sources_receipt.py"; then exit 1; fi
+fi
+
 MATCHED=""
 while IFS= read -r f; do
     [ -z "$f" ] && continue
@@ -43,13 +53,6 @@ while IFS= read -r f; do
 done <<< "$STAGED"
 MATCHED=$(printf '%s' "$MATCHED" | grep -v '^$' | sort -u)
 [ -z "$MATCHED" ] && exit 0
-
-# suite/sources.json defines what every public number on the suite pages is derived from, so a
-# pointer-style receipt is not enough: this check re-fetches the new pin and hashes it itself.
-# It exempts a formatting-only edit by comparing semantic tuples, not text.
-if printf '%s' "$STAGED" | grep -qx 'suite/sources.json'; then
-    if ! python3 "$REPO/.githooks/sources_receipt.py"; then exit 1; fi
-fi
 
 ACK="$REPO/.claim-review-ack"
 MISSING="" ; UNRESOLVED="" ; OVERRIDES=""

@@ -16,6 +16,7 @@ requires a receipt naming the panel and both commits.
 """
 from __future__ import annotations
 
+import datetime
 import hashlib
 import json
 import pathlib
@@ -29,9 +30,23 @@ TARGET = "suite/sources.json"
 KEYS = ("panel", "artifact", "issuer_commit", "sha256", "public_url", "derivation")
 
 
-def _git(*a) -> bytes | None:
-    p = subprocess.run(["git", "-C", str(REPO), *a], capture_output=True)
+def _git(*a, repo: pathlib.Path | None = None) -> bytes | None:
+    p = subprocess.run(["git", "-C", str(repo or REPO), *a], capture_output=True)
     return p.stdout if p.returncode == 0 else None
+
+
+def _audit(repo: pathlib.Path, records: list[str]) -> None:
+    """Append-only record of a verified pin bump.
+
+    The generic claim loop wrote its OVERRIDE record and no longer sees this file, so the audit
+    trail moves here with the verification. Written only after the pinned url has been fetched
+    and its bytes hashed against the manifest, so the log records what was proven, not what was
+    claimed: a receipt alone never reaches this line."""
+    stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with (repo / ".claim-review-audit.log").open("a", encoding="utf-8") as fh:
+        fh.write(f"{stamp}  commit PIN (verified)\n")
+        for r in records:
+            fh.write(f"  {r}\n")
 
 
 def _tuples(raw: bytes | None) -> dict:
@@ -57,30 +72,31 @@ def _fetch(url: str):
         return None, f"{type(e).__name__}: {e}"
 
 
-def main() -> int:
-    staged = _git("show", f":{TARGET}")
+def main(repo: pathlib.Path | None = None) -> int:
+    repo = repo or REPO
+    staged = _git("show", f":{TARGET}", repo=repo)
     if staged is None:
         return 0
 
-    before, after = _tuples(_git("show", f"HEAD:{TARGET}")), _tuples(staged)
+    before, after = _tuples(_git("show", f"HEAD:{TARGET}", repo=repo)), _tuples(staged)
     if before == after:
         return 0  # formatting or order only: no claim moved
 
     changed = sorted({p for p in set(before) | set(after) if before.get(p) != after.get(p)})
-    ack = (REPO / ".claim-review-ack")
+    ack = (repo / ".claim-review-ack")
     lines = ack.read_text().splitlines() if ack.exists() else []
     doc = json.loads(staged)
     entries = {e["panel"]: e for e in doc["sources"]}
 
     known = set()
     try:
-        sys.path.insert(0, str(REPO / "suite"))
+        sys.path.insert(0, str(repo / "suite"))
         import build as _b  # noqa: E402
         known = set(_b.DERIVATIONS)
     except Exception:
         pass
 
-    problems = []
+    problems, verified = [], []
     for panel in changed:
         e = entries.get(panel)
         if e is None:
@@ -105,8 +121,11 @@ def main() -> int:
         if known and e["derivation"] not in known:
             problems.append(f"{panel}: derivation {e['derivation']!r} is not implemented in "
                             f"suite/build.py ({sorted(known)})")
+            continue
+        verified.append(f"{want} :: {e['public_url']} sha256 {got}")
 
-    also = (_git("diff", "--cached", "--name-only", "--diff-filter=ACMR") or b"").decode().split()
+    also = (_git("diff", "--cached", "--name-only", "--diff-filter=ACMR",
+                 repo=repo) or b"").decode().split()
     if not problems and "suite/index.html" not in also:
         problems.append("suite/index.html is not staged. A pin moved, so the generated page must "
                         "be rebuilt and committed with it: run python3 suite/build.py")
@@ -119,6 +138,8 @@ def main() -> int:
         print("\nA PIN receipt records the decision; this hook independently re-fetches the new\n"
               "pinned URL and hashes it, so a receipt alone cannot pass a claim.", file=sys.stderr)
         return 1
+    if verified:
+        _audit(repo, verified)
     return 0
 
 
