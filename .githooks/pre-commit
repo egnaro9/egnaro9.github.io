@@ -16,6 +16,29 @@
 #
 # FAILS CLOSED on a malformed receipt line or an unreadable .claim-paths.
 #
+# RECEIPT GRAMMAR. One line per claim-bearing file in .claim-review-ack:
+#
+#     <path> :: EVIDENCE <existing-path-or-200-url> :: blob <full-40-hex-sha1>
+#     <path> :: OVERRIDE <reason>                   :: blob <full-40-hex-sha1>
+#
+# <sha> is the STAGED blob, `git rev-parse :<path>`, and must be the FULL 40-character
+# object id. A prefix is not accepted: the line is selected by literal substring match on
+# ":: blob <sha>", so a short id would match any blob sharing that head. Mutation testing
+# found exactly this: truncating the comparison to four hex characters passed the whole
+# regression suite until a prefix case was added.
+#
+# WHY A BLOB AND NOT A PATH. Selection used `grep -F "<path> ::" | head -1`, so the first
+# line naming the path won regardless of what it said or when it was written. A receipt
+# recorded for an earlier version of a file kept satisfying every later version: the gate
+# reported success along a path where it never examined the staged content. Binding to the
+# blob makes a stale review a refusal instead of a silent pass, and removes the line-order
+# dependency the old head -1 created.
+#
+# MIGRATION. Path-only receipts written under the previous grammar no longer satisfy
+# anything, by design: they are the hole. The next commit touching a claim-bearing file
+# will be refused with "no receipt carries the staged blob"; re-issue the line with the
+# blob appended. .claim-review-ack is gitignored, so this is a local-only migration.
+#
 # RESIDUAL, and it is not small: `git commit --no-verify` skips every client-side hook.
 # No local hook can be a complete policy boundary. If enforcement must survive a
 # deliberate bypass, the publish path has to check receipts independently before deploy.
@@ -55,11 +78,27 @@ MATCHED=$(printf '%s' "$MATCHED" | grep -v '^$' | sort -u)
 [ -z "$MATCHED" ] && exit 0
 
 ACK="$REPO/.claim-review-ack"
-MISSING="" ; UNRESOLVED="" ; OVERRIDES=""
+MISSING="" ; UNRESOLVED="" ; OVERRIDES="" ; STALE=""
 while IFS= read -r f; do
     [ -z "$f" ] && continue
-    LINE=$(grep -F -- "$f ::" "$ACK" 2>/dev/null | head -1)
-    if [ -z "$LINE" ]; then MISSING="$MISSING  $f"$'\n'; continue; fi
+    # A receipt is bound to the blob it reviewed:  <path> :: KIND <ref> :: blob <sha1>
+    # Selection is BY BLOB, not by line order. `head -1` on a pathname let a receipt
+    # written for an older version of a file satisfy every later version of it: the gate
+    # reported success along a path where it never examined the staged content.
+    BLOB=$(git rev-parse ":$f" 2>/dev/null)
+    if [ -z "$BLOB" ]; then
+        UNRESOLVED="$UNRESOLVED  $f -> could not read staged blob"$'\n'; continue
+    fi
+    LINE=$(grep -F -- "$f ::" "$ACK" 2>/dev/null | grep -F -- ":: blob $BLOB" | head -1)
+    if [ -z "$LINE" ]; then
+        if grep -qF -- "$f ::" "$ACK" 2>/dev/null; then
+            STALE="$STALE  $f -> no receipt carries the staged blob $BLOB"$'\n'
+        else
+            MISSING="$MISSING  $f"$'\n'
+        fi
+        continue
+    fi
+    LINE=${LINE%% :: blob *}
     KIND=$(printf '%s' "$LINE" | sed -E 's/.*:: *([A-Z]+).*/\1/')
     REF=$(printf '%s' "$LINE" | sed -E 's/.*:: *[A-Z]+ *//')
     case "$KIND" in
@@ -87,15 +126,16 @@ if [ -n "$OVERRIDES" ]; then
         >> "$REPO/.claim-review-audit.log"
 fi
 
-if [ -n "$MISSING" ] || [ -n "$UNRESOLVED" ]; then
+if [ -n "$MISSING" ] || [ -n "$UNRESOLVED" ] || [ -n "$STALE" ]; then
     {
       echo "claim gate: commit blocked. Claim-bearing files staged with no resolved receipt."
       [ -n "$MISSING" ]    && { echo; echo "No receipt line in .claim-review-ack for:"; printf '%s' "$MISSING"; }
       [ -n "$UNRESOLVED" ] && { echo; echo "Receipt present but the evidence pointer did not resolve:"; printf '%s' "$UNRESOLVED"; }
+      [ -n "$STALE" ]      && { echo; echo "Receipt present but written for a different blob (stale review):"; printf '%s' "$STALE"; echo "  (a receipt with no ':: blob <sha>' is pre-migration grammar and never matches)"; }
       echo
-      echo "Add one line per file to .claim-review-ack:"
-      echo "  <path> :: EVIDENCE <existing-path-or-200-url>"
-      echo "  <path> :: OVERRIDE <reason>"
+      echo "Add one line per file to .claim-review-ack, bound to the staged blob:"
+      echo "  <path> :: EVIDENCE <existing-path-or-200-url> :: blob \$(git rev-parse :<path>)"
+      echo "  <path> :: OVERRIDE <reason> :: blob \$(git rev-parse :<path>)"
       echo
       echo "EVIDENCE is resolved by this hook. Verify the claim against the artifact, not a note."
     } >&2
