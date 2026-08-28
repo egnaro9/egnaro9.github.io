@@ -2,7 +2,7 @@
 
 Portfolio site for **Erik Hill** — AI evaluation & testing engineer.
 
-**Live:** https://egnaro9.github.io · Hand-written HTML/CSS, no framework, nothing compiled at deploy time. The pages under `suite/` are the exception: they are generated from committed artifacts by `suite/build.py`, `suite/runner.py` and `suite/refusals.py`, and the output is checked in.
+**Live:** https://erikhill.dev · Hand-written HTML/CSS, no framework, nothing compiled at deploy time. The pages under `suite/` are the exception: they are generated from committed artifacts by `suite/build.py`, `suite/runner.py` and `suite/refusals.py`, and the output is checked in.
 
 This repo is the site's source, but it's also the **hub of a working system**: a
 set of small, single-purpose repos that probe LLMs for regressions, store the
@@ -10,11 +10,42 @@ results in a real service, gate merges on them, and prove their own correctness.
 The site links out to each; this README maps how they actually fit together, so
 you can see the shape without leaving GitHub.
 
+## The verifiable-evaluation suite
+
+The top layer of this work is a program on **Agent Release
+Readiness**, where a claim about an AI system ships as a **capability
+contract** backed by a **replayable evidence bundle**.
+
+- **[evalmut](https://github.com/egnaro9/evalmut)** — mutation testing for
+  eval suites ([on PyPI](https://pypi.org/project/evalmut/)): inject a known
+  defect mined from a real failure; a grader that stays green has a hole.
+  Found 3 real holes in `gradecore`'s own graders.
+- **[reference-fleet](https://github.com/egnaro9/reference-fleet)** — six
+  reference models broken in exactly one documented way each, at a stated,
+  seeded rate, plus a [live audit board](https://erikhill.dev/reference-fleet/)
+  of which suite styles notice. CI re-runs the audit before the board deploys.
+- **[agent-certlab](https://github.com/egnaro9/agent-certlab)** — capability
+  contracts for coding agents: seeded defects, artifacts-only grading, every
+  committed contract independently re-graded in CI; one certification earned
+  entirely inside GitHub Actions.
+- **[vac-protocol](https://github.com/egnaro9/vac-protocol)** — the VAC spec
+  and [registry](https://erikhill.dev/vac-protocol/) (9 accepted
+  bundles and 2 pending, two-gated acceptance: structural verification, then
+  semantic replay by the issuer's own deterministic grader). Accepted bundles
+  replay from sha256 pins addressed to a commit; the two pending are refused by
+  the verifier over their own evidence and are not replayable until repaired.
+- **[vac-gate](https://github.com/egnaro9/vac-gate)** — a composite GitHub
+  Action: no verified contract, no green check.
+
+`model-drift` and `crashkit` each emit their central claim into that registry
+as a bundle (`emit_vac.py`).
+
 ## The system these repos form
 
-The center of gravity is **`eval-history`** — a deployed FastAPI + Postgres
-service that other repos write to and read from. Every arrow below is a real
-data path in the code, not an aspiration.
+Underneath that layer is a working eval stack, and its substrate is
+**`eval-history`**, a deployed FastAPI + Postgres service that other repos
+write to and read from. Every arrow below is a real data path in the code,
+not an aspiration.
 
 ```mermaid
 flowchart TD
@@ -70,40 +101,10 @@ this is a cloud/infra story that maps concept-for-concept onto AWS primitives
 (RDS · ALB health checks · CloudFormation · CodePipeline). It's built on Render +
 Neon, and it's honest to say so.
 
-## The verifiable-evaluation suite (August 2026)
-
-The newest layer sits above the eval stack: a program on **Agent Release
-Readiness**, where a claim about an AI system ships as a **capability
-contract** backed by a **replayable evidence bundle**.
-
-- **[evalmut](https://github.com/egnaro9/evalmut)** — mutation testing for
-  eval suites ([on PyPI](https://pypi.org/project/evalmut/)): inject a known
-  defect mined from a real failure; a grader that stays green has a hole.
-  Found 3 real holes in `gradecore`'s own graders.
-- **[reference-fleet](https://github.com/egnaro9/reference-fleet)** — six
-  reference models broken in exactly one documented way each, at a stated,
-  seeded rate, plus a [live audit board](https://egnaro9.github.io/reference-fleet/)
-  of which suite styles notice. CI re-runs the audit before the board deploys.
-- **[agent-certlab](https://github.com/egnaro9/agent-certlab)** — capability
-  contracts for coding agents: seeded defects, artifacts-only grading, every
-  committed contract independently re-graded in CI; one certification earned
-  entirely inside GitHub Actions.
-- **[vac-protocol](https://github.com/egnaro9/vac-protocol)** — the VAC spec
-  and [registry](https://egnaro9.github.io/vac-protocol/) (9 accepted
-  bundles and 2 pending, two-gated acceptance: structural verification, then
-  semantic replay by the issuer's own deterministic grader). Accepted bundles
-  replay from sha256 pins addressed to a commit; the two pending are refused by
-  the verifier over their own evidence and are not replayable until repaired.
-- **[vac-gate](https://github.com/egnaro9/vac-gate)** — a composite GitHub
-  Action: no verified contract, no green check.
-
-`model-drift` and `crashkit` each emit their central claim into that registry
-as a bundle (`emit_vac.py`).
-
 ## The repos
 
 The canonical, always-current map is the site itself:
-[egnaro9.github.io](https://egnaro9.github.io).
+[erikhill.dev](https://erikhill.dev).
 
 | Repo | What it is | What it proves |
 |---|---|---|
@@ -149,4 +150,4 @@ python -m pytest tools/ -q        # the refresh-drift refuse-or-write policy
 
 ---
 
-Built by [Erik Hill](https://egnaro9.github.io) · MIT licensed.
+Built by [Erik Hill](https://erikhill.dev) · MIT licensed.
