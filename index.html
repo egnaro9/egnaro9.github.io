@@ -23,6 +23,7 @@
     --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
     --amber:#f2a53c; --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
     --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12); --teal-line:rgba(72,193,172,.34);
+    --rec:#c084fc; --rec-soft:rgba(192,132,252,.07); --rec-line:rgba(192,132,252,.26);
     --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     --maxw:880px;
@@ -34,6 +35,7 @@
       --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
       --amber:#b7761a; --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
       --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1); --teal-line:rgba(28,143,125,.4);
+      --rec:#7c3aed; --rec-soft:rgba(124,58,237,.06); --rec-line:rgba(124,58,237,.28);
     }
   }
   :root[data-theme="dark"]{
@@ -42,6 +44,7 @@
     --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
     --amber:#f2a53c; --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
     --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12); --teal-line:rgba(72,193,172,.34);
+    --rec:#c084fc; --rec-soft:rgba(192,132,252,.07); --rec-line:rgba(192,132,252,.26);
   }
   :root[data-theme="light"]{
     --ink:#e9edee; --panel:#f4f6f6; --raised:#ffffff;
@@ -49,6 +52,7 @@
     --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
     --amber:#b7761a; --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
     --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1); --teal-line:rgba(28,143,125,.4);
+      --rec:#7c3aed; --rec-soft:rgba(124,58,237,.06); --rec-line:rgba(124,58,237,.28);
   }
 
   *{box-sizing:border-box}
@@ -276,13 +280,31 @@
   .rec blockquote::before{content:'"'; color:#c084fc; font-size:22px; line-height:0; margin-right:2px}
   .rec blockquote::after{content:'"'; color:#c084fc; font-size:22px; line-height:0; margin-left:2px}
   .rec figcaption{margin-top:12px; font-family:var(--mono); font-size:12px; color:var(--fg-dim)}
-  .rec figcaption a{color:#c084fc; text-decoration:none}
+  .rec figcaption a{color:var(--rec); text-decoration:none}
   .rec figcaption a:hover{text-decoration:underline}
   .rec-full{display:inline-block; margin-top:8px; padding:4px 11px; border:1px solid rgba(192,132,252,.4);
     border-radius:20px; background:rgba(192,132,252,.08)}
   .rec-full span{opacity:.7; margin-left:2px}
   .rec-full:hover{background:rgba(192,132,252,.16); text-decoration:none !important}
   .rec-note{margin:14px 0 0; color:var(--fg-dim); font-size:14.5px; max-width:62ch}
+  /* One sentence from the same recommendation, near the hero, linking down to the
+     full quote and its receipt. Deliberately not a second testimonial section. */
+  .pq{margin:22px 0 0; padding:14px 18px; border-radius:10px;
+    /* Fill tinted from the same purple as the rule, so the card reads as one
+       object in the amber hero rather than a stripe on a neutral panel. */
+    background:linear-gradient(var(--rec-soft), var(--rec-soft)), var(--panel);
+    border:1px solid var(--rec-line); border-left:3px solid var(--rec)}
+  .pq q{font-size:16.5px; line-height:1.5; color:var(--fg)}
+  .pq .pq-by{display:block; margin-top:9px; font-family:var(--mono); font-size:12px; color:var(--fg-dim)}
+  .pq .pq-name{color:var(--rec); font-weight:700; letter-spacing:.01em}
+  .pq .pq-by a{color:var(--rec); text-decoration:none; border-bottom:1px solid var(--rec-line)}
+  .pq .pq-by a:hover{border-bottom-color:var(--rec); text-decoration:none}
+  /* A published paper, in the same panel language as the evidence blocks. */
+  .paper{margin:20px 0 0; padding:18px 20px; border:1px solid var(--line);
+    border-left:3px solid var(--amber); border-radius:10px; background:var(--panel)}
+  .paper h3{margin:0 0 7px; font-size:17px; line-height:1.35; color:var(--fg)}
+  .paper .paper-meta{font-family:var(--mono); font-size:12px; color:var(--fg-dim)}
+  .paper p{margin:11px 0 0; color:var(--fg-dim); font-size:15px; max-width:62ch}
   .rec-note a{color:#c084fc}
   /* The bridge: one row per crash-test battery, naming the piece it reuses. */
   .bridge{margin-top:14px; border:1px solid var(--line); border-radius:10px; overflow:hidden}
@@ -385,6 +407,11 @@
       <p class="tldr-f">Everything below is the long version, and every claim on this page has something running underneath it.</p>
     </div>
 
+    <figure class="pq">
+      <q>Push on a design decision and he goes back to the code.</q>
+      <span class="pq-by"><strong class="pq-name">Bart&#322;omiej Nawara, PhD</strong>, Senior AI/ML Engineer &amp; NLP Researcher &middot; <a href="#independent-review">read the full recommendation, next to the bug it describes</a></span>
+    </figure>
+
     <div class="cta" style="margin-top:18px; justify-content:flex-start; gap:10px; flex-wrap:wrap">
       <a class="plive" href="https://erikhill.dev/suite/runner.html">&#9654; See Evalmut's proof console. A witnessed run, checked in your browser</a>
       <a class="plive" href="https://erikhill.dev/vac-protocol/">▶ Open the claim registry: 9 replayable bundles, 2 held pending</a>
@@ -479,7 +506,16 @@
     </div>
 
     <p class="compose-note" style="margin-top:16px">And the two lenses further down this page are members, not spectators: <a href="#board">the drift board</a> and <a href="#crash-test">the crash test</a> each emit their central claim into the registry as a bundle (<code>emit_vac.py</code>). The flagship that started the whole program is next.</p>
-  </section>
+  
+    <div class="paper">
+      <h3>Four Ways to Forge a Bundle My Own Verifier Calls Clean: Refusal-Site Mutation Testing of an Evidence-Bundle Verifier</h3>
+      <div class="paper-meta">Erik Hill &middot; arXiv preprint, 2026 &middot; arXiv:2608.26183</div>
+      <p>An outside engineer broke the verifier above first. After merging his fix I disabled its refusals one at a time: of <strong>112 refusal sites, 75 could be deleted</strong> with the whole suite and every tamper fixture still green.</p>
+      <a class="plive" style="margin-top:14px; display:inline-flex" href="https://arxiv.org/abs/2608.26183" target="erikhill-out">&#9654; Read the paper</a>
+      <div class="paper-meta" style="margin-top:12px">The verifier it audits: <a href="https://github.com/egnaro9/vac-protocol" target="erikhill-out">vac-protocol</a> &middot; the registry: <a href="https://erikhill.dev/vac-protocol/" target="erikhill-out">erikhill.dev/vac-protocol/</a></div>
+    </div>
+
+</section>
 
   <section id="crash-test">
     <div class="label"><span class="tick">//</span> The Crash Test</div>
@@ -894,7 +930,7 @@
       <p class="intro" style="margin-top:16px"><strong>Merged</strong>: <a href="https://github.com/konsoletyper/teavm/pull/1213" target="erikhill-out">konsoletyper/teavm#1213</a>, against <a href="https://github.com/konsoletyper/teavm/issues/371" target="erikhill-out">issue #371</a> (filed 2018, zero comments in the eight years since). Merged by the project lead on 17 July 2026. Nine lines changed, one of them the character that mattered. The finding never depended on it landing; it's just better that it did.</p>
     </div>
 
-    <figure class="rec">
+    <figure class="rec" id="independent-review">
       <blockquote>He also has a good eye for <strong>the quiet problem</strong>. The ones that don't throw an error, don't page anyone, and just <strong>quietly corrupt what you think you know about your system</strong>. Catching those takes patience and a certain suspicion of your own dashboards.</blockquote>
       <figcaption>
         <a href="https://www.linkedin.com/in/bartlomiej-nawara-phd/" target="erikhill-out">Bartłomiej Nawara, PhD</a>
