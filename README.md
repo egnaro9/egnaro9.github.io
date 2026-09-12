@@ -78,8 +78,11 @@ directly); everything else feeds into or reads from `eval-history`.
 Most of these read as libraries or CLIs. The backend story lives in one place
 and is easy to miss, so, plainly:
 
-- **`eval-history` is a real, running service.** FastAPI + SQLAlchemy 2.0 over
-  **Neon Postgres**, deployed on **Render** ([live OpenAPI docs](https://eval-history.onrender.com/docs)).
+- **`eval-history` is a real service, now published as a static archive.** FastAPI
+  + SQLAlchemy 2.0 over **Neon Postgres**. Render suspended the deployment over an
+  unpaid invoice, so the read routes are exported to
+  [erikhill.dev/eval-history](https://erikhill.dev/eval-history/) by a scheduled
+  job, byte-identical to what the API returned and hashed in a manifest.
   It has a **liveness/readiness split** (`/health` vs `/readyz`, 503 on DB-down
   without restart-looping), **Alembic migrations** with a model↔migration
   **drift test**, and **CI that runs the suite against SQLite *and* real

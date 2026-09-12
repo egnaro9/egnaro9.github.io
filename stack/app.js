@@ -346,29 +346,32 @@ const pct = (v) => (v * 100).toFixed(0) + "%";
    run you just produced. Nothing is simulated; the comparison logic and the
    baseline are both the genuine article.                                     */
 
-const EVAL_HISTORY = "https://eval-history.onrender.com";
+const EVAL_HISTORY = "https://erikhill.dev/eval-history";
 const COMPARE_SRC =
   "https://raw.githubusercontent.com/egnaro9/eval-history/main/evalhistory/compare.py";
 
-let historyWoken = false;
-function wakeEvalHistory() {
-  if (historyWoken) return;
-  historyWoken = true;
-  fetch(`${EVAL_HISTORY}/health`).catch(() => {});   // best effort; failure is fine
-}
+// The wake-up ping is gone with the service it woke. eval-history was on
+// Render's free tier, which slept after 15 minutes and took ~30s to answer, so
+// a page that was about to query it pinged /health early. Render then suspended
+// the service outright and every call 503'd. The data now lives as static files
+// on Pages, which serve immediately and have nothing to wake.
+function wakeEvalHistory() {}
 
 /** A stored run in eval_run.json shape, plus how to describe it. */
 async function fetchStoredBaseline(signal) {
-  const list = await fetch(`${EVAL_HISTORY}/runs?limit=20`, { signal }).then((r) => {
+  // runs.json is the whole ordered list, newest first. There is no ?limit on a
+  // static file, and none is needed: 946 runs are 39 KB over the wire gzipped,
+  // and .find below still lands on the newest CI run exactly as it did before.
+  const list = await fetch(`${EVAL_HISTORY}/runs.json`, { signal }).then((r) => {
     if (!r.ok) throw new Error(`eval-history returned ${r.status}`);
     return r.json();
   });
   // Prefer a real CI run: an ablation is a config sweep, not a baseline anyone
-  // pushed. The service knows the difference — that's what `source` is for.
-  lit("chip-eval-history");   // the deployed service answered
+  // pushed. The stored row knows the difference, that's what `source` is for.
+  lit("chip-eval-history");   // the archive answered
   const pick = list.find((r) => r.source === "ci") ?? list[0];
   if (!pick) throw new Error("eval-history has no runs stored");
-  const body = await fetch(`${EVAL_HISTORY}/runs/${pick.id}/eval_run`, { signal })
+  const body = await fetch(`${EVAL_HISTORY}/runs/${pick.id}/eval_run.json`, { signal })
     .then((r) => {
       if (!r.ok) throw new Error(`eval-history returned ${r.status}`);
       return r.json();
