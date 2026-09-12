@@ -298,7 +298,7 @@ sha256 {_e(e['sha256'][:8])} &middot; {_e(e['artifact'].split('/')[0])}@{_e(e['i
 <meta name="description" content="Six eval tools, one page. Every number recomputed from bytes
 pinned by sha256 to a named issuer commit.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>{CSS}</style></head><body>
-<div class="nav"><a href="/">&larr; Portfolio</a><span class="navsep"> &middot; </span><a href="https://agent-hub-exiz.onrender.com" target="erikhill-out">the constellation</a></div>
+<div class="nav"><a href="/">&larr; Portfolio</a><span class="navsep"> &middot; </span><a href="https://erikhill.dev/agent-hub/" target="erikhill-out">the constellation</a></div>
 <div class="wrap">
 <p class="kicker">One system</p>
 <h1>Six tools that only mean something together</h1>
