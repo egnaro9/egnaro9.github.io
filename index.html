@@ -427,8 +427,8 @@
       <a class="plive" href="https://erikhill.dev/suite/runner.html">&#9654; See Evalmut's proof console. A witnessed run, checked in your browser</a>
       <a class="plive" href="https://erikhill.dev/vac-protocol/">▶ Open the claim registry: 9 replayable bundles, 2 held pending</a>
       <a class="plive" href="https://erikhill.dev/model-drift/">▶ Open the live board: 16 LLMs, 5 metrics</a>
-      <a class="plive alt" href="https://crashkit.onrender.com">▶ Crash-test a model with your own key</a>
-      <span class="pnote">free tier. The first click can take up to a minute to wake</span>
+      <a class="plive alt" href="https://github.com/egnaro9/crashkit" target="erikhill-out">▶ Crash-test a model with your own key. Run it locally</a>
+      <span class="pnote">the hosted demo is offline. Clone and run it, or read the batteries</span>
     </div>
     <p class="lede"><strong>Evaluation harnesses, regression gates, and adversarial test batteries for LLM systems.</strong> Plus the autonomous development harness I built them for. A multi-agent loop that plans, executes, critiques and validates its own changes to a real React&nbsp;/&nbsp;Capacitor product, with a human on every step that can't be undone.</p>
     
@@ -543,13 +543,13 @@
 
     <p class="intro">It also answers the question a single run can't: <strong>run the battery N times</strong> and it separates the <em>mean</em> score from the <strong>worst case</strong>: a task counts as failed if it failed in <em>any</em> run, because an attacker only needs the leak to land once. A model that leaks two times in five reads clean on three of them. The flaky tasks get named.</p>
     <div style="margin-top:16px">
-      <a class="plive" href="https://crashkit.onrender.com">▶ Crash-test a model. Your key, your browser</a>
+      <a class="plive" href="https://github.com/egnaro9/crashkit" target="erikhill-out">▶ Crash-test a model. Your key, your browser. Run it locally</a>
     </div>
     <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px">
       <a class="plink" href="https://github.com/egnaro9/crashkit" target="erikhill-out">crashkit. The source <span>→</span></a>
       <a class="plink" href="https://github.com/egnaro9/gradecore" target="erikhill-out">gradecore. The grader <span>→</span></a>
     </div>
-    <p class="compose-note" style="margin-top:10px">Free tier. The first click can take up to a minute to wake it. Deterministic grading, a severity-weighted score, and a fail card for every miss; <b>BYOK</b> for Anthropic, Gemini, xAI, Groq, OpenAI, or any OpenAI-compatible endpoint.</p>
+    <p class="compose-note" style="margin-top:10px">The hosted demo is offline; it runs locally from the source above. Deterministic grading, a severity-weighted score, and a fail card for every miss; <b>BYOK</b> for Anthropic, Gemini, xAI, Groq, OpenAI, or any OpenAI-compatible endpoint.</p>
     <p class="compose-note" style="margin-top:14px">The twin-mock invariant is now a <a href="#program">registered claim</a>: crashkit's VAC bundle re-earns the <strong>0.0</strong> (safe twin) and <strong>1.0</strong> (deliberately-vulnerable twin) severity-weighted scores from the committed answer sets alone. Grading replayed, no model called.</p>
 
     <p class="compose-note" style="margin-top:22px; border-left:3px solid var(--amber-line); padding-left:14px"><strong>The same grader, pointed at the harness instead of the model.</strong> The crash test asks whether one model breaks under attack. <a href="#harness-builder">The Harness Builder</a> asks the question after it. And the first time I ran it, it contradicted me.</p>
@@ -823,8 +823,8 @@
         </div>
         <div class="pside">
         <a class="plive" href="https://erikhill.dev/rag-eval-lab/">▶ Try to fool it, in your browser</a>
-        <a class="plink" href="https://rag-eval-lab.onrender.com/docs" target="erikhill-out">live API: /query · /eval <span>→</span></a>
-        <span class="pnote">free tier. The first call can take up to a minute to wake it</span>
+        <a class="plink" href="https://github.com/egnaro9/rag-eval-lab" target="erikhill-out">the API: /query · /eval, in source <span>→</span></a>
+        <span class="pnote">the hosted API is offline. The in-browser version above still runs</span>
         <a class="plink" href="https://github.com/egnaro9/rag-eval-lab" target="erikhill-out">github.com/egnaro9/rag-eval-lab <span>→</span></a>
         </div>
       </div>

@@ -79,16 +79,18 @@ Most of these read as libraries or CLIs. The backend story lives in one place
 and is easy to miss, so, plainly:
 
 - **`eval-history` is a real service, now published as a static archive.** FastAPI
-  + SQLAlchemy 2.0 over **Neon Postgres**. Render suspended the deployment over an
-  unpaid invoice, so the read routes are exported to
+  + SQLAlchemy 2.0 over **Neon Postgres**. The hosted deployment is currently
+  offline, so the read routes are exported to
   [erikhill.dev/eval-history](https://erikhill.dev/eval-history/) by a scheduled
   job, byte-identical to what the API returned and hashed in a manifest.
   It has a **liveness/readiness split** (`/health` vs `/readyz`, 503 on DB-down
   without restart-looping), **Alembic migrations** with a model↔migration
   **drift test**, and **CI that runs the suite against SQLite *and* real
   Postgres 16 & 18**. IaC via `render.yaml`; secrets generated, never committed.
-- **`rag-eval-lab` is a second live service** — a FastAPI wrapper over the RAG
-  pipeline on **Render** ([live](https://rag-eval-lab.onrender.com/healthz)):
+- **`rag-eval-lab` is a second deployed service, currently offline.** A FastAPI
+  wrapper over the RAG pipeline on **Render**; the
+  [in-browser version](https://erikhill.dev/rag-eval-lab/) still runs. The service
+  exposes:
   `POST /query`, `POST /eval`, `GET /healthz`, structured logging, and a pgvector
   path exercised in CI against a real pgvector Postgres.
 - **`llm-gateway`** is production-shaped API discipline: versioned `/v1` routes,
