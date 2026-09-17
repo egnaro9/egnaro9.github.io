@@ -42,6 +42,16 @@ KNOWN_DETAIL_DIVERGENCE = {
         "CPython names the BOM specifically (Unexpected UTF-8 BOM, decode using utf-8-sig); JS "
         "reports the generic 'Expecting value: line 1 column 1' once the BOM is kept in the "
         "string rather than stripped. Both refuse with invalid-json, which is the contract.",
+    ("derived", "json-depth-bom-manifest"):
+        "The same BOM divergence as derived/utf8-bom, at 20001 levels of nesting. It is a "
+        "separate case because it pins the ORDER: neither implementation measures a document "
+        "that opens with a byte-order mark, so the mark keeps the reason at any depth and the "
+        "nesting limit never gets to speak. Both refuse with invalid-json.",
+    ("derived", "json-depth-bom-jsonl-line"):
+        "The same BOM divergence on one JSON Lines line rather than the whole text. The mark "
+        "opens line 3, so only that line goes unmeasured and the parser names it at its first "
+        "character. Both refuse with artifact-unparsable, and the deep line does not take the "
+        "reason in either implementation.",
 }
 
 

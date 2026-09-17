@@ -179,6 +179,99 @@ globalThis.VACBROWSER = (function () {
   function cmp(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
   function sortedKeys(o) { return Object.keys(o).sort(cmp); }
 
+  // ------------------------------------------------- JSON nesting (SPEC 4)
+  // SPEC 4 bounds nesting at 256 levels and requires the decision to be made
+  // BEFORE parsing, so the verdict belongs to the verifier and not to the host.
+  // The reason it exists is exactly the shape this file is in: json.loads
+  // recurses once per level and gives out where CPython's stack does, and
+  // parseValue below recurses once per level and gives out where V8's does.
+  // Two verifiers, two stacks, one set of bytes, and the boundary decided by
+  // neither of them.
+  //
+  // Counted on the text, iteratively, never by parsing it: the outermost array
+  // or object is level 1, brackets inside string literals do not count, and a
+  // closer with nothing open is ignored. Text the parser would reject still
+  // gets a count, and an unterminated string runs to the end.
+  //
+  // 256 and the message tail are mirrored from verify.py the way every other
+  // reference message text in this file is mirrored. They are not addressed
+  // through the generated table because neither is a refusal NAME: the table
+  // carries names, and the name this raises is addressed through it at the
+  // three sites below.
+  const MAX_JSON_DEPTH = 256;
+  // The depth is measured on lines cut HERE, at a line feed, a carriage return
+  // or the two together, because that is what read_text() has already turned
+  // into one line feed by the time verify.py splits. The rows are PARSED on the
+  // wider set below, which is what str.splitlines() cuts. Keeping the two apart
+  // is what makes a named line number the one an editor shows.
+  const MEASURED_LINE_BREAK = /\r\n|[\n\r]/;
+  const PARSED_LINE_BREAK = /\r\n|[\n\r\u000b\u000c\u001c\u001d\u001e\u0085\u2028\u2029]/;
+  // Which rows the reference parses is `if row.strip()`, and the two
+  // languages do not agree on what a blank row is. ECMAScript trim() strips
+  // U+FEFF, because ZWNBSP sits in its WhiteSpace production; Python's
+  // str.strip() does not, because U+FEFF does not carry the White_Space
+  // property. A row that is nothing but a byte-order mark is therefore
+  // dropped by trim() and parsed by the reference, which refuses the artifact
+  // while this file returns the rows on either side of it and passes: a
+  // disagreement in the one direction that matters, since the browser is the
+  // side that says PASS. So blankness is asked of Python's set instead, which
+  // is what str.isspace() answers for: the White_Space property plus U+001C
+  // to U+001F. Several of those characters also cut rows above and so cannot
+  // reach this test. They are listed anyway, because the set a reader checks
+  // this against is str.isspace(), not the remainder left by another regex.
+  const PY_BLANK = /^[\t\n\v\f\r \u001c-\u001f\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]*$/;
+
+  class TooDeep extends Error {}
+
+  function nestingExceeds(text, limit) {
+    let depth = 0;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (c === '"') {
+        for (i++; i < text.length; i++) {
+          if (text[i] === '\\') i++;      // the escaped character, whatever it is
+          else if (text[i] === '"') break;
+        }
+      } else if (c === '[' || c === '{') {
+        if (++depth > limit) return true;
+      } else if ((c === ']' || c === '}') && depth) {
+        depth--;
+      }
+    }
+    return false;
+  }
+
+  // The one place this file parses JSON on a VERIFICATION path. With
+  // lines=true, `text` is JSON Lines and the result is its rows: every line's
+  // depth is decided before any row is parsed, so a syntax error on one line
+  // cannot hide a line that is too deep.
+  //
+  // Text that starts with a byte-order mark is not measured, and neither is a
+  // line that does. decodeText keeps the mark in the string on purpose and the
+  // parser refuses it at offset 0 before reading any nesting, which is how it
+  // was refused before this limit, so it keeps that reason at any depth.
+  // Stripping the mark to measure it would be the first step to accepting a
+  // document the parser refuses.
+  function jsonLoads(text, opts) {
+    const asLines = !!(opts && opts.lines);
+    if (!text.startsWith('\ufeff')) {
+      const measured = asLines ? text.split(MEASURED_LINE_BREAK) : [text];
+      for (let n = 0; n < measured.length; n++) {
+        if (measured[n].startsWith('\ufeff')) continue;
+        if (nestingExceeds(measured[n], MAX_JSON_DEPTH)) {
+          throw new TooDeep((asLines ? `line ${n + 1} ` : '') +
+            `nested deeper than ${MAX_JSON_DEPTH} levels`);
+        }
+      }
+    }
+    if (!asLines) return jsonParse(text).value;
+    // str.splitlines() breaks on more than \n. Matching it matters because a
+    // JSONL artifact written on another platform must parse into the same
+    // number of rows here as it does at the command line.
+    return text.split(PARSED_LINE_BREAK)
+      .filter(ln => !PY_BLANK.test(ln)).map(ln => jsonParse(ln).value);
+  }
+
   // ------------------------------------------------------------------- JSON
   // A hand-written parser, for two reasons JSON.parse cannot serve: it records
   // which literals were floats (above), and it reproduces CPython's decoder
@@ -508,10 +601,19 @@ globalThis.VACBROWSER = (function () {
     want = want || ['object'];
     let data;
     try {
-      const parsed = jsonParse(decodeText(fileBytes(bundle, rel)));
-      data = parsed.value;
+      data = jsonLoads(decodeText(fileBytes(bundle, rel)));
     } catch (e) {
-      if (e instanceof PyJSONError || e instanceof DecodeError) {
+      // Past the limit the artifact is not unparsable, it is refused unread,
+      // under the manifest-level name, exactly as the reference verifier does.
+      if (e instanceof TooDeep) {
+        f.push(`${R.INVALID_JSON}: ${rel}: ${e.message}`);
+        return null;
+      }
+      // RangeError is V8's stack giving out, the backstop the reference keeps
+      // for RecursionError. Nothing inside the limit reaches it; catching it
+      // means the port names a reason where it used to abort the run.
+      if (e instanceof PyJSONError || e instanceof DecodeError
+          || e instanceof RangeError) {
         f.push(`${R.ARTIFACT_UNPARSABLE}: ${rel}: ${e.message}`);
         return null;
       }
@@ -651,14 +753,14 @@ globalThis.VACBROWSER = (function () {
     const rawRel = check.raw;
     let raw;
     try {
-      // str.splitlines() breaks on more than \n. Matching it matters because a
-      // JSONL artifact written on another platform must parse into the same
-      // number of rows here as it does at the command line.
-      raw = decodeText(fileBytes(bundle, rawRel))
-        .split(/\r\n|[\n\r\u000b\u000c\u001c\u001d\u001e\u0085\u2028\u2029]/)
-        .filter(ln => ln.trim() !== '').map(ln => jsonParse(ln).value);
+      raw = jsonLoads(decodeText(fileBytes(bundle, rawRel)), { lines: true });
     } catch (e) {
-      if (e instanceof PyJSONError || e instanceof DecodeError) {
+      if (e instanceof TooDeep) {
+        f.push(`${R.INVALID_JSON}: ${rawRel}: ${e.message}`);
+        return null;
+      }
+      if (e instanceof PyJSONError || e instanceof DecodeError
+          || e instanceof RangeError) {
         f.push(`${R.ARTIFACT_UNPARSABLE}: ${rawRel}: ${e.message}`);
         return null;
       }
@@ -1306,9 +1408,10 @@ globalThis.VACBROWSER = (function () {
     }
     let m;
     try {
-      m = jsonParse(decodeText(bundle.files.get('vac.json'))).value;
+      m = jsonLoads(decodeText(bundle.files.get('vac.json')));
     } catch (e) {
-      if (e instanceof PyJSONError || e instanceof DecodeError) {
+      if (e instanceof TooDeep || e instanceof PyJSONError
+          || e instanceof DecodeError || e instanceof RangeError) {
         out.failures.push(`${R.INVALID_JSON}: vac.json: ${e.message}`);
         return out;
       }
@@ -1388,6 +1491,14 @@ globalThis.VACBROWSER = (function () {
     // The replay recipe, echoed exactly as the command line echoes it: the one
     // procedure that WOULD re-earn these verdicts, and the reason a structural
     // pass here is not that.
+    //
+    // _report re-reads vac.json to echo this, which is why the reference routes
+    // that read through its loader too: it must not echo on one host what it
+    // called unreadable on another. Here the echo reads the manifest THIS run
+    // already parsed, and a run that refused the manifest carries none, so
+    // there is no second parse to bound. That is a structural property of the
+    // line below, not a promise: re-reading the bytes here would need
+    // jsonLoads, the way every other read in this file does.
     const m = result.manifest;
     const replay = (m && isObj(m.replay)) ? m.replay : {};
     return {
@@ -1631,6 +1742,7 @@ globalThis.VACBROWSER = (function () {
     loadBundle, verifyBundle, verdictOf, scopeOf,
     runClean, runMutation, MUTATIONS, PORTED, NOT_PORTED,
     sha256Hex, pyRound, pyFloatRepr, pyRepr, jsonParse,
+    jsonLoads, nestingExceeds, TooDeep, MAX_JSON_DEPTH,
     refusals: R, spec: SPEC,
   };
 })();

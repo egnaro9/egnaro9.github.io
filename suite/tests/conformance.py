@@ -25,6 +25,7 @@ the reference's, so an abstaining run cannot smuggle in an invented refusal.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import pathlib
@@ -233,6 +234,160 @@ def _d_issuer_commit_mismatch(d, m):
     m["replay"]["issuer_commit"] = "deadbee"
 
 
+# ------------------------------------------------- JSON nesting depth (SPEC 4)
+# SPEC 4 bounds nesting at 256 levels and requires the decision to be made
+# BEFORE parsing, so the verdict belongs to the verifier and not to whichever
+# stack the host happens to give a recursive parser. Both sides of the boundary
+# are built here: a document AT the limit must verify exactly as it did before,
+# one level past it must be refused as invalid-json, and the cases below also
+# pin the counting rules that decide where that boundary falls.
+MAX_JSON_DEPTH = 256
+
+
+def _deep_key(text: str, k: int) -> str:
+    """`text` (a JSON object) with one extra first member holding k nested
+    arrays, so the document is exactly k + 1 levels deep. SPEC 2 permits the
+    unknown key, so depth is the only thing that moves."""
+    assert text.startswith("{"), text[:40]
+    return '{"deep": ' + "[" * k + "]" * k + ", " + text[1:]
+
+
+def _repin(d: pathlib.Path, m: dict, rel: str) -> None:
+    """Re-pin one artifact's sha256 so the edit under test is the depth and not
+    a hash mismatch that would refuse the bundle before anything parses it."""
+    digest = hashlib.sha256((d / rel).read_bytes()).hexdigest()
+    for e in m["evidence"]:
+        if e["path"] == rel:
+            e["sha256"] = digest
+            return
+    raise KeyError(f"{rel} is not listed in the manifest")
+
+
+def _rewrite_lines(d: pathlib.Path, rel: str, fn) -> None:
+    p = d / rel
+    lines = p.read_text().splitlines(keepends=True)
+    fn(lines)
+    p.write_text("".join(lines))
+
+
+def _d_manifest_at_the_depth_limit(d, m):
+    """Exactly 256 levels. Nothing about this bundle is dishonest, so both
+    verifiers must still pass it: a limit that also refuses the last legal
+    document would be a different limit."""
+    p = d / "vac.json"
+    p.write_text(_deep_key(p.read_text(), MAX_JSON_DEPTH - 1))
+    return False
+
+
+def _d_manifest_past_the_depth_limit(d, m):
+    p = d / "vac.json"
+    p.write_text(_deep_key(p.read_text(), MAX_JSON_DEPTH))
+    return False
+
+
+def _d_manifest_far_past_the_depth_limit(d, m):
+    """20000 levels: past CPython 3.12's stack and inside 3.14's, which is the
+    pair of hosts that used to return opposite verdicts on the same bytes."""
+    p = d / "vac.json"
+    p.write_text(_deep_key(p.read_text(), 20000))
+    return False
+
+
+def _d_artifact_past_the_depth_limit(d, m):
+    rel = "evidence/bundle.json"
+    p = d / rel
+    p.write_text(_deep_key(p.read_text(), MAX_JSON_DEPTH))
+    _repin(d, m, rel)
+
+
+def _d_jsonl_line_past_the_depth_limit(d, m):
+    rel = "evidence/raw_results.jsonl"
+    _rewrite_lines(d, rel,
+                   lambda ls: ls.__setitem__(1, _deep_key(ls[1], MAX_JSON_DEPTH)))
+    _repin(d, m, rel)
+
+
+def _d_jsonl_deep_line_behind_a_broken_one(d, m):
+    """Line 1 will not parse and line 3 is too deep. A parser stops at the
+    first error, so the only way line 3 is named is if every line was measured
+    before any line was parsed."""
+    rel = "evidence/raw_results.jsonl"
+
+    def edit(ls):
+        ls[2] = _deep_key(ls[2], MAX_JSON_DEPTH)
+        ls[0] = "{not json\n"
+
+    _rewrite_lines(d, rel, edit)
+    _repin(d, m, rel)
+
+
+def _d_brackets_inside_a_string_are_not_nesting(d, m):
+    """400 opening brackets, all of them string content. A counter that read
+    them as containers would refuse an honest bundle."""
+    m["deep_looking"] = "[" * 400 + ' "' + "{" * 400
+
+
+def _d_stray_closers_before_deep_nesting(d, m):
+    """Four closers with nothing open, then 258 real levels. A counter that let
+    the depth go negative would read the 258 as 254 and hand the document to
+    the parser, which names a different refusal on a different line."""
+    rel = "evidence/bundle.json"
+    n = MAX_JSON_DEPTH + 2
+    (d / rel).write_text("]]]]" + "[" * n + "]" * n + "\n")
+    _repin(d, m, rel)
+
+
+def _d_utf8_bom_on_a_deep_manifest(d, m):
+    """A byte-order mark opens the document, so the document is refused at its
+    first character whatever its depth. Measuring it would be the first step to
+    accepting text the parser refuses."""
+    p = d / "vac.json"
+    p.write_bytes(b"\xef\xbb\xbf" + _deep_key(p.read_text(), 20000).encode())
+    return False
+
+
+def _d_jsonl_blank_lines_before_a_deep_one(d, m):
+    """Blank lines hold no row, but they are still lines. The number a refusal
+    names has to be the one an editor shows, so the two implementations must
+    count the same things as lines."""
+    rel = "evidence/raw_results.jsonl"
+
+    def edit(ls):
+        ls[1] = _deep_key(ls[1], MAX_JSON_DEPTH)
+        ls.insert(1, "\n\n")
+
+    _rewrite_lines(d, rel, edit)
+    _repin(d, m, rel)
+
+
+def _d_jsonl_carriage_returns_before_a_deep_line(d, m):
+    """The same artifact written with carriage returns for line endings.
+    read_text() turns a lone CR, and a CRLF pair, into one line feed before the
+    reference counts lines, so a port that measured on line feeds alone would
+    read this whole file as one line and name the wrong number."""
+    rel = "evidence/raw_results.jsonl"
+
+    def edit(ls):
+        ls[3] = _deep_key(ls[3], MAX_JSON_DEPTH)
+        for i, ln in enumerate(ls):
+            ls[i] = ln.replace("\n", "\r")
+
+    _rewrite_lines(d, rel, edit)
+    _repin(d, m, rel)
+
+
+def _d_utf8_bom_on_a_deep_jsonl_line(d, m):
+    """The mark opens line 3, not the text, so only that line goes unmeasured
+    and the parser names it at its first character, as it did before."""
+    rel = "evidence/raw_results.jsonl"
+
+    def edit(ls):
+        ls[2] = "\ufeff" + _deep_key(ls[2], 20000)
+
+    _rewrite_lines(d, rel, edit)
+    _repin(d, m, rel)
+
+
 DERIVED = [
     ("missing-manifest", _d_missing_manifest, "vac.json removed"),
     ("invalid-json", _d_invalid_json, "manifest is not parseable JSON"),
@@ -246,6 +401,30 @@ DERIVED = [
      "checks[0].artifact points outside the evidence list"),
     ("issuer-commit-mismatch", _d_issuer_commit_mismatch,
      "replay.issuer_commit diverges from protocol.issuer_commit"),
+    ("json-depth-manifest-at-limit", _d_manifest_at_the_depth_limit,
+     "manifest nests exactly 256 levels"),
+    ("json-depth-manifest-over", _d_manifest_past_the_depth_limit,
+     "manifest nests 257 levels, one past the limit"),
+    ("json-depth-manifest-20000", _d_manifest_far_past_the_depth_limit,
+     "manifest nests 20001 levels, past one host's stack and inside another's"),
+    ("json-depth-artifact-over", _d_artifact_past_the_depth_limit,
+     "evidence/bundle.json nests 257 levels"),
+    ("json-depth-jsonl-over", _d_jsonl_line_past_the_depth_limit,
+     "raw_results.jsonl line 2 nests 257 levels"),
+    ("json-depth-jsonl-behind-broken-line", _d_jsonl_deep_line_behind_a_broken_one,
+     "raw_results.jsonl line 1 is malformed and line 3 nests 257 levels"),
+    ("json-depth-brackets-in-string", _d_brackets_inside_a_string_are_not_nesting,
+     "800 brackets inside a manifest string value, none of them containers"),
+    ("json-depth-stray-closers", _d_stray_closers_before_deep_nesting,
+     "evidence/bundle.json opens with four unmatched closers, then 258 levels"),
+    ("json-depth-bom-manifest", _d_utf8_bom_on_a_deep_manifest,
+     "manifest carries a BOM and nests 20001 levels"),
+    ("json-depth-bom-jsonl-line", _d_utf8_bom_on_a_deep_jsonl_line,
+     "raw_results.jsonl line 3 carries a BOM and nests 20001 levels"),
+    ("json-depth-jsonl-blank-lines", _d_jsonl_blank_lines_before_a_deep_one,
+     "two blank lines pushed ahead of the 257-level line in raw_results.jsonl"),
+    ("json-depth-jsonl-cr", _d_jsonl_carriage_returns_before_a_deep_line,
+     "raw_results.jsonl rewritten with CR endings, line 4 nests 257 levels"),
 ]
 
 
