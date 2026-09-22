@@ -36,10 +36,14 @@ jobs:
       - name: Say what a failure means
         if: failure()
         run: |
-          echo "::warning::A pin is BROKEN or BEHIND. Nothing was changed."
+          echo "::warning::A pin is BROKEN, BEHIND or UNMEASURED. Nothing was changed."
           echo "BROKEN means the pinned URL stopped resolving or its bytes stopped hashing to the"
           echo "declared sha256: that is a fault here and the page may be publishing an"
           echo "unverifiable claim."
+          echo "UNMEASURED means this run could not compare the pin to upstream at all, so that"
+          echo "panel's drift is unknown rather than absent. Usually a 404: the artifact was"
+          echo "renamed or removed and public_url now names a path nobody serves. Find where it"
+          echo "went, then repoint the panel or retire it. Do not read it as a quiet VALID."
           echo "BEHIND means the pin is intact but the issuer shipped past it. Review the upstream"
           echo "change, decide whether the claim still holds, then update issuer_commit, sha256,"
           echo "public_url and pinned_as_of in suite/sources.json, rerun suite/build.py, and commit"

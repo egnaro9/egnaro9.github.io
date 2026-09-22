@@ -23,6 +23,7 @@ import json
 import pathlib
 import re
 import sys
+import urllib.error
 import urllib.request
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -82,12 +83,27 @@ def _parts(entry: dict):
     return m.groups() if m else None
 
 
-def _get(url: str):
-    try:
-        with urllib.request.urlopen(url, timeout=30) as r:
-            return r.read(), ""
-    except Exception as e:
-        return None, f"{type(e).__name__}: {e}"
+def _get(url: str, attempts: int = 1):
+    """Fetch url, returning (bytes, error, http_status).
+
+    http_status is the code the server answered with, and 0 when nothing answered at
+    all. The caller needs that difference. A 404 is a durable fact about the artifact,
+    a timeout is a passing fact about the network, and collapsing the two is how this
+    script spent 2026-08-30 to 2026-09-22 printing VALID for a panel it never managed
+    to look at: model-drift's dashboard/metrics.json was renamed upstream, every fetch
+    of it 404ed, and "could not look" was recorded as "looked, and it was fine".
+    """
+    err, code = "", 0
+    for _ in range(attempts):
+        try:
+            with urllib.request.urlopen(url, timeout=30) as r:
+                return r.read(), "", r.status
+        except urllib.error.HTTPError as e:
+            # The server answered. Retrying will get the same answer, so do not.
+            return None, f"HTTPError: {e}", e.code
+        except Exception as e:
+            err, code = f"{type(e).__name__}: {e}", 0
+    return None, err, code
 
 
 def check(entry: dict) -> tuple[str, str]:
@@ -96,7 +112,7 @@ def check(entry: dict) -> tuple[str, str]:
         return "BROKEN", f"public_url is not pinned to a commit: {entry['public_url']}"
     owner, repo, commit, path = p
 
-    pinned, err = _get(f"{RAW}{owner}/{repo}/{commit}/{path}")
+    pinned, err, _ = _get(f"{RAW}{owner}/{repo}/{commit}/{path}")
     if pinned is None:
         return "BROKEN", f"pinned url did not resolve ({err})"
     got = hashlib.sha256(pinned).hexdigest()
@@ -107,9 +123,20 @@ def check(entry: dict) -> tuple[str, str]:
         where = entry.get("declared_in", f"suite/{MANIFEST.name}")
         return "BROKEN", f"pinned bytes hash {got}, {where} declares {entry['sha256']}"
 
-    head, err = _get(f"{RAW}{owner}/{repo}/main/{path}")
+    # Two attempts, because a single transient failure should not be reported as a
+    # finding about the artifact. A 404 short-circuits inside _get and is not retried.
+    head, err, code = _get(f"{RAW}{owner}/{repo}/main/{path}", attempts=2)
     if head is None:
-        return "VALID", f"pin verified; upstream main unreadable ({err}), drift unknown"
+        if code == 404:
+            return "UNMEASURED", (
+                f"pin verified, but {repo}@main no longer serves {path} (HTTP 404). "
+                "The artifact was renamed or removed upstream, so there is nothing to "
+                "compare the pin against and this panel has had no drift coverage since "
+                "it moved. Find where the artifact went and repoint public_url, or drop "
+                "the panel.")
+        return "UNMEASURED", (
+            f"pin verified, but {repo}@main could not be read after 2 attempts ({err}); "
+            "drift was NOT measured on this run")
     hh = hashlib.sha256(head).hexdigest()
     if hh != got:
         return "BEHIND", (f"pin verified, but {repo}@main now serves {hh[:12]} "
@@ -128,14 +155,18 @@ def main() -> int:
     for e, fault in [*((s, "") for s in man["sources"]), verifier_pin()]:
         state, why = ("BROKEN", fault) if fault else check(e)
         owner_repo = e["artifact"].split("/")[0]
-        print(f"[{state:6}] {e['panel']}")
+        print(f"[{state:10}] {e['panel']}")
         print(f"          claim      {e['label']}")
         print(f"          artifact   {e['artifact']}")
         print(f"          pinned     {owner_repo}@{e['issuer_commit']}")
         print(f"          expected   sha256 {e['sha256']}")
         print(f"          observed   {why}")
         print(f"          derivation {e['derivation']}\n")
-        if state == "BROKEN" or (state == "BEHIND" and not only_pins):
+        # UNMEASURED sorts with BEHIND rather than BROKEN, for the reason BEHIND is
+        # already excused here: the pin itself resolves and hashes, so a pull request
+        # that never touched this panel should not fail on it. It is still a finding,
+        # and the scheduled job says so out loud.
+        if state == "BROKEN" or (state in ("BEHIND", "UNMEASURED") and not only_pins):
             worst.append((e["panel"], state))
 
     if not worst:
@@ -143,6 +174,11 @@ def main() -> int:
         return 0
 
     print("DRIFT DETECTED: " + ", ".join(f"{n} ({s})" for n, s in worst))
+    if any(s == "UNMEASURED" for _, s in worst):
+        print("\nUNMEASURED is not a milder BEHIND. It means this run could not compare the")
+        print("pin to anything, so that panel's drift is unknown rather than absent. A 404")
+        print("says the artifact is no longer at the path public_url names; find where it")
+        print("went, then repoint the panel or retire it.")
     print("\nThis run does not change anything. To act on it, deliberately:")
     print("  1. review the upstream change and decide whether the claim still holds")
     print("  2. update issuer_commit, sha256 and public_url for that panel in suite/sources.json")
