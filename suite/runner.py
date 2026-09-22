@@ -100,6 +100,21 @@ def run_verifier(target: pathlib.Path) -> tuple[int, str, int]:
 DOGFOOD = "docs/dogfood_gradecore.json"
 WITNESS_ARTIFACT = "evalmut/docs/dogfood_gradecore_witnessed.json"
 BOARD = "board/results.json"
+
+# Step 2 binds THIS, not BOARD, and the difference is the whole point.
+#
+# reference-fleet's bundle went to 0.2 and split into three per-suite bundles. board/results.json
+# and board/raw_results.jsonl left the bundle deliberately: at 0.1 the verifier pooled by bare
+# field name, so the naive suite's detection_rate 0.167 sat in the same `detection_rate` slot as a
+# member's 1.0 and was satisfied by it. A false bind, and upstream repaired it by publishing
+# suite-scoped claims only.
+#
+# So the board file is still committed and still sha-pinned by suite/sources.json, but nothing
+# records a replay recipe for it any more, and bundled_recipe refuses to attach one that belongs
+# to other bytes. That refusal is correct. The fix is not to work around it but to bind the
+# artifact this step was always about: the head here has only ever counted the naive archetype,
+# and naive_contains.json is exactly that archetype, hash-pinned by the bundle that ships it.
+NAIVE = "board/vac/naive_contains.json"
 REGISTRY = "registry.json"
 CERTS = HOME / "agent-certlab" / "certifications"
 
@@ -154,10 +169,15 @@ def calibrate_values(src, d) -> list:
 
     The naive archetype is picked by the same substring test on both sides, so the jq printed in
     the drawer is the filter that built the row and not a description of one. A reader who
-    disagrees with the filter can see it, which is the point of showing it."""
+    disagrees with the filter can see it, which is the point of showing it.
+
+    SCOPE. These read the naive suite's own bundled artifact, not the whole board. The filter is
+    kept anyway rather than dropped as redundant: it is what makes the head's "naive only" caveat
+    checkable against the bytes instead of taken on trust, and it goes to zero and fails loudly if
+    this ever gets pointed at a different suite's bundle."""
     naive = '.rows[] | select(.suite | ascii_downcase | contains("naive"))'
     spec = [
-        ("suite x member results", ".rows | length", lambda x: len(x["rows"]), str),
+        ("rows in this archetype's bundle", ".rows | length", lambda x: len(x["rows"]), str),
         ("archetypes measured", ".rows | map(.suite) | unique | length",
          lambda x: len({r["suite"] for r in x["rows"]}), str),
         ("fleet members", ".rows | map(.member) | unique | length",
@@ -352,8 +372,8 @@ def steps(src, d) -> list[dict]:
                         note=f"wanted evalmut/{DOGFOOD}"))
 
     # 2 CALIBRATE
-    fleet_src, fleet = bound("reference-fleet", BOARD,
-                             how=lambda: bundled_recipe("reference-fleet", BOARD,
+    fleet_src, fleet = bound("reference-fleet", NAIVE,
+                             how=lambda: bundled_recipe("reference-fleet", NAIVE,
                                                         "board/vac/vac.json"))
     if fleet:
         vals = calibrate_values(fleet_src, fleet)
@@ -371,7 +391,7 @@ def steps(src, d) -> list[dict]:
     else:
         out.append(dict(n=2, verb="CALIBRATE", tool="reference-fleet", ok=False,
                         head="artifact missing", q="Can the instrument detect known-bad?",
-                        values=[], src=None, note=f"wanted reference-fleet/{BOARD}"))
+                        values=[], src=None, note=f"wanted reference-fleet/{NAIVE}"))
 
     # 3 CERTIFY
     cert = latest_cert()

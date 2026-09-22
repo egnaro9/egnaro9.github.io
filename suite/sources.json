@@ -18,9 +18,9 @@
       "label": "Suite-by-member detection results against a seeded answer key",
       "question": "Which defect classes does a suite catch, against a known answer key?",
       "artifact": "reference-fleet/board/results.json",
-      "issuer_commit": "4d958c3a5e3f",
-      "sha256": "6a6c5be75738155543057a4a7a1ed717564cb9b74d681ec52e18a039c779f3cd",
-      "public_url": "https://github.com/egnaro9/reference-fleet/blob/4d958c3a5e3f/board/results.json",
+      "issuer_commit": "53f931fafcc2",
+      "sha256": "c00213d1e39e4b08bb94bb093ceaaaeab381c5fa26cd9a6f1129717d47292862",
+      "public_url": "https://github.com/egnaro9/reference-fleet/blob/53f931fafcc2/board/results.json",
       "derivation": "fleet_board@1"
     },
     {
