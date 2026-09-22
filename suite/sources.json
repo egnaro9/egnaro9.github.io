@@ -48,9 +48,9 @@
       "label": "Deterministic checks declared in the crashkit evidence bundle",
       "question": "Do the graders bite, with no LLM judge anywhere?",
       "artifact": "crashkit/vac/vac.json",
-      "issuer_commit": "71eefcf22edf",
-      "sha256": "d8260125207c19ebbf3d14aef282354a36cb414bbb1803072fbc564a32b13d07",
-      "public_url": "https://github.com/egnaro9/crashkit/blob/71eefcf22edf/vac/vac.json",
+      "issuer_commit": "335f162d19de",
+      "sha256": "c57c7dd7dd9c61d444059761f238ab3d50874b3a805158d2eabc2b4505fd7d19",
+      "public_url": "https://github.com/egnaro9/crashkit/blob/335f162d19de/vac/vac.json",
       "derivation": "crashkit_bundle@1"
     },
     {
@@ -58,9 +58,9 @@
       "label": "VAC registry acceptance state, including bundles the verifier refused",
       "question": "Can a stranger verify these bundles offline?",
       "artifact": "vac-protocol/registry.json",
-      "issuer_commit": "0b44bf216a60",
-      "sha256": "1b147cc0729cdf5cd202c98a338f9a3e1cacb83308200c9f6a313e66ea305347",
-      "public_url": "https://github.com/egnaro9/vac-protocol/blob/0b44bf216a60/registry.json",
+      "issuer_commit": "e630d404b58d",
+      "sha256": "e53a39fad5059b2a32e9e4a87d708c3e5f85a5d7c0c4b170ed4ddac18537f292",
+      "public_url": "https://github.com/egnaro9/vac-protocol/blob/e630d404b58d/registry.json",
       "derivation": "vac_registry@1"
     }
   ]
