@@ -32,13 +32,18 @@ VERIFY = pathlib.Path.home() / "vac-protocol" / "vac" / "verify.py"
 # Spec constants the browser port must agree with byte for byte. Typed here as
 # NAMES to look up, never as VALUES to copy: if verify.py drops one, extraction
 # raises and the build stops instead of shipping a stale table.
-_WANT_CONSTS = ("VAC_VERSION", "PROFILES", "_ROW_OPS", "_CRASHKIT_WEIGHTS",
-                "_CRASHKIT_ACC_ALIASES", "_EVALMUT_HOLES", "_TODO_PREFIX",
-                "_CHECK_REFS", "_CHECK_OPT_REFS")
+#
+# SUPPORTED_VERSIONS is the set the schema accepts, and VAC_VERSION only what a
+# fresh draft is stamped with. Reading the latter as the former made the port
+# refuse every 0.2 bundle, the honest ones included.
+_WANT_CONSTS = ("VAC_VERSION", "SUPPORTED_VERSIONS", "PROFILES", "_ROW_OPS",
+                "_CRASHKIT_WEIGHTS", "_CRASHKIT_ACC_ALIASES", "_EVALMUT_HOLES",
+                "_TODO_PREFIX", "_CHECK_REFS", "_CHECK_OPT_REFS",
+                "_FIXTURES_MANIFEST_V")
 # Regexes the port must apply to the same artifacts. Each is plain enough to be
 # the same pattern in JS; a construct that is not would be caught by the
 # fixture comparison, which runs both implementations over the same bytes.
-_WANT_PATTERNS = ("_CERTLAB_RENDER", "_EVALMUT_RENDER", "_NUMERIC_STR")
+_WANT_PATTERNS = ("_SCOPE_RE", "_CERTLAB_RENDER", "_EVALMUT_RENDER", "_NUMERIC_STR")
 HERE = pathlib.Path(__file__).resolve().parent
 JSON_OUT = HERE / "refusals.json"
 JS_OUT = HERE / "refusals.gen.js"
@@ -67,25 +72,65 @@ def _leading_name(node: ast.AST) -> str | None:
     return m.group(1) if m else None
 
 
+def _unwrap(node: ast.AST) -> ast.AST:
+    """The literal inside print(_printable(...)): a one-argument wrapper escapes text, it does
+    not rename it.
+
+    verify.py routes its CLI output through _printable() since bb4dda3 (at c441011, :2119 and
+    :2137). Reading only a bare print() argument then saw a Call, not a string, so unsafe-archive
+    dropped out of the vocabulary and one fixed line out of report_lines, with no error: a
+    smaller table reads exactly like a correct one."""
+    while (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+           and len(node.args) == 1 and not node.keywords):
+        node = node.args[0]
+    return node
+
+
+def _asks_is_symlink(test: ast.AST) -> bool:
+    """True if an `if` test is exactly `<path>.is_symlink()`.
+
+    Exactly, not "mentions it": under `if not p.is_symlink():` the body is where the answer was
+    no. A test that grows another clause stops qualifying, so the exemption lapses and the
+    coverage tests fail rather than quietly keeping a refusal out of the port."""
+    return (isinstance(test, ast.Call) and isinstance(test.func, ast.Attribute)
+            and test.func.attr == "is_symlink" and not test.args and not test.keywords)
+
+
+def _symlink_guarded(tree: ast.AST) -> set[int]:
+    """ids of every node inside the BODY of an `if` that asks is_symlink().
+
+    Read off the code rather than listed, for the same reason the names are: a refusal the
+    browser port can never be handed a bundle for is only exempt while verify.py itself says it
+    fires for a filesystem link and nothing else. The else branch is not guarded, since there
+    the answer was no."""
+    out: set[int] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.If) and _asks_is_symlink(node.test):
+            for stmt in node.body:
+                out |= {id(n) for n in ast.walk(stmt)}
+    return out
+
+
 def _emission_sites(tree: ast.AST):
-    """Yield (name, lineno, kind) for every literal that reaches a refusal."""
+    """Yield (name, lineno, kind, symlink_guarded) for every literal that reaches a refusal."""
+    guarded = _symlink_guarded(tree)
     for node in ast.walk(tree):
         # f.append("name: reason") / failures.append(...)
         if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
                 and node.func.attr == "append" and len(node.args) == 1):
             name = _leading_name(node.args[0])
             if name:
-                yield name, node.lineno, "append"
+                yield name, node.lineno, "append", id(node) in guarded
         # return ["name: reason"]: a wholesale refusal, nothing else runs
         elif isinstance(node, ast.Return) and isinstance(node.value, ast.List):
             for elt in node.value.elts:
                 name = _leading_name(elt)
                 if name:
-                    yield name, node.lineno, "return"
+                    yield name, node.lineno, "return", id(node) in guarded
         # print(f"FAIL name: reason"), the archive path, outside verify_bundle
         elif (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
               and node.func.id == "print" and len(node.args) == 1):
-            arg = node.args[0]
+            arg = _unwrap(node.args[0])
             head = None
             if isinstance(arg, ast.JoinedStr) and arg.values:
                 first = arg.values[0]
@@ -96,7 +141,7 @@ def _emission_sites(tree: ast.AST):
             if head and head.startswith("FAIL "):
                 m = _NAME.match(head[5:])
                 if m:
-                    yield m.group(1), node.lineno, "print"
+                    yield m.group(1), node.lineno, "print", id(node) in guarded
 
 
 def _constants(tree: ast.AST) -> dict:
@@ -139,11 +184,12 @@ def _report_lines(tree: ast.AST) -> list[str]:
         if isinstance(node, ast.FunctionDef) and node.name == "_report":
             out = []
             for sub in ast.walk(node):
-                if (isinstance(sub, ast.Call) and isinstance(sub.func, ast.Name)
-                        and sub.func.id == "print" and len(sub.args) == 1
-                        and isinstance(sub.args[0], ast.Constant)
-                        and isinstance(sub.args[0].value, str)):
-                    out.append(sub.args[0].value)
+                if not (isinstance(sub, ast.Call) and isinstance(sub.func, ast.Name)
+                        and sub.func.id == "print" and len(sub.args) == 1):
+                    continue
+                arg = _unwrap(sub.args[0])
+                if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                    out.append(arg.value)
             if not out:
                 raise ExtractionError("_report prints no fixed lines")
             return out
@@ -163,9 +209,11 @@ def extract(verify_py: pathlib.Path = VERIFY) -> dict:
 
     sites: dict[str, list[int]] = {}
     kinds: dict[str, set] = {}
-    for name, lineno, kind in _emission_sites(tree):
+    linked: dict[str, list[bool]] = {}
+    for name, lineno, kind, guarded in _emission_sites(tree):
         sites.setdefault(name, []).append(lineno)
         kinds.setdefault(name, set()).add(kind)
+        linked.setdefault(name, []).append(guarded)
     if not sites:
         raise ExtractionError(f"no refusal names found in {verify_py}")
 
@@ -189,6 +237,10 @@ def extract(verify_py: pathlib.Path = VERIFY) -> dict:
                 # a refusal reached only by print() is main()'s archive path,
                 # which never runs over an already-unpacked bundle
                 "archive_only": kinds[n] == {"print"},
+                # a refusal emitted only where verify.py has just asked is_symlink() and got
+                # yes: it exists for a link on disk, which a bundle held as paths and bytes,
+                # as the browser holds one, has no way to express
+                "symlink_only": all(linked[n]),
             }
             for n in names
         ],
@@ -203,6 +255,7 @@ def as_js(vocab: dict) -> str:
     c = vocab["constants"]
     spec = {
         "VAC_VERSION": c["VAC_VERSION"],
+        "SUPPORTED_VERSIONS": list(c["SUPPORTED_VERSIONS"]),
         "PROFILES": list(c["PROFILES"]),
         "ROW_OPS": list(c["_ROW_OPS"]),
         "CRASHKIT_WEIGHTS": c["_CRASHKIT_WEIGHTS"],
@@ -211,6 +264,7 @@ def as_js(vocab: dict) -> str:
         "TODO_PREFIX": c["_TODO_PREFIX"],
         "CHECK_REFS": {k: list(v) for k, v in c["_CHECK_REFS"].items()},
         "CHECK_OPT_REFS": {k: list(v) for k, v in c["_CHECK_OPT_REFS"].items()},
+        "FIXTURES_MANIFEST_V": c["_FIXTURES_MANIFEST_V"],
         "PATTERNS": c["_PATTERNS"],
         "REPORT_LINES": vocab["report_lines"],
     }
@@ -295,5 +349,6 @@ if __name__ == "__main__":
     print(f"  spec constants: {', '.join(sorted(v['constants']))}")
     print(f"  report lines: {len(v['report_lines'])}")
     for r in v["refusals"]:
-        flag = "  (archive path only)" if r["archive_only"] else ""
+        flag = ("  (archive path only)" if r["archive_only"]
+                else "  (symlink only)" if r["symlink_only"] else "")
         print(f"  {r['name']:<26} {r['sites']} site(s), first at line {r['first_line']}{flag}")

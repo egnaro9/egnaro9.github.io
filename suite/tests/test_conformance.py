@@ -8,6 +8,7 @@ Print the whole table with:
     cd suite && ~/vac-protocol/.venv/bin/python tests/conformance.py
 """
 
+import json
 import pathlib
 import shutil
 import sys
@@ -16,7 +17,9 @@ import tempfile
 import pytest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
+import browserverify  # noqa: E402
 import conformance as C  # noqa: E402
 
 
@@ -62,11 +65,11 @@ def report():
 
 
 def test_the_whole_committed_corpus_is_present(report):
-    """22 fixtures + examples/outsider, none dropped on the way in."""
+    """26 fixtures + examples/outsider, none dropped on the way in."""
     whole = [r for r in report["records"] if r["family"] == "whole"]
-    assert len(whole) == 23, [r["name"] for r in whole]
+    assert len(whole) == 27, [r["name"] for r in whole]
     fixtures = [r["name"] for r in whole if r["name"] != "outsider"]
-    assert len(fixtures) == 22
+    assert len(fixtures) == 26
     assert "make_fixtures.py" not in fixtures
 
 
@@ -82,8 +85,12 @@ def test_no_mismatch_between_the_two_implementations(report):
 
 
 def test_every_case_is_classified_and_nothing_is_skipped(report):
+    """27 whole, 25 sliced, 38 derived. The derived count rose from 22 when the
+    port took c441011's rules: each new case is one of those rules on a bundle
+    that exercises it, and each one fails this file when it is run against the
+    port as it stood before them."""
     recs = report["records"]
-    assert len(recs) == 54, len(recs)
+    assert len(recs) == 90, len(recs)
     assert all(r["status"] in (C.MATCH, C.DIVERGENT, C.MISMATCH) for r in recs)
     # a divergence with no reason is a silent skip wearing a label
     for r in recs:
@@ -140,7 +147,47 @@ def test_every_implemented_refusal_class_has_coverage(report):
         "refusal classes with NO conformance coverage: "
         + ", ".join(sorted(uncovered - set(C.UNREACHABLE)))
     )
-    assert len(cov["tested"]) == 19, sorted(cov["tested"])
+    # 20 of 22: every class but the two in UNREACHABLE. unscopable-check made it
+    # 20 when the port learned 0.2 and the derived 0.2 cases began to reach it.
+    assert len(cov["tested"]) == 20, sorted(cov["tested"])
+
+
+def test_the_unreachable_list_is_what_verify_py_says():
+    """UNREACHABLE is typed here, so it is held to the flags refusals.py reads off
+    verify.py's structure: a class is exempt only while the reference emits it
+    only on the archive path, or only for a symbolic link. A name added by hand
+    to quiet the coverage test fails here instead."""
+    vocab = json.loads(C.REFUSALS_JSON.read_text())
+    flagged = {r["name"] for r in vocab["refusals"]
+               if r["archive_only"] or r["symlink_only"]}
+    assert set(C.UNREACHABLE) == flagged, (sorted(C.UNREACHABLE), sorted(flagged))
+
+
+def test_a_symlink_never_reaches_the_port(tmp_path):
+    """The reason UNREACHABLE gives for unsafe-bundle, checked rather than asserted.
+
+    Two links, one at each of verify.py's two sites: a listed artifact replaced by
+    a link to identical bytes outside the bundle, and an unlisted link. The
+    reference must refuse both by name, or the class is not what the reason says.
+    Then neither way into the port may carry them: the node harness refuses to
+    read the directory, and the page build refuses to embed it."""
+    src = C.VAC_ROOT / "examples" / "outsider"
+    outside = tmp_path / "outside.json"
+    shutil.copy(src / "results.json", outside)
+    for name, plant in (
+        ("listed", lambda d: ((d / "results.json").unlink(),
+                              (d / "results.json").symlink_to(outside))),
+        ("unlisted", lambda d: (d / "stray").symlink_to("vac.json")),
+    ):
+        d = tmp_path / name
+        shutil.copytree(src, d)
+        plant(d)
+        ref = C.reference_verify(d)
+        assert "unsafe-bundle" in ref["names"], (name, ref)
+        js = C.browser_verify(d)
+        assert js["verdict"] == "ERROR" and "symbolic link" in js["error"], (name, js)
+        with pytest.raises(browserverify.Unavailable, match="symbolic link"):
+            browserverify.bundle_files(d)
 
 
 def test_detail_text_divergences_are_declared(report):
@@ -156,11 +203,11 @@ def test_detail_text_divergences_are_declared(report):
 
 def test_slicing_preserved_the_tamper(report):
     """The slice must not have quietly repaired the bundle it was cut from.
-    Every sliced case except the two whose tamper lived in the dropped profile
-    still fails on the reference."""
+    Every sliced case except the two whose tamper lived in the dropped profile,
+    and the two honest bundles, still fails on the reference."""
     sliced = {r["name"]: r for r in report["records"] if r["family"] == "sliced"}
     repaired_by_design = {"tamper-modeldrift-rows", "tamper-modeldrift-standings",
-                          "valid"}
+                          "valid", "v02-twin-arms"}
     for name, r in sliced.items():
         if name in repaired_by_design:
             assert r["ref_verdict"] == "PASS", name

@@ -44,11 +44,26 @@ def _e(v) -> str:
     return html.escape("" if v is None else str(v))
 
 
+def bundle_files(root: pathlib.Path) -> list[pathlib.Path]:
+    """Every file under `root`, refusing a symbolic link rather than embedding its target.
+
+    The page carries a bundle as paths and bytes, which cannot express a link. is_file()
+    follows one, so without this a linked artifact would be embedded as the target's bytes
+    under the link's name, and the in-page verifier would pass a bundle vac-verify refuses as
+    unsafe-bundle. That refusal is exempt from the port only because no bundle holding a link
+    can reach it, and this is one of the two places that keeps it so."""
+    links = sorted(p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_symlink())
+    if links:
+        raise Unavailable(f"{root.name} holds a symbolic link ({', '.join(links[:4])}); "
+                          "the page embeds bytes, which cannot carry one")
+    return sorted(p for p in root.rglob("*") if p.is_file())
+
+
 def embed_bundle() -> dict:
     """The committed bundle, as bytes the page can hand to crypto.subtle."""
     if not BUNDLE.is_dir():
         raise Unavailable(f"{BUNDLE_REPO}/{BUNDLE_IN_REPO} is not a directory")
-    files = sorted(p for p in BUNDLE.rglob("*") if p.is_file())
+    files = bundle_files(BUNDLE)
     if not files:
         raise Unavailable(f"{BUNDLE_REPO}/{BUNDLE_IN_REPO} holds no files")
     if not (BUNDLE / "vac.json").is_file():
@@ -157,18 +172,30 @@ def panel() -> dict:
         }
 
     covered, missing = port_coverage(vocab)
-    archive = {r["name"] for r in vocab["refusals"] if r["archive_only"]}
-    unexplained = [n for n in missing if n not in archive]
-    if missing and not unexplained:
-        gap = (f"It does not emit {_e(', '.join(missing))}, which verify.py reaches only "
-               "through the archive path: this page embeds the bundle already unpacked, "
-               "so that path does not exist here.")
-    elif unexplained:
-        gap = (f"It does NOT emit {_e(', '.join(missing))}. A bundle that would earn one of "
-               "those is not fully checked here, and the run is reported INCOMPLETE rather "
-               "than passed.")
-    else:
-        gap = "It emits every refusal the reference verifier can emit."
+    # Each sentence below is chosen by a flag refusals.py reads off verify.py's own structure,
+    # so a refusal is only ever described as unreachable here while the code says it is.
+    archive = [n for n in missing
+               if any(r["name"] == n and r["archive_only"] for r in vocab["refusals"])]
+    linked = [n for n in missing
+              if any(r["name"] == n and r.get("symlink_only") for r in vocab["refusals"])]
+    unexplained = [n for n in missing if n not in archive and n not in linked]
+    parts = []
+    if archive:
+        parts.append(f"It does not emit {_e(', '.join(archive))}, which verify.py reaches only "
+                     "through the archive path: this page embeds the bundle already unpacked, "
+                     "so that path does not exist here.")
+    if linked:
+        parts.append(f"It does not emit {_e(', '.join(linked))}, which verify.py emits only for "
+                     "a symbolic link in a bundle directory: this page holds the bundle as paths "
+                     "and bytes, which cannot express a link, and the build refuses to embed a "
+                     "bundle that holds one.")
+    if unexplained:
+        # Nothing here abstains on a refusal it does not reference: the port simply never
+        # names it. So the page must not promise an INCOMPLETE it would not print.
+        parts.append(f"It does NOT emit {_e(', '.join(unexplained))}. A bundle that verify.py "
+                     "refuses for one of those can pass here, so a PASS on this page is not a "
+                     "PASS from verify.py.")
+    gap = " ".join(parts) or "It emits every refusal the reference verifier can emit."
     d = vocab["derived_from"]
     files = ", ".join(f'{f["path"]} ({f["size"]} B)' for f in bundle["files"])
 

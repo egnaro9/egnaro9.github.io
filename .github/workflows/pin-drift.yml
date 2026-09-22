@@ -44,3 +44,6 @@ jobs:
           echo "change, decide whether the claim still holds, then update issuer_commit, sha256,"
           echo "public_url and pinned_as_of in suite/sources.json, rerun suite/build.py, and commit"
           echo "the regenerated page with a claim receipt."
+          echo "If the drifted pin is the verifier pin (vac-verify), move the vac-protocol commit in"
+          echo "suite/requirements-dev.txt and suite.yml together and rerun suite/refusals.py,"
+          echo "suite/build.py and suite/runner.py; the browser port may need work first."

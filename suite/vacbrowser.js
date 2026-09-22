@@ -30,6 +30,14 @@ globalThis.VACBROWSER = (function () {
     throw new Error('refusals.gen.js must be loaded before vacbrowser.js: ' +
       'the vocabulary is generated from verify.py, never typed here');
   }
+  // A table generated before verify.py accepted 0.2 carries none of these,
+  // and reading one as undefined would compare against nothing. Refuse to
+  // load instead, the same way a missing refusal name throws.
+  if (!Array.isArray(SPEC.SUPPORTED_VERSIONS) || typeof SPEC.FIXTURES_MANIFEST_V !== 'number'
+      || typeof (SPEC.PATTERNS || {})._SCOPE_RE !== 'string') {
+    throw new Error('refusals.gen.js predates the constants this port reads ' +
+      '(SUPPORTED_VERSIONS, FIXTURES_MANIFEST_V, _SCOPE_RE): regenerate it with refusals.py');
+  }
 
   // ---------------------------------------------------------------- numbers
   // Python's round() rounds the EXACT binary value of the double to the nearest
@@ -219,7 +227,18 @@ globalThis.VACBROWSER = (function () {
   // to U+001F. Several of those characters also cut rows above and so cannot
   // reach this test. They are listed anyway, because the set a reader checks
   // this against is str.isspace(), not the remainder left by another regex.
-  const PY_BLANK = /^[\t\n\v\f\r \u001c-\u001f\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]*$/;
+  //
+  // The same set is what str.strip() removes, so pyStrip and nonemptyStr
+  // below are built from it too. trim() disagrees with strip() in both
+  // directions: it strips U+FEFF, which strip() keeps, and keeps U+001C to
+  // U+001F and U+0085, which strip() removes. So a limitation reading only
+  // U+001C counted as stated here and as empty at the command line, and a
+  // summary "5" behind a U+001C walked past the numeral-as-string refusal.
+  const PY_WS = '\\t\\n\\v\\f\\r \\u001c-\\u001f\\u0085\\u00a0\\u1680' +
+    '\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000';
+  const PY_BLANK = new RegExp(`^[${PY_WS}]*$`);
+  const PY_EDGES = new RegExp(`^[${PY_WS}]+|[${PY_WS}]+$`, 'g');
+  function pyStrip(s) { return s.replace(PY_EDGES, ''); }
 
   class TooDeep extends Error {}
 
@@ -429,9 +448,16 @@ globalThis.VACBROWSER = (function () {
   function isHex64(v) {
     return typeof v === 'string' && v.length === 64 && /^[0-9a-f]{64}$/.test(v);
   }
-  function nonemptyStr(v) { return typeof v === 'string' && v.trim() !== ''; }
+  // verify.py's _nonempty_str is bool(v.strip()), so blankness is Python's.
+  function nonemptyStr(v) { return typeof v === 'string' && !PY_BLANK.test(v); }
   function isObj(v) { return v !== null && typeof v === 'object' && !Array.isArray(v); }
   function nonemptyObj(v) { return isObj(v) && Object.keys(v).length > 0; }
+  // verify.py's _hashable. A list or dict raises when Python uses it as a
+  // dict key or a set element, and every other JSON value hashes, so this is
+  // exactly the set of values the reference refuses where it would otherwise
+  // crash. SPEC 3.2 and 3.3 do not type suite, member or operator_id, so an
+  // integer id stays legal evidence here as it does there.
+  function hashable(v) { return !(Array.isArray(v) || isObj(v)); }
 
   // pathlib resolves `bundle / "./results.json"` to results.json, so a manifest
   // may list a path that is not the literal key of any file. The path stays RAW
@@ -488,9 +514,35 @@ globalThis.VACBROWSER = (function () {
       if (!pred(v)) { f.push(`${R.SCHEMA_VIOLATION}: ${path}: ${what}`); return null; }
       return v;
     };
-    if (m.vac_version !== SPEC.VAC_VERSION) {
-      f.push(`${R.SCHEMA_VIOLATION}: vac_version: must be ${pyRepr(SPEC.VAC_VERSION)}, ` +
-        `got ${pyRepr(m.vac_version, m, 'vac_version')}`);
+    // Every version verify.py accepts, read from its SUPPORTED_VERSIONS through
+    // the generated table. VAC_VERSION is only what a fresh draft is stamped
+    // with, so comparing against it refused every 0.2 bundle the reference
+    // accepts, the honest ones included.
+    const ver = 'vac_version' in m ? m.vac_version : null;
+    if (!SPEC.SUPPORTED_VERSIONS.includes(ver)) {
+      f.push(`${R.SCHEMA_VIOLATION}: vac_version: must be one of ` +
+        `${pyRepr(SPEC.SUPPORTED_VERSIONS)}, got ${pyRepr(ver, m, 'vac_version')}`);
+    }
+    if (ver === '0.2') {
+      // SPEC 2.5.1: at 0.2 a check's scope is derived from its primary
+      // evidence reference, so a declared one is refused rather than ignored.
+      // The reference reads m.get("results", {}).get("checks") here, which
+      // raises when results is present and not an object, or when checks is
+      // true or a nonzero number. Those bundles crash the command line rather
+      // than earning a named reason, so there is no answer to agree with, and
+      // this port goes on to name the schema refusals they do earn. A checks
+      // object or string iterates there as keys or characters, never as
+      // objects, so it yields nothing in either implementation.
+      const res = 'results' in m ? m.results : {};
+      const cs = isObj(res) ? res.checks : null;
+      if (Array.isArray(cs)) {
+        cs.forEach((c, i) => {
+          if (isObj(c) && 'scope' in c) {
+            f.push(`${R.SCHEMA_VIOLATION}: results.checks[${i}].scope: scope is derived ` +
+              "from the check's primary evidence reference, never declared");
+          }
+        });
+      }
     }
     const claim = need(m, 'claim', isObj, 'object required') || {};
     need(claim, 'claim.capability', nonemptyStr, 'non-empty string required');
@@ -571,6 +623,13 @@ globalThis.VACBROWSER = (function () {
   }
 
   // ------------------------------------- artifacts: presence, sha256, closure
+  //
+  // verify.py asks is_symlink() of every path here first, and refuses a link by
+  // name before reading through it. There is no counterpart below, because a
+  // bundle in this file is a Map from path to bytes and a link has no way to
+  // appear in one. That only holds while nothing builds the Map by following
+  // links, so both builders refuse them: browserverify.bundle_files for the
+  // page, and loadDir in bv_harness.js for the conformance runs.
   function verifyArtifacts(bundle, m) {
     const f = [];
     const entries = (Array.isArray(m.evidence) ? m.evidence : [])
@@ -650,11 +709,14 @@ globalThis.VACBROWSER = (function () {
     const data = loadJson(bundle, art, f);
     if (data === null) return null;
     const verdicts = data.verdicts;
-    if (!Array.isArray(verdicts)) {
+    // A verdict that is not an object carries no fixed/policy_ok/tests_ok to
+    // count. Counting it as a row with every flag false would still recompute
+    // a number, and the reference refuses the array instead.
+    if (!Array.isArray(verdicts) || !verdicts.every(isObj)) {
       f.push(`${R.ARTIFACT_UNPARSABLE}: ${art}: no verdicts[] array`);
       return null;
     }
-    const count = k => verdicts.filter(v => isObj(v) && v[k] === true).length;
+    const count = k => verdicts.filter(v => v[k] === true).length;
     const recomputed = {
       verdicts: I(verdicts.length), fixed: I(count('fixed')),
       policy_ok: I(count('policy_ok')), tests_ok: I(count('tests_ok')),
@@ -698,7 +760,7 @@ globalThis.VACBROWSER = (function () {
     const pool = poolOf(recomputed);
     const modes = new Map();
     for (const v of verdicts) {
-      if (isObj(v) && nonemptyStr(v.failure_mode)) {
+      if (nonemptyStr(v.failure_mode)) {
         modes.set(v.failure_mode, (modes.get(v.failure_mode) || 0) + 1);
       }
     }
@@ -748,7 +810,7 @@ globalThis.VACBROWSER = (function () {
       ['false_alarm_rate', F(pyRound(fa / n, 3))]];
   }
 
-  function checkFleet(bundle, check, proto, f) {
+  function checkFleet(bundle, check, proto, f, version) {
     const agg = loadJson(bundle, check.aggregate, f);
     const rawRel = check.raw;
     let raw;
@@ -768,15 +830,30 @@ globalThis.VACBROWSER = (function () {
     }
     if (agg === null) return null;
     const rows = agg.rows;
-    if (!Array.isArray(rows)) {
+    // A row or a raw line that is not an object has no suite, member or
+    // rate to read. Reading it as an empty object used to recompute from it
+    // anyway, where the reference refuses the artifact and stops.
+    if (!Array.isArray(rows) || !rows.every(isObj)) {
       f.push(`${R.ARTIFACT_UNPARSABLE}: ${check.aggregate}: no rows[] array`);
       return null;
     }
+    if (!raw.every(isObj)) {
+      f.push(`${R.ARTIFACT_UNPARSABLE}: ${rawRel}: every line must be an object`);
+      return null;
+    }
     const groups = new Map();                 // canonical key -> {suite, member, lines}
-    raw.forEach((ln, idx) => {
-      const o = isObj(ln) ? ln : {};
+    for (let idx = 0; idx < raw.length; idx++) {
+      const o = raw[idx];
       const suite = 'suite' in o ? o.suite : null;
       const member = 'member' in o ? o.member : null;
+      // The reference keys its groups by the (suite, member) tuple, which
+      // raises on a list or dict, so it names the line and stops. The
+      // contradictions already named for earlier lines stay named.
+      if (!(hashable(suite) && hashable(member))) {
+        f.push(`${R.ARTIFACT_UNPARSABLE}: ${rawRel}: line ${idx + 1} suite/member ` +
+          'must be scalar identifiers');
+        return null;
+      }
       const paired = o.defective_failed === true && o.clean_passed === true;
       const got = 'detected' in o ? o.detected : null;
       if (got !== paired) {
@@ -786,8 +863,8 @@ globalThis.VACBROWSER = (function () {
       }
       const key = canonical([suite, member]);
       if (!groups.has(key)) groups.set(key, { suite, member, lines: [] });
-      groups.get(key).lines.push(ln);
-    });
+      groups.get(key).lines.push(o);
+    }
     const expect = check.expect;
     if (isObj(expect)) {
       for (const k of sortedKeys(expect)) {
@@ -800,10 +877,15 @@ globalThis.VACBROWSER = (function () {
       }
     }
     const seen = new Set();
-    for (const row of rows) {
-      const o = isObj(row) ? row : {};
+    for (let n = 0; n < rows.length; n++) {
+      const o = rows[n];
       const suite = 'suite' in o ? o.suite : null;
       const member = 'member' in o ? o.member : null;
+      if (!(hashable(suite) && hashable(member))) {
+        f.push(`${R.ARTIFACT_UNPARSABLE}: ${check.aggregate}: row ${n + 1} suite/member ` +
+          'must be scalar identifiers');
+        return null;
+      }
       const where = `${pyStr(suite, o, 'suite')}/${pyStr(member, o, 'member')}`;
       const key = canonical([suite, member]);
       if (seen.has(key)) {
@@ -853,23 +935,36 @@ globalThis.VACBROWSER = (function () {
           `${pyStr(agg.fleet_commit, agg, 'fleet_commit')}`);
       }
     }
+    // Three granularities: per (suite, member), per suite, whole board. At
+    // 0.1 they share one key per field, so a suite's rate and one member's
+    // rate are both admissible for a headline naming that field. At 0.2 each
+    // granularity gets its own key (member_, suite_, board_), so a number
+    // from the wrong grouping level is refused. 0.1 keeps the merged keys,
+    // which is what the bundles accepted under it were accepted under.
+    const v2 = version === '0.2';
+    const pool = {};
+    const put = (prefix, k, v) => {
+      const key = v2 ? `${prefix}_${k}` : k;
+      if (!(key in pool)) pool[key] = [];
+      pool[key].push(v);
+    };
     const suites = new Set();
     for (const g of groups.values()) suites.add(canonical(g.suite));
-    const pool = { rows: [I(groups.size)], suites: [I(suites.size)] };
-    const add = (k, v) => { if (!(k in pool)) pool[k] = []; pool[k].push(v); };
+    put('board', 'rows', I(groups.size));
+    put('board', 'suites', I(suites.size));
     const bySuite = new Map();
     for (const g of groups.values()) {
       const sk = canonical(g.suite);
       if (!bySuite.has(sk)) bySuite.set(sk, []);
       bySuite.get(sk).push(...g.lines);
-      for (const [k, v] of fleetRates(g.lines)) add(k, v);
+      for (const [k, v] of fleetRates(g.lines)) put('member', k, v);
     }
     for (const lines of bySuite.values()) {
       const stats = fleetRates(lines);
-      stats.push(['members', I(new Set(lines.map(l => canonical(isObj(l) ? l.member : null))).size)]);
-      for (const [k, v] of stats) add(k, v);
+      stats.push(['members', I(new Set(lines.map(l => canonical('member' in l ? l.member : null))).size)]);
+      for (const [k, v] of stats) put('suite', k, v);
     }
-    if (raw.length) for (const [k, v] of fleetRates(raw)) add(k, v);
+    if (raw.length) for (const [k, v] of fleetRates(raw)) put('board', k, v);
     return pool;
   }
 
@@ -894,14 +989,22 @@ globalThis.VACBROWSER = (function () {
       f.push(`${R.ARTIFACT_UNPARSABLE}: ${art}: no holes object`);
       return null;
     }
-    rows.forEach((r, idx) => {
+    for (let idx = 0; idx < rows.length; idx++) {
+      const r = rows[idx];
+      // operator_id becomes a set element and a catalog key in the reference,
+      // both of which raise on a list or dict, so it names the row and stops.
+      if (!hashable('operator_id' in r ? r.operator_id : null)) {
+        f.push(`${R.ARTIFACT_UNPARSABLE}: ${art}: row ${idx + 1} operator_id must ` +
+          'be a scalar identifier');
+        return null;
+      }
       if ((r.outcome === 'missed' && r.polarity !== 'defect')
         || (r.outcome === 'flagged' && r.polarity !== 'equivalent')) {
         f.push(`${R.RAW_AGGREGATE_MISMATCH}: ${art}: row ${idx + 1} outcome ` +
           `${pyRepr(r.outcome, r, 'outcome')} contradicts its polarity ` +
           `${pyRepr(r.polarity, r, 'polarity')}`);
       }
-    });
+    }
     const counts = {};
     for (const k of ['caught', 'missed', 'flagged', 'error', 'na']) {
       counts[k] = rows.filter(r => r.outcome === k).length;
@@ -914,7 +1017,19 @@ globalThis.VACBROWSER = (function () {
       }
     }
     const applied = counts.caught + counts.missed + counts.flagged;
-    const score = applied === 0 ? 1.0 : counts.caught / applied;
+    // SPEC 3.3 no longer scores a run that applied nothing. This line used to
+    // read `applied === 0 ? 1.0 : ...`, after the rule the reference dropped
+    // at 6e01b56, so an empty results[] or a run whose every row errored
+    // passed here with a perfect score while the command line refused it.
+    // No score means no recomputation to contribute, so the check returns
+    // nothing and the run cannot complete.
+    if (applied === 0) {
+      f.push(`${R.ARTIFACT_UNPARSABLE}: ${art}: applied == 0, so this run has no score. ` +
+        'A payload that applied no mutation has measured nothing; it does not score ' +
+        '1.0 by default');
+      return null;
+    }
+    const score = counts.caught / applied;
     if (('score' in data ? data.score : null) !== score) {
       f.push(`${R.RAW_AGGREGATE_MISMATCH}: ${art}: score declared ` +
         `${pyStr('score' in data ? data.score : null, data, 'score')}, ` +
@@ -939,8 +1054,51 @@ globalThis.VACBROWSER = (function () {
       applied: I(applied), results: I(rows.length), score_3: F(pyRound(score, 3)),
       vacuous: I(holeCounts.vacuous), blind: I(holeCounts.blind),
       brittle: I(holeCounts.brittle), coverage_gap: I(holeCounts.coverage_gap),
-      operators_exercised: I(new Set(rows.map(r => canonical(r.operator_id))).size),
+      operators_exercised: I(new Set(rows.map(r =>
+        canonical('operator_id' in r ? r.operator_id : null))).size),
     };
+    // The corpus binding (SPEC 3.3): the fixture manifest pins WHAT the run
+    // was applied to, and a row may not cite a case it does not contain.
+    // Without this the ref is still required to be listed and hash-clean,
+    // because CHECK_OPT_REFS names it, and nothing reads it: a vacuous check
+    // that passes here what the command line refuses. corpus_sha256 is not
+    // recomputed on either side, because its inputs are fixture files in the
+    // issuer's tree and not in the bundle.
+    const fxRel = check.fixtures;
+    if (nonemptyStr(fxRel)) {
+      const fx = loadJson(bundle, fxRel, f);
+      if (fx !== null) {
+        const mv = 'manifest_version' in fx ? fx.manifest_version : null;
+        if (mv !== SPEC.FIXTURES_MANIFEST_V) {
+          f.push(`${R.UNKNOWN_PROFILE}: ${fxRel}: manifest_version ` +
+            `${pyRepr(mv, fx, 'manifest_version')}, this check reads ` +
+            `${SPEC.FIXTURES_MANIFEST_V}`);
+        }
+        const cases = fx.cases;
+        if (!(Array.isArray(cases) && cases.every(isObj))) {
+          f.push(`${R.ARTIFACT_UNPARSABLE}: ${fxRel}: no cases[] array`);
+        } else {
+          const names = new Set(cases.filter(c => nonemptyStr(c.name)).map(c => c.name));
+          if (names.size !== cases.length) {
+            f.push(`${R.ARTIFACT_UNPARSABLE}: ${fxRel}: every case must carry a unique ` +
+              'non-empty name');
+          }
+          const count = 'case_count' in fx ? fx.case_count : null;
+          if (count !== cases.length) {
+            f.push(`${R.RAW_AGGREGATE_MISMATCH}: ${fxRel}: case_count declares ` +
+              `${pyStr(count, fx, 'case_count')}, recomputed ${cases.length}`);
+          }
+          const cited = new Set(rows.map(r => r.case_name).filter(nonemptyStr));
+          const stray = Array.from(cited).filter(n => !names.has(n)).sort(cmp);
+          if (stray.length) {
+            const shown = stray.slice(0, 4).join(', ');
+            const more = stray.length > 4 ? ` (+${stray.length - 4} more)` : '';
+            f.push(`${R.RAW_AGGREGATE_MISMATCH}: ${art}: rows cite case(s) absent from ` +
+              `${fxRel}: ${shown}${more}`);
+          }
+        }
+      }
+    }
     const catRel = check.catalog;
     if (nonemptyStr(catRel)) {
       const cat = loadJson(bundle, catRel, f, ['array']);
@@ -951,9 +1109,11 @@ globalThis.VACBROWSER = (function () {
         } else {
           cat.forEach((o, idx) => {
             if (!(nonemptyStr(o.id) && nonemptyStr(o.real_origin))) {
-              // verify.py's own long dash, written as an escape, never typed
+              // verify.py's own long dash, written as an escape, never typed. It
+              // was once escaped twice, which printed a backslash, a u and four
+              // digits where the command line prints the dash itself.
               f.push(`${R.ARTIFACT_UNPARSABLE}: ${catRel}: catalog entry ${idx + 1} lacks a ` +
-                'non-empty id/real_origin \\u2014 the battery must be mined, not asserted');
+                'non-empty id/real_origin \u2014 the battery must be mined, not asserted');
               ok = false;
             }
           });
@@ -1284,7 +1444,13 @@ globalThis.VACBROWSER = (function () {
   const NOT_PORTED = SPEC.PROFILES.filter(p => !(p in CHECK_FNS));
 
   // ------------------------------------------------------------- coherence
-  function summaryOutruns(summary, pools) {
+  // SPEC 2.5 and 2.5.1. At 0.1 a summary number binds on its LEAF key against
+  // pools merged by bare field name, then falls back to "equals something
+  // some check recomputed". At 0.2 the pools arrive keyed scope.field and
+  // unmerged, a number binds on its FULL summary path, and there is no
+  // fallback tier: a path no check recomputes is refused whatever its value.
+  function summaryOutruns(summary, pools, version) {
+    const v2 = version === '0.2';
     const byField = new Map();
     for (const pool of pools) {
       for (const k of Object.keys(pool)) {
@@ -1309,14 +1475,14 @@ globalThis.VACBROWSER = (function () {
       }
       if (typeof node === 'boolean') return;
       if (typeof node === 'string') {
-        if (numericStr.test(node.trim())) {
+        if (numericStr.test(pyStrip(node))) {
           f.push(`${R.SUMMARY_OUTRUNS_CHECKS}: ${path}: declares ${pyRepr(node)} as a ` +
             'string; a numeric headline must be a JSON number so it can be recomputed');
         }
         return;
       }
       if (typeof node !== 'number') return;
-      const mp = byField.get(key);
+      const mp = byField.get(v2 ? path.slice('summary.'.length) : key);
       if (mp) {
         if (!mp.has(node)) {
           const got = Array.from(mp.keys()).sort((a, b) => a - b);
@@ -1326,7 +1492,7 @@ globalThis.VACBROWSER = (function () {
           f.push(`${R.SUMMARY_OUTRUNS_CHECKS}: ${path}: declares ` +
             `${pyStr(node, parent, pkey)}, recomputation gives ${shown}`);
         }
-      } else if (!allVals.has(node)) {
+      } else if (v2 || !allVals.has(node)) {
         f.push(`${R.SUMMARY_OUTRUNS_CHECKS}: ${path}: declares ` +
           `${pyStr(node, parent, pkey)}, no check recomputes it`);
       }
@@ -1334,10 +1500,33 @@ globalThis.VACBROWSER = (function () {
     return f;
   }
 
+  // A check's scope at 0.2 (SPEC 2.5.1), DERIVED from its primary evidence
+  // reference: the first ref its profile names, cut to the filename and then
+  // to the text before its first dot. Never declared, because an issuer who
+  // named the binding key and also wrote the summary would control both sides
+  // of the binding. The stem comes from a path the manifest pins by sha256,
+  // so renaming a scope means renaming a hashed artifact.
+  const SCOPE_RE = new RegExp('^(?:' + SPEC.PATTERNS._SCOPE_RE + ')$');
+  function checkScope(c) {
+    const ref = SPEC.CHECK_REFS[c.profile][0];
+    const val = ref in c ? c[ref] : null;
+    if (!nonemptyStr(val)) return null;
+    // PurePosixPath(val).name: the last component once empty and '.' parts
+    // are dropped, which is also how fsPath reads a manifest path.
+    const parts = val.split('/').filter(s => s !== '' && s !== '.');
+    const stem = (parts.length ? parts[parts.length - 1] : '').split('.')[0];
+    return SCOPE_RE.test(stem) ? stem : null;
+  }
+
   function coherence(bundle, m, trusted) {
     const f = [];
     const results = isObj(m.results) ? m.results : {};
     const proto = isObj(m.protocol) ? m.protocol : {};
+    // Any string is carried as the version here, exactly as the reference
+    // carries it: only '0.2' changes the semantics below, and a version the
+    // schema refused is verified under 0.1's rather than skipped.
+    const version = typeof m.vac_version === 'string' ? m.vac_version : '0.1';
+    const scopes = new Set();
     const listed = new Set((Array.isArray(m.evidence) ? m.evidence : [])
       .filter(e => isObj(e) && safeRelpath(e.path)).map(e => e.path));
     const pools = [];
@@ -1367,15 +1556,38 @@ globalThis.VACBROWSER = (function () {
       const fn = CHECK_FNS[c.profile];
       if (!fn) { complete = false; unported.push(c.profile); continue; }
       const before = f.length;
-      const pool = fn(bundle, c, proto, f);
+      const pool = fn(bundle, c, proto, f, version);
       if (pool === null) {
         complete = false;
         if (f.length === before) {                // fail closed, never skip silently
           f.push(`${R.ARTIFACT_UNPARSABLE}: ${c.profile}: check contributed no recomputation`);
         }
-      } else {
+        continue;
+      }
+      // The recomputation ran either way. What an unscopable check loses is
+      // its place in the summary binding, and with it the whole summary
+      // comparison, since that only runs over a complete set of pools.
+      ran.push(c.profile);
+      if (version !== '0.2') {
         pools.push(pool);
-        ran.push(c.profile);
+        continue;
+      }
+      const scope = checkScope(c);
+      if (scope === null) {
+        const ref = SPEC.CHECK_REFS[c.profile][0];
+        f.push(`${R.UNSCOPABLE_CHECK}: ${c.profile}: ${ref} ` +
+          `${pyRepr(ref in c ? c[ref] : null, c, ref)} yields no scope; a primary ` +
+          "reference must have a filename matching [A-Za-z0-9_-]+ before its first '.'");
+        complete = false;
+      } else if (scopes.has(scope)) {
+        f.push(`${R.UNSCOPABLE_CHECK}: scope ${pyRepr(scope)} is claimed by more than ` +
+          'one check; a summary path could not say which one it means');
+        complete = false;
+      } else {
+        scopes.add(scope);
+        const scoped = {};
+        for (const k of Object.keys(pool)) scoped[`${scope}.${k}`] = pool[k];
+        pools.push(scoped);
       }
     }
     const uncovered = Array.from(listed).filter(p => !covered.has(p)).sort(cmp);
@@ -1387,7 +1599,7 @@ globalThis.VACBROWSER = (function () {
     }
     const summary = results.summary;
     if (complete && pools.length && isObj(summary)) {
-      for (const line of summaryOutruns(summary, pools)) f.push(line);
+      for (const line of summaryOutruns(summary, pools, version)) f.push(line);
     }
     return { failures: f, unported, ran };
   }

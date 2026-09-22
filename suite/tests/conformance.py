@@ -9,13 +9,15 @@ implementations against another.
 Three corpora, all materialised to real directories so both verifiers read
 identical bytes:
 
-  whole    the 22 fixtures + examples/outsider, exactly as committed.
+  whole    the 26 fixtures + examples/outsider, exactly as committed.
   sliced   the same bundles with the profiles the browser port does not
            implement (modeldrift-board-v1, crashkit-variance-v1) removed,
            along with the evidence only those checks read and the summary
            subtree only those checks recompute. Without this the port abstains
-           on 21 of 23 bundles and the comparison proves nothing.
-  derived  minimal edits that provoke refusal classes no fixture reaches.
+           on 25 of 27 bundles and the comparison proves nothing.
+  derived  minimal edits that provoke refusal classes no fixture reaches, and
+           that pin each rule the port gained from c441011's verify.py on
+           the fixture it would otherwise go unexercised by.
 
 A run where the browser port abstains (INCOMPLETE) is NOT a match. It is
 recorded as EXPECTED-DIVERGENT with the reason it abstained, and it is still
@@ -50,12 +52,23 @@ REFUSALS_JSON = SUITE / "refusals.json"
 # mismatch instead of being absorbed as "expected".
 UNPORTED_PROFILES = {"modeldrift-board-v1", "crashkit-variance-v1"}
 
-# Refusal classes that cannot be reached by a directory bundle at all, with the
-# reason. These are reported as NO COVERAGE, never as agreement.
+# Refusal classes no bundle the browser port can be handed will ever earn, with
+# the reason. These are reported as NO COVERAGE, never as agreement, and the
+# set must equal what refusals.json flags from verify.py's own structure
+# (archive_only, symlink_only), so it cannot grow by hand.
 UNREACHABLE = {
     "unsafe-archive": (
         "tar path only: fires while unpacking a .tar.gz. A directory bundle "
         "never enters that code path in either implementation."
+    ),
+    "unsafe-bundle": (
+        "symlink only: verify.py emits it only after asking is_symlink() of a "
+        "path in a bundle directory. The port's input is a map from path to "
+        "bytes, which has no way to express a link: the page embeds bytes, "
+        "browserverify.bundle_files refuses to embed a bundle holding a link, "
+        "and bv_harness.js refuses to read one. "
+        "test_a_symlink_never_reaches_the_port checks all three against the "
+        "reference's own refusal."
     ),
 }
 
@@ -376,6 +389,30 @@ def _d_jsonl_carriage_returns_before_a_deep_line(d, m):
     _repin(d, m, rel)
 
 
+def _rewrite_json(d: pathlib.Path, m: dict, rel: str, fn) -> None:
+    """Edit one JSON evidence artifact in place and re-pin it, so the edit under
+    test is what the check reads and not a hash mismatch in front of it."""
+    p = d / rel
+    data = json.loads(p.read_text())
+    fn(data)
+    p.write_text(json.dumps(data, indent=2) + "\n")
+    _repin(d, m, rel)
+
+
+def _move_artifact(d: pathlib.Path, m: dict, old: str, new: str) -> None:
+    """Move an artifact, and every reference to it, to a new path. The bytes and
+    their sha256 do not change, so the only thing that moves is the name."""
+    (d / new).parent.mkdir(parents=True, exist_ok=True)
+    (d / old).rename(d / new)
+    for e in m["evidence"]:
+        if e["path"] == old:
+            e["path"] = new
+    for c in m["results"]["checks"]:
+        for k, v in list(c.items()):
+            if v == old:
+                c[k] = new
+
+
 def _d_utf8_bom_on_a_deep_jsonl_line(d, m):
     """The mark opens line 3, not the text, so only that line goes unmeasured
     and the parser names it at its first character, as it did before."""
@@ -386,6 +423,137 @@ def _d_utf8_bom_on_a_deep_jsonl_line(d, m):
 
     _rewrite_lines(d, rel, edit)
     _repin(d, m, rel)
+
+
+# ------------------------------------ rules the port took from c441011 (v0.1)
+# Each of these was a rule verify.py had and the port did not, and every one
+# of them passed a bundle here that the command line refused, or the reverse.
+# The fixtures exercise none of them, so without a case each would be ported
+# on trust.
+def _d_evalmut_corpus_in_an_unknown_shape(d, m):
+    _rewrite_json(d, m, "evidence/evalmut_fixtures.json",
+                  lambda fx: fx.__setitem__("manifest_version", 2))
+
+
+def _d_evalmut_corpus_miscounts_its_cases(d, m):
+    _rewrite_json(d, m, "evidence/evalmut_fixtures.json",
+                  lambda fx: fx.__setitem__("case_count", 3))
+
+
+def _d_evalmut_rows_cite_an_absent_case(d, m):
+    """toy-exact leaves the corpus manifest and its count is corrected, so the
+    only thing wrong is that four rows still cite it."""
+    def edit(fx):
+        fx["cases"] = [c for c in fx["cases"] if c["name"] != "toy-exact"]
+        fx["case_count"] = len(fx["cases"])
+
+    _rewrite_json(d, m, "evidence/evalmut_fixtures.json", edit)
+
+
+def _d_evalmut_operator_id_is_a_list(d, m):
+    _rewrite_json(d, m, "evidence/evalmut_run.json",
+                  lambda r: r["results"][0].__setitem__("operator_id", ["toy-blank"]))
+
+
+def _d_certlab_verdict_is_not_an_object(d, m):
+    _rewrite_json(d, m, "evidence/bundle.json", lambda b: b["verdicts"].append("fixed"))
+
+
+def _d_fleet_row_is_not_an_object(d, m):
+    _rewrite_json(d, m, "evidence/results.json", lambda a: a["rows"].append(5))
+
+
+def _d_fleet_raw_line_is_not_an_object(d, m):
+    rel = "evidence/raw_results.jsonl"
+    _rewrite_lines(d, rel, lambda ls: ls.append("[1]\n"))
+    _repin(d, m, rel)
+
+
+def _d_fleet_member_is_a_list_after_a_contradiction(d, m):
+    """Line 1 contradicts its own pair and line 3 names a list as its member.
+    The reference names line 1, then stops at line 3, so this pins the ORDER as
+    well as the stop: a port that checked every line's type first would drop
+    the first reason."""
+    rel = "evidence/raw_results.jsonl"
+
+    def edit(ls):
+        first = json.loads(ls[0])
+        first["detected"] = False
+        ls[0] = json.dumps(first) + "\n"
+        third = json.loads(ls[2])
+        third["member"] = [third["member"]]
+        ls[2] = json.dumps(third) + "\n"
+
+    _rewrite_lines(d, rel, edit)
+    _repin(d, m, rel)
+
+
+def _d_limitation_blank_only_to_python(d, m):
+    """U+001C is whitespace to str.strip() and not to String.prototype.trim(),
+    so the port read this as a stated limitation and passed a bundle the
+    reference refuses as stating none."""
+    m["claim"]["limitations"] = ["\u001c"]
+
+
+def _d_capability_a_lone_byte_order_mark(d, m):
+    """The other direction: trim() strips U+FEFF and str.strip() keeps it, so
+    the port refused as empty a capability the reference accepts."""
+    m["claim"]["capability"] = "\ufeff"
+
+
+def _d_summary_numeral_behind_a_u001c(d, m):
+    """A numeral in quotes is refused once stripped. Stripped by trim(), the
+    U+001C stayed on, the numeral pattern missed, and the string walked past."""
+    m["results"]["summary"]["verdicts"] = "\u001c3"
+
+
+# ---------------------------------------------------------- vac_version 0.2
+# Built on fixtures/v02-twin-arms, sliced, the clean 0.2 control. Every one of
+# these would be refused as schema-violation by a port that knew only 0.1, so
+# each is the reference's 0.2 semantics or nothing.
+def _d_v02_declared_scope(d, m):
+    m["results"]["checks"][0]["scope"] = "bundle"
+
+
+def _d_v02_scope_without_a_stem(d, m):
+    """A leading dot leaves nothing before the first '.', so no scope."""
+    _move_artifact(d, m, "evidence/eval_run_safe.json", "evidence/.eval_run_safe.json")
+
+
+def _d_v02_scope_claimed_twice(d, m):
+    """The safe arm moves into a directory under the unsafe arm's filename. Two
+    checks, one scope, and a summary path that could no longer say which."""
+    _move_artifact(d, m, "evidence/eval_run_safe.json", "evidence/safe/eval_run.json")
+
+
+def _d_v02_summary_has_no_fallback(d, m):
+    """0.5 is the unsafe arm's recomputed accuracy, so at 0.1 the fallback tier
+    would admit it under any name. At 0.2 a path no check recomputes is refused."""
+    m["results"]["summary"]["headline"] = 0.5
+
+
+def _d_v02_fleet_rate_from_another_level(d, m):
+    """1.0 is one member's detection rate. The suite's is 0.75, and at 0.2 the
+    suite_ key holds only that. The bare detection_rate beside it is the 0.1
+    key, which merged all three levels and would admit 0.75; at 0.2 it names
+    nothing any check recomputes, so both leaves are refused."""
+    m["results"]["summary"]["results"] = {"detection_rate": 0.75,
+                                          "suite_detection_rate": 1.0}
+
+
+DERIVED_V02 = [
+    ("v02-declared-scope", _d_v02_declared_scope,
+     "0.2: checks[0] declares a scope, which 0.2 derives and never accepts"),
+    ("v02-scope-without-a-stem", _d_v02_scope_without_a_stem,
+     "0.2: the safe arm renamed .eval_run_safe.json, which yields no scope"),
+    ("v02-scope-claimed-twice", _d_v02_scope_claimed_twice,
+     "0.2: the safe arm moved to safe/eval_run.json, the unsafe arm's scope"),
+    ("v02-summary-has-no-fallback", _d_v02_summary_has_no_fallback,
+     "0.2: summary.headline 0.5, a recomputed value under no check's path"),
+    ("v02-fleet-rate-from-another-level", _d_v02_fleet_rate_from_another_level,
+     "0.2: summary.results carries a member's rate under suite_ and the "
+     "merged 0.1 key"),
+]
 
 
 DERIVED = [
@@ -425,6 +593,29 @@ DERIVED = [
      "two blank lines pushed ahead of the 257-level line in raw_results.jsonl"),
     ("json-depth-jsonl-cr", _d_jsonl_carriage_returns_before_a_deep_line,
      "raw_results.jsonl rewritten with CR endings, line 4 nests 257 levels"),
+    ("evalmut-corpus-unknown-shape", _d_evalmut_corpus_in_an_unknown_shape,
+     "evalmut_fixtures.json manifest_version 2, a shape the check does not read"),
+    ("evalmut-corpus-miscount", _d_evalmut_corpus_miscounts_its_cases,
+     "evalmut_fixtures.json case_count 3 over 2 cases"),
+    ("evalmut-rows-cite-absent-case", _d_evalmut_rows_cite_an_absent_case,
+     "toy-exact dropped from evalmut_fixtures.json while rows still cite it"),
+    ("evalmut-operator-id-list", _d_evalmut_operator_id_is_a_list,
+     "evalmut_run.json results[0].operator_id is a list"),
+    ("certlab-verdict-not-object", _d_certlab_verdict_is_not_an_object,
+     "bundle.json verdicts[] gains a string"),
+    ("fleet-row-not-object", _d_fleet_row_is_not_an_object,
+     "results.json rows[] gains a number"),
+    ("fleet-raw-line-not-object", _d_fleet_raw_line_is_not_an_object,
+     "raw_results.jsonl gains a line holding an array"),
+    ("fleet-member-list-after-contradiction",
+     _d_fleet_member_is_a_list_after_a_contradiction,
+     "raw_results.jsonl line 1 contradicts its pair, line 3's member is a list"),
+    ("limitation-blank-only-to-python", _d_limitation_blank_only_to_python,
+     "claim.limitations is one U+001C, blank to str.strip() and not to trim()"),
+    ("capability-lone-bom", _d_capability_a_lone_byte_order_mark,
+     "claim.capability is one U+FEFF, blank to trim() and not to str.strip()"),
+    ("summary-numeral-behind-u001c", _d_summary_numeral_behind_a_u001c,
+     "summary.verdicts is the string U+001C then 3"),
 ]
 
 
@@ -451,11 +642,15 @@ def build_corpus(tmp: pathlib.Path) -> list:
     base = tmp / "derived" / "_base"
     if slice_unported(VAC_ROOT / "fixtures" / "valid", base) is None:
         raise RuntimeError("fixtures/valid no longer declares an unported profile")
-    for name, fn, note in DERIVED:
-        dest = tmp / "derived" / name
-        shutil.copytree(base, dest)
-        _edit(dest, fn)
-        cases.append(("derived", name, dest, note))
+    base02 = tmp / "derived" / "_base02"
+    if slice_unported(VAC_ROOT / "fixtures" / "v02-twin-arms", base02) is None:
+        raise RuntimeError("fixtures/v02-twin-arms no longer declares an unported profile")
+    for root, family in ((base, DERIVED), (base02, DERIVED_V02)):
+        for name, fn, note in family:
+            dest = tmp / "derived" / name
+            shutil.copytree(root, dest)
+            _edit(dest, fn)
+            cases.append(("derived", name, dest, note))
     return cases
 
 

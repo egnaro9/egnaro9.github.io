@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@v4
         with: { repository: egnaro9/agent-certlab, ref: fc0244b44bf0abd1e5aba045dfd379f2b17bd520, path: home/agent-certlab, fetch-depth: 0 }
       - uses: actions/checkout@v4
-        with: { repository: egnaro9/vac-protocol, ref: 50e613e29f2c47fbb3022dae17ecb70048c63b32, path: home/vac-protocol, fetch-depth: 0 }
+        with: { repository: egnaro9/vac-protocol, ref: c4410114a470d2aca19b9f277efc3895a87a0d80, path: home/vac-protocol, fetch-depth: 0 }
 
       - uses: actions/setup-python@v5
         with:

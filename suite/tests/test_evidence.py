@@ -27,6 +27,12 @@ HOME = pathlib.Path.home()
 BUNDLE = "docs/dogfood_gradecore.json"
 JQ = shutil.which("jq")
 PAGE = pathlib.Path(__file__).resolve().parents[1] / "runner.html"
+# Every evidence drawer, open or closed, matched case-insensitively as test_the_drawer_needs_no_
+# javascript does. Splitting on the literal `<details class="ev">` skipped the headline drawer once
+# it rendered `open`, and with it the five numbers a reader meets first.
+EV_DRAWER = re.compile(r"""<details\b[^>]*\bclass=["'][^"']*\bev\b[^>]*>""", re.I)
+DRAWER_END = re.compile(r"</details\s*>", re.I)
+VALUE_CELL = re.compile(r"""<td\s+class=["']n["']\s*>""", re.I)
 needs_jq = pytest.mark.skipif(not JQ, reason="jq not installed")
 needs_repo = pytest.mark.skipif(not (HOME / "evalmut" / BUNDLE).exists(),
                                 reason="evalmut bundle not on this machine")
@@ -90,8 +96,8 @@ def _rows(page: str) -> list[tuple[str, str, str]]:
     cited one repository; running a reference-fleet expression inside evalmut would fail for a
     reason that has nothing to do with whether the page is telling the truth."""
     out = []
-    for block in page.split('<details class="ev">')[1:]:
-        drawer = block.split("</details>")[0]
+    for block in EV_DRAWER.split(page)[1:]:
+        drawer = DRAWER_END.split(block, maxsplit=1)[0]
         named = re.search(r"<dt>file</dt><dd><a [^>]*>([^<]+)</a>", drawer)
         repo = html.unescape(named.group(1)).split("/")[0] if named else ""
         for tr in re.findall(r"<tr><td>.*?</tr>", drawer, re.S):
@@ -118,7 +124,7 @@ def _as_shown(raw):
 @pytest.mark.skipif(not PAGE.exists(), reason="page not built")
 def test_the_page_carries_a_drawer_for_every_headline_number():
     page = PAGE.read_text()
-    assert page.count('<details class="ev">') >= 2, "headline and step 1 each need a route"
+    assert len(EV_DRAWER.findall(page)) >= 2, "headline and step 1 each need a route"
     rows = _rows(page)
     assert len(rows) >= 9, f"expected the headline and audit values, found {len(rows)}"
 
@@ -132,8 +138,9 @@ def test_rendered_commands_reproduce_the_shown_values():
     This is the assertion that closes the loop. It does not consult the generator, the Source
     object, or any Python derivation: it takes the command text out of the HTML, executes it in
     the repo the page points at, and compares to the number printed beside it."""
+    page = PAGE.read_text()
     checked = 0
-    for repo, shown, cmd in _rows(PAGE.read_text()):
+    for repo, shown, cmd in _rows(page):
         assert repo, f"a provenance row names no repository: {cmd!r}"
         m = re.fullmatch(r"jq '(.+)' (\S+)", cmd)
         assert m, f"row command is not runnable as printed: {cmd!r}"
@@ -145,6 +152,10 @@ def test_rendered_commands_reproduce_the_shown_values():
         assert rendered == shown, f"page shows {shown!r} for `{cmd}` which returns {rendered!r}"
         checked += 1
     assert checked >= 9
+    # A floor of 9 passed while the headline drawer's five rows were never run: 26 of 31 still
+    # cleared it. Every value cell the page prints must have been executed, not merely enough.
+    cells = len(VALUE_CELL.findall(page))
+    assert checked == cells, f"ran {checked} of the {cells} values the page shows"
 
 
 @needs_repo
@@ -184,10 +195,29 @@ def test_replay_route_is_pinned_to_a_commit_not_to_main():
 
 @pytest.mark.skipif(not PAGE.exists(), reason="page not built")
 def test_the_drawer_needs_no_javascript():
-    """Evidence a skeptic can only reach by running our script is evidence with a precondition."""
+    """Evidence a skeptic can only reach by running our script is evidence with a precondition.
+
+    Every drawer is checked, open or closed, and the count is asserted. The first version sliced
+    from the first `<details class="ev">` to the first `</details>`. Once the headline drawer
+    rendered as `open`, those two landed in different drawers, the slice came out empty, and the
+    assertion passed by searching nothing. Requiring one closed body per opening tag, and no
+    `<details` nested inside a body, keeps a drawer that never closes or that ends early at an
+    inner `</details>` from leaving part of itself unsearched.
+
+    Tag and attribute names are case-insensitive in HTML, so matching is too, and every
+    `<details>` on the page is checked rather than only the ones whose class reads exactly "ev":
+    a drawer whose class drifted to `ev wide` would otherwise drop out of both counts together."""
     page = PAGE.read_text()
-    body = page[page.index('<details class="ev">'):page.index("</details>")]
-    assert "onclick" not in body and "<script" not in body
+    opened = re.findall(r"<details\b[^>]*>", page, re.I)
+    drawers = re.findall(r"<details\b[^>]*>.*?</details>", page, re.I | re.S)
+    ev = [d for d in drawers if re.match(r"""<details\b[^>]*\bclass=["'][^"']*\bev\b""", d, re.I)]
+    assert len(ev) >= 2, f"headline and step 1 each need a drawer, found {len(ev)}"
+    assert len(drawers) == len(opened), (
+        f"{len(opened)} drawers open but {len(drawers)} close cleanly; the rest went unchecked")
+    for drawer in drawers:
+        assert len(re.findall(r"<details\b", drawer, re.I)) == 1, (
+            f"a nested <details> cuts short: {drawer[:80]}")
+        assert not re.search(r"<script\b|<[^>]*\son[a-z]+\s*=", drawer, re.I), drawer[:80]
 
 
 @needs_repo

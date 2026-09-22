@@ -18,13 +18,22 @@ const path = require('path');
 require(path.join(__dirname, 'refusals.gen.js'));
 const V = require(path.join(__dirname, 'vacbrowser.js'));
 
+// A symbolic link is refused, never followed. The page holds a bundle as paths
+// and bytes, which cannot express a link, so reading through one here would
+// hand the verifier the target's bytes as if the bundle carried them, and it
+// would pass what vac-verify refuses by name. Refusing makes the run an error,
+// which the conformance harness counts as a mismatch, never as agreement.
 function loadDir(dir) {
   const files = new Map();
   (function walk(rel) {
     const abs = rel ? path.join(dir, rel) : dir;
     for (const name of fs.readdirSync(abs).sort()) {
       const sub = rel ? rel + '/' + name : name;
-      const st = fs.statSync(path.join(dir, sub));
+      const st = fs.lstatSync(path.join(dir, sub));
+      if (st.isSymbolicLink()) {
+        throw new Error(`${sub} is a symbolic link: the browser verifier's input is ` +
+          'paths and bytes, which cannot carry one, so it is refused rather than read through');
+      }
       if (st.isDirectory()) walk(sub);
       else if (st.isFile()) files.set(sub, new Uint8Array(fs.readFileSync(path.join(dir, sub))));
     }

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -189,18 +190,39 @@ def test_the_scope_statement_is_measured_and_not_boilerplate():
     assert any("no stamp was compared" in s for s in full["scope"]["notRun"])
 
 
-def test_the_port_covers_every_refusal_except_the_archive_path():
+def test_the_port_covers_every_refusal_except_the_archive_and_symlink_paths():
     """The page prints this as a measured claim, so it has to hold.
 
     unsafe-archive is the only name verify.py reaches through unpacking a tar,
-    and a page that embeds an already-unpacked bundle never takes that path."""
+    and a page that embeds an already-unpacked bundle never takes that path.
+    unsafe-bundle is the only name it emits for a symbolic link, and a bundle
+    held as paths and bytes cannot express one. Both exemptions are flags
+    refusals.py reads off verify.py, not names typed here, and the second is
+    exercised end to end by test_conformance.test_a_symlink_never_reaches_the_port."""
     vocab, _ = refusals.load()
     covered, missing = browserverify.port_coverage(vocab)
-    archive = {r["name"] for r in vocab["refusals"] if r["archive_only"]}
-    assert set(missing) == archive, (
-        f"the port no longer references {sorted(set(missing) - archive)}, so the page "
+    exempt = {r["name"] for r in vocab["refusals"]
+              if r["archive_only"] or r["symlink_only"]}
+    assert set(missing) == exempt, (
+        f"the port no longer references {sorted(set(missing) - exempt)}, so the page "
         "would be claiming a coverage it does not have")
-    assert len(covered) == len(vocab["refusals"]) - len(archive)
+    assert len(covered) == len(vocab["refusals"]) - len(exempt)
+
+
+def test_the_coverage_sentence_names_only_what_the_port_leaves_out():
+    """The sentence under the panel is chosen from the same measurement. It must
+    name each refusal the port does not emit, give the reason that applies to it,
+    and never promise an INCOMPLETE the port does not print."""
+    p = browserverify.panel()
+    if not p["ok"]:
+        pytest.skip("the panel is unavailable on this machine")
+    vocab, _ = refusals.load()
+    _covered, missing = browserverify.port_coverage(vocab)
+    for name in missing:
+        assert re.search(rf"It does not emit [^.<]*\b{re.escape(name)}\b", p["html"]), name
+    assert "reported INCOMPLETE rather than passed" not in p["html"]
+    assert "through the archive path" in p["html"]
+    assert "symbolic link in a bundle directory" in p["html"]
 
 
 # ------------------------------------------------------------------ the page
