@@ -38,10 +38,10 @@
       "label": "Seeded defects repaired under a stated certification policy",
       "question": "Can this agent repair seeded defects under a stated policy?",
       "artifact": "agent-certlab/certifications/claude-code-cloud-2026-08-14/vac.json",
-      "issuer_commit": "fc0244b44bf0",
-      "sha256": "70c89e63e46e2c163b255585fcbce5bb4cf624e7297cb1c76e5d2c17e288fb1e",
-      "public_url": "https://github.com/egnaro9/agent-certlab/blob/fc0244b44bf0/certifications/claude-code-cloud-2026-08-14/vac.json",
-      "derivation": "certlab_bundle@1"
+      "issuer_commit": "9bc001957b06",
+      "sha256": "ab9994fe6d2ab2e1495cad2b890625b1d3fb73fbe9c018651c4622f879e18d07",
+      "public_url": "https://github.com/egnaro9/agent-certlab/blob/9bc001957b06/certifications/claude-code-cloud-2026-08-14/vac.json",
+      "derivation": "certlab_bundle@2"
     },
     {
       "panel": "crashkit",

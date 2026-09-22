@@ -43,7 +43,7 @@ jobs:
       - uses: actions/checkout@v4
         with: { repository: egnaro9/reference-fleet, ref: 4d958c3a5e3f3ef2c6c713c465d959a9940b3f52, path: home/reference-fleet, fetch-depth: 0 }
       - uses: actions/checkout@v4
-        with: { repository: egnaro9/agent-certlab, ref: fc0244b44bf0abd1e5aba045dfd379f2b17bd520, path: home/agent-certlab, fetch-depth: 0 }
+        with: { repository: egnaro9/agent-certlab, ref: 9bc001957b06c8e996b789fa0b84f9edf2ca7c7d, path: home/agent-certlab, fetch-depth: 0 }
       - uses: actions/checkout@v4
         with: { repository: egnaro9/vac-protocol, ref: c4410114a470d2aca19b9f277efc3895a87a0d80, path: home/vac-protocol, fetch-depth: 0 }
 

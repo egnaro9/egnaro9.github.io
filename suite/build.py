@@ -154,6 +154,39 @@ def _certlab(d):
     ])
 
 
+def _certlab_v2(d):
+    """certlab bundles at vac_version 0.2.
+
+    The summary moved from {tasks, fixed, failure_modes} to {bundle: {verdicts, fixed}},
+    which is why this is a new name rather than an edit to _certlab. Same artifact, a
+    different shape, and the whole point of versioning a derivation is that a reader
+    cannot be quietly repointed at bytes it was not written for.
+
+    "failure modes" does not come across. At 0.1 it was len(failure_modes or {}), and an
+    absent key and an empty dict both rendered 0, so the row published a zero whether the
+    bundle had measured no failures or had never carried the field at all. At 0.2 the key
+    is simply gone, so a naive port would render a 0 that cannot go red for any reason.
+    Dropping a published row is a claim change and is deliberate here.
+
+    What replaces it is better, because it is bound. The 0.2 check recomputes four numbers
+    against bundle.json, expect = {verdicts, fixed, policy_ok, tests_ok}, so policy and
+    tests are each recomputed by the bundle's own verifier and can disagree with it.
+    """
+    b = d["results"]["summary"]["bundle"]
+    n = b["verdicts"]
+    rows = [
+        ("seeded defects fixed", f"{b['fixed']} of {n}"),
+        ("capability", str(d["claim"]["capability"]).split(" - ")[0][:60]),
+    ]
+    # Read from the check that recomputes them, not from a summary that merely asserts them.
+    expect = next((c.get("expect") or {} for c in (d["results"].get("checks") or [])
+                   if (c.get("expect") or {}).get("policy_ok") is not None), {})
+    for key, label in (("policy_ok", "under policy"), ("tests_ok", "tests green")):
+        if expect.get(key) is not None:
+            rows.append((label, f"{expect[key]} of {n}"))
+    return (f"{b['fixed']}/{n}", rows)
+
+
 def _crashkit(d):
     checks = d.get("results", {}).get("checks") or []
     return (f"{len(checks)}", [
@@ -178,6 +211,7 @@ DERIVATIONS = {
     "fleet_board@1": _fleet,
     "drift_metrics@1": _drift,
     "certlab_bundle@1": _certlab,
+    "certlab_bundle@2": _certlab_v2,
     "crashkit_bundle@1": _crashkit,
     "vac_registry@1": _vac,
 }
