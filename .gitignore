@@ -5,4 +5,8 @@ __pycache__/
 .venv/
 venv/
 .claim-review-ack
+# The override log records WHY a claim gate was bypassed, in the reviewer's own words.
+# It is a local audit trail, not a published artifact, and it is one `git add -A` away
+# from being one. Ignored for the same reason the receipts file is.
+.claim-review-audit.log
 .local-holds/
