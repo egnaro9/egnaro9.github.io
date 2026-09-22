@@ -313,12 +313,13 @@ def build_eval_run(cases_json):
     })
 `);
 
-    // eval-history is the fifth project and the only one that isn't in this tab —
-    // it's a real service on a free tier that sleeps. Nudge it awake while the
-    // reader is still reading, so stage 6 doesn't stall on a 50s cold start.
+    // eval-history is the fifth project and the only one not computed in this tab.
+    // It used to be a service on a free tier that slept, so this nudged it awake
+    // while the reader was still reading. It is a static archive now, so
+    // wakeEvalHistory is an empty no-op kept only so this call site stays put.
     wakeEvalHistory();
 
-    setStatus("Ready — four projects installed in this tab, and a fifth answering from a real database", "ready");
+    setStatus("Ready — four projects installed in this tab, and a fifth read from a recorded archive", "ready");
     document.querySelectorAll("button").forEach((b) => (b.disabled = false));
     const docs = JSON.parse(await py.runPythonAsync("corpus_json()"));
     $("corpusBox").value = Object.entries(docs).map(([k, v]) => `${k}: ${v}`).join("\n");
@@ -500,8 +501,8 @@ async function stageEvalHistory(evalRun) {
   wakeEvalHistory();
   const id = "s6";
   step(6, `<span class="proj r">rag-eval-lab</span> → <span class="proj h">eval-history</span> · what changed?`,
-    `<div class="mono" id="${id}">asking a real Postgres what it remembers…
-       <span class="dim">(free tier — if it's been idle this takes ~30-50s to wake)</span></div>`, "h");
+    `<div class="mono" id="${id}">reading what a real Postgres remembered…
+       <span class="dim">(served from a hashed static archive, so there is nothing to wake)</span></div>`, "h");
 
   const ctrl = new AbortController();
   const bail = setTimeout(() => ctrl.abort(), 75000);

@@ -29,11 +29,11 @@ contract** backed by a **replayable evidence bundle**.
   committed contract independently re-graded in CI; one certification earned
   entirely inside GitHub Actions.
 - **[vac-protocol](https://github.com/egnaro9/vac-protocol)** — the VAC spec
-  and [registry](https://erikhill.dev/vac-protocol/) (9 accepted
-  bundles and 2 pending, two-gated acceptance: structural verification, then
-  semantic replay by the issuer's own deterministic grader). Accepted bundles
-  replay from sha256 pins addressed to a commit; the two pending are refused by
-  the verifier over their own evidence and are not replayable until repaired.
+  and [registry](https://erikhill.dev/vac-protocol/) (11 accepted
+  bundles, none pending, two-gated acceptance: structural verification, then
+  semantic replay by the issuer's own deterministic grader). Every bundle
+  replays from sha256 pins addressed to a commit; two were once refused by the
+  verifier over their own evidence and stayed unreplayable until repaired.
 - **[vac-gate](https://github.com/egnaro9/vac-gate)** — a composite GitHub
   Action: no verified contract, no green check.
 
@@ -104,8 +104,9 @@ and is easy to miss, so, plainly:
 
 Framed as *managed Postgres · health checks · IaC · migrations · CI-against-real-DB*,
 this is a cloud/infra story that maps concept-for-concept onto AWS primitives
-(RDS · ALB health checks · CloudFormation · CodePipeline). It's built on Render +
-Neon, and it's honest to say so.
+(RDS · ALB health checks · CloudFormation · CodePipeline). It was built on Render +
+Neon; the hosting is gone and its read routes are now published as a hashed
+static archive, and it's honest to say so.
 
 ## The repos
 
@@ -114,12 +115,12 @@ The canonical, always-current map is the site itself:
 
 | Repo | What it is | What it proves |
 |---|---|---|
-| **[evalmut](https://github.com/egnaro9/evalmut)** | Mutation testing for eval suites (PyPI) | 18 mined operators · holes proven against ground truth, never guessed |
+| **[evalmut](https://github.com/egnaro9/evalmut)** | Mutation testing for eval suites (PyPI) | 17 mined defect operators plus 8 equivalent-mutant controls · holes proven against ground truth, never guessed |
 | **[reference-fleet](https://github.com/egnaro9/reference-fleet)** | Certified defect models + live audit board | seeded exact defect rates · CI-reproduced board · a LoRA-trained native member |
 | **[agent-certlab](https://github.com/egnaro9/agent-certlab)** | Capability contracts for coding agents | seeded-defect certification · artifacts-only grading · CI regrade |
 | **[vac-protocol](https://github.com/egnaro9/vac-protocol)** | Verifiable Agent Claims spec + registry | replayable evidence bundles · two-gated acceptance |
 | **[vac-gate](https://github.com/egnaro9/vac-gate)** | Composite Action gating CI on a verified contract | integrity gate · sha256-checked registry fetch |
-| **[crashkit](https://github.com/egnaro9/crashkit)** | BYOK adversarial crash test, deployed on Render | deterministic severity-weighted grading · twin-control mocks |
+| **[crashkit](https://github.com/egnaro9/crashkit)** | BYOK adversarial crash test, deployed on Cloudflare Workers | deterministic severity-weighted grading · twin-control mocks |
 | **[gradecore](https://github.com/egnaro9/gradecore)** | The shared deterministic grading engine | one grader package under crashkit + model-drift, byte-identical `suite_hash` |
 | **[harness-builder](https://github.com/egnaro9/harness-builder)** | Harness-shape sweep tool | paired sign test that refuses to over-claim · deterministic scoring |
 | **[eval-history](https://github.com/egnaro9/eval-history)** | FastAPI + Postgres regression store for LLM eval runs | API design · data modeling · Alembic migrations · dual-DB CI · health/readiness |
