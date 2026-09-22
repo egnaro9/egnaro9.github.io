@@ -94,14 +94,33 @@ jobs:
       # No panel may be STALE or ABSENT in a deployable build. The page renders those states on
       # purpose so a reader can see them, but shipping a new one in that condition would be
       # accepting silently what the state exists to make loud.
+      #
+      # BOTH pages, and that is the point. This step read suite/index.html only, while the
+      # build writes two pages and runner.py degrades on its own terms: bound() catches a
+      # ProvenanceError and hands back (None, None), which renders that step as
+      # `class="step absent"` with the head "artifact missing". So a runner page could lose a
+      # step and still ship green, because the gate was never pointed at it. Measured on
+      # 2026-09-22 while reviewing the reference-fleet pin: moving that pin deletes the
+      # evidence entry runner.py binds through, and step 2 CALIBRATE goes absent with the
+      # artifact sitting right there. Nothing would have said so.
       - name: Refuse a STALE or ABSENT panel
         run: |
+          fail=0
           if grep -qE 'class="state">(STALE|ABSENT)' suite/index.html; then
             echo "::error::a source panel is STALE or ABSENT; suite/index.html is not deployable"
             grep -oE 'class="state">(STALE|ABSENT)</span>' suite/index.html
-            exit 1
+            fail=1
           fi
-          echo "all panels VALID"
+          if grep -qE 'class="step absent"' suite/runner.html; then
+            echo "::error::a runner step is ABSENT; suite/runner.html is not deployable"
+            grep -oE 'class="step absent" data-i="[0-9]+"' suite/runner.html
+            echo "An absent step means bound() could not cite the artifact. Read the step's"
+            echo "head: 'artifact missing' with the file present usually means the bundle"
+            echo "recipe no longer lists an evidence entry for it."
+            fail=1
+          fi
+          [ "$fail" = 0 ] || exit 1
+          echo "all panels VALID and every runner step is bound"
 
       - name: Refuse a generated page that differs from what is committed
         run: |
