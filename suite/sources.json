@@ -48,9 +48,9 @@
       "label": "Deterministic checks declared in the crashkit evidence bundle",
       "question": "Do the graders bite, with no LLM judge anywhere?",
       "artifact": "crashkit/vac/vac.json",
-      "issuer_commit": "d08d756b1100",
-      "sha256": "7e3ebeaee89a185e543cedf80a09536f617e39d03e17728b9db38783dc56b6e3",
-      "public_url": "https://github.com/egnaro9/crashkit/blob/d08d756b1100/vac/vac.json",
+      "issuer_commit": "71eefcf22edf",
+      "sha256": "d8260125207c19ebbf3d14aef282354a36cb414bbb1803072fbc564a32b13d07",
+      "public_url": "https://github.com/egnaro9/crashkit/blob/71eefcf22edf/vac/vac.json",
       "derivation": "crashkit_bundle@1"
     },
     {
