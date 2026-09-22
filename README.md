@@ -50,7 +50,7 @@ not an aspiration.
 ```mermaid
 flowchart TD
     MD["<b>model-drift</b><br/>daily LLM regression probe<br/>deterministic grading, no LLM judge"]
-    EH[("<b>eval-history</b><br/>FastAPI · SQLAlchemy 2.0 · Postgres<br/>Render + Neon · Alembic drift test<br/>/health · /readyz")]
+    EH[("<b>eval-history</b><br/>FastAPI · SQLAlchemy 2.0 · Postgres<br/>Neon · archived to Pages · Alembic drift test<br/>/health · /readyz")]
     GW["<b>llm-gateway</b><br/>OpenAI-shaped API · auth · rate-limit<br/>cache · retries · cost accounting"]
     REL["<b>rag-eval-lab</b><br/>from-scratch BM25 · precision@k / recall@k<br/>faithfulness · optional pgvector"]
     DASH["<b>eval-dashboard</b><br/>Next.js · strict TS · static export"]
