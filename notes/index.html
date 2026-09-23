@@ -177,6 +177,8 @@
 // of truth and would go stale the first time a post was corrected upstream.
 const RAW = "https://raw.githubusercontent.com/egnaro9/model-drift/main/posts/";
 const $ = (id) => document.getElementById(id);
+const ABOUT_LABEL = {models: "model", harness: "instrument", infrastructure: "infrastructure"};
+const label = (a) => ABOUT_LABEL[a] || a;
 const esc = (s) => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 // Deliberately a small subset: headings, tables, bold, links, rules, paragraphs.
@@ -252,7 +254,7 @@ function card(p) {
   const about = ["models", "harness", "infrastructure"].includes(p.about) ? p.about : "";
   return `<a class="card" href="#${encodeURIComponent(p.slug)}">
     <div class="meta"><span class="date">${esc(p.date || "")}</span>
-    ${about ? `<span class="tag ${about}">${esc(about)}</span>` : ""}
+    ${about ? `<span class="tag ${about}">${esc(label(about))}</span>` : ""}
     ${p.kind ? `<span class="tag">${esc(p.kind)}</span>` : ""}</div>
     <h2>${esc(p.title)}</h2><p>${esc(p.summary || "")}</p></a>`;
 }
@@ -271,7 +273,7 @@ async function route() {
   $("post").classList.add("on");
   const about = ["models", "harness", "infrastructure"].includes(post.about) ? post.about : "";
   $("post-meta").innerHTML = `<span class="date">${esc(post.date || "")}</span>` +
-    (about ? `<span class="tag ${about}">${esc(about)}</span>` : "");
+    (about ? `<span class="tag ${about}">${esc(label(about))}</span>` : "");
   $("post-body").innerHTML = "<p>Loading…</p>";
   try {
     const r = await fetch(RAW + post.file, { cache: "no-cache" });
