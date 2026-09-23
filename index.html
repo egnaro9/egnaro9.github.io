@@ -189,7 +189,8 @@
   .loc .sep{color:var(--fg-faint)}
   .contact{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; max-width:760px}
   @media (max-width:560px){ .launch .lgrid{grid-template-columns:1fr} }
-  /* every other demo is WASM in the reader's tab; this one is a real server. */
+  /* every other demo is WASM in the reader's tab; this one was a real server until
+     its host was retired, and now reads a frozen static archive of its rows. */
   .proj .pci.api{color:#f472b6; border-color:#f472b6; background:rgba(244,114,182,.09)}
   .proj .pci.api .v{background:#f472b6; animation:pulse 2s ease-in-out infinite}
   @media (prefers-reduced-motion:reduce){.proj .pci.api .v{animation:none}}
@@ -690,7 +691,7 @@
     <p class="intro">They were built separately to solve different problems, and this page wires their real interfaces together: <strong>five independently useful tools, composed without a mock layer</strong>. The grounding check <a href="#crash-test">the crash test</a> above runs against your model is literally this stack's own; <em>this</em> is where it does its day job. (The other two turn up in <a href="#oracle">The Oracle</a>.)</p>
 
     <div class="arch-wrap">
-      <svg class="arch" viewBox="0 0 800 390" role="img" aria-label="Architecture: agent-graph retrieves via rag-eval-lab and routes its LLM calls through llm-gateway; rag-eval-lab grades the answers into eval_run.json, which eval-dashboard renders and eval-history stores in Postgres to compare against earlier runs.">
+      <svg class="arch" viewBox="0 0 800 390" role="img" aria-label="Architecture: agent-graph retrieves via rag-eval-lab and routes its LLM calls through llm-gateway; rag-eval-lab grades the answers into eval_run.json, which eval-dashboard renders and eval-history archived in Postgres to compare against earlier runs and is now a frozen static archive.">
         <defs>
           <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="var(--fg-faint)"/>
@@ -763,7 +764,7 @@
         <text class="nm dim" x="631" y="334" text-anchor="middle">Postgres</text>
         <text class="ns" x="631" y="352" text-anchor="middle">every run, kept</text>
       </svg>
-      <div class="arch-legend">Five of the eight boxes are live, click one. The dashed three are what the live ones talk to. Every arrow is a real call, not a decoration, most in-process, the last two over the wire. Everything above the last row runs in your tab; <b>eval-history is a real server</b>.</div>
+      <div class="arch-legend">Five of the eight boxes are live, click one. The dashed three are what the live ones talk to. Every arrow is a real call, not a decoration, most in-process, the last two over the wire. Everything above the last row runs in your tab. <b>eval-history was a live FastAPI and Postgres service until its host was retired in August 2026</b>; the last box now reads its frozen archive, 946 runs, served as static JSON.</div>
     </div>
 
     <p class="compose-note">An agent that retrieves, a gateway governing its model calls, a harness grading its answers, a dashboard showing what failed, and a database that remembers every run. One button runs a question through <b>all five</b> and hands you the result. Including the case that's <b>perfectly faithful and completely wrong</b>, which is the case that matters most. The last stage leaves your tab: it asks the <b>live Postgres service</b> what changed versus a run it really has stored, using <b>the same <code>compare.py</code> the server runs</b>, fetched from GitHub and executed in front of you.</p>
