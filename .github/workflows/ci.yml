@@ -55,6 +55,14 @@ jobs:
             --timeout 40
             --max-concurrency 8
             --root-dir ${{ github.workspace }}
+            # A generated note carries its own url as its canonical, so checking
+            # it over HTTP asks whether the deploy this push is racing has
+            # already finished. It had not: the check ran at 23:13:52Z on
+            # 2026-09-23 and Pages went live at 23:14:23Z, so CI went red on two
+            # correct pages. A re-run would have gone green and fixed nothing.
+            # Verified on disk instead, in the step below, which is race-free
+            # and catches a wrong slug before it is ever published.
+            --exclude erikhill\.dev/notes/
             --exclude asciinema\.org
             --exclude reddit\.com
             --exclude linkedin\.com
@@ -64,3 +72,12 @@ jobs:
           fail: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The half the link checker was excluded from. posts/index.json in
+      # model-drift decides what is published and no page here can edit it, so
+      # it is the authority: every published note must have a page, and every
+      # page's canonical must match the directory it sits in.
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: Every published note has a page, and says so correctly
+        run: node tools/check-note-selfrefs.mjs
