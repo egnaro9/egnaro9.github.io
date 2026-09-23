@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twice the data, less power: my stability rule got blinder the harder I looked | Erik Hill</title>
+<meta name="description" content="I was comparing two models on a frozen 159 task suite and I had a problem most eval code does not admit to having: the same model, asked the same question three times, sometimes disagrees with itself. I had written a rule for that. A task…">
+<link rel="canonical" href="https://erikhill.dev/notes/2026-09-23-twice-the-data-less-power/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Twice the data, less power: my stability rule got blinder the harder I looked">
+<meta property="og:description" content="I was comparing two models on a frozen 159 task suite and I had a problem most eval code does not admit to having: the same model, asked the same question three times, sometimes disagrees with itself. I had written a rule for that. A task…">
+<meta property="og:url" content="https://erikhill.dev/notes/2026-09-23-twice-the-data-less-power/">
+<meta property="og:site_name" content="Drift Notes">
+<meta property="article:published_time" content="2026-09-23">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Twice the data, less power: my stability rule got blinder the harder I looked">
+<meta name="twitter:description" content="I was comparing two models on a frozen 159 task suite and I had a problem most eval code does not admit to having: the same model, asked the same question three times, sometimes disagrees with itself. I had written a rule for that. A task…">
+<link rel="stylesheet" href="/notes/notes.css">
+</head>
+<body>
+<a href="https://erikhill.dev" aria-label="Back to portfolio" style="position:fixed;top:12px;left:14px;z-index:9999;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;font-weight:600;color:#f2a53c;background:rgba(14,19,22,.86);border:1px solid rgba(242,165,60,.45);border-radius:4px;padding:6px 11px;text-decoration:none;backdrop-filter:blur(4px)">&#8592; Portfolio</a>
+
+<div class="col">
+  <article id="post" class="on">
+    <header style="padding-top:76px">
+      <a class="back" href="/notes/">&#8592; All notes</a>
+      <div class="meta"><span class="date">2026-09-23</span><span class="tag harness">instrument</span><span class="tag">method</span></div>
+      <div><h1>Twice the data, less power: my stability rule got blinder the harder I looked</h1>
+<p><strong>This is a finding about a measurement rule, not about a model. The models did not change.</strong></p>
+<h2>What happened</h2>
+<p>I was comparing two models on a frozen 159 task suite and I had a problem most eval code does not admit to having: the same model, asked the same question three times, sometimes disagrees with itself. I had written a rule for that. A task where a config does not agree with itself is discarded, not counted. Call it <code>strict</code>.</p>
+<p>On the first three repetitions <code>strict</code> gave me Haiku ahead 7 to 1, eight informative tasks, p equal to 0.070. Not significant.</p>
+<p>So I looked at why, found that <code>strict</code> was throwing away thirteen tasks, and wrote a second rule that tolerates a minority disagreement. Call it <code>rate</code>. It gave Haiku ahead 13 to 2, fifteen informative tasks, p equal to 0.0074. Significant.</p>
+<p>I had run the conservative rule, got a null, and then built the rule that returned the result I wanted. That is also exactly what everyone who p hacks believes about themselves.</p>
+<h2>The evidence</h2>
+<div class="twrap"><table><thead><tr><th>claim</th><th>how it was checked</th></tr></thead><tbody><tr><td>the two rules disagreed on the same data</td><td>reps 1 to 3, suite <code>combined-159.json</code>: <code>strict</code> 7 to 1, informative 8, p 0.070; <code>rate</code> 13 to 2, informative 15, p 0.0074</td></tr><tr><td>the second rule was written after seeing the first result</td><td>stated in <code>runs/PREREGISTRATION.md</code>, committed before reps 4 to 6 existed, so the git timestamp is checkable against the run files' mtimes</td></tr><tr><td>the replication was pre-registered, analysis included</td><td>predictions, refutation conditions and fixed parameters in <code>runs/PREREGISTRATION.md</code>; the analysis in <code>tools/replicate.py</code>, written while the sweeps were still running</td></tr><tr><td>the prediction I got wrong, I got wrong in public</td><td>predicted <code>strict</code> would again fail to reach significance; on fresh data it reached p 0.0215</td></tr><tr><td>more repetitions raised the discard count</td><td>2 reps: about 8.7 discarded, about 10.3 informative. 3 reps: 13 discarded, 8 informative</td></tr><tr><td>pooling all six repetitions lost the result</td><td>reps 4 to 6 alone: informative 10, discards 13, p 0.0215, decisive. Reps 1 to 6 pooled: informative 8, discards 17, p 0.0703, not significant</td></tr></tbody></table></div>
+<h2>What the extra data did not buy</h2>
+<p>This is the part I did not expect and the reason the post exists.</p>
+<p>Every extra repetition is another chance to observe a config disagreeing with itself, and <code>strict</code> discards a task the moment it sees one. So the discards climb with the data. Thirteen became seventeen. Informative tasks fell from ten to eight. The p value went from 0.0215 to 0.0703, which is to say a decisive result became a null by adding measurements to it.</p>
+<p>In the limit the rule throws away every genuinely stochastic task. More measurement cannot fix that. Only a different rule can.</p>
+<p>A conservative rule is not a free choice. It will never report noise as signal, and the price is that it grows blinder the harder you look. That price is measurable, and until I measured it I had been describing the conservatism as pure upside.</p>
+<h2>What the pre-registration was actually for</h2>
+<p>The rule I trust reached significance on data it had never seen. <code>strict</code> on reps 4 to 6 alone: Haiku 9 to 1, ten informative tasks, p 0.0215.</p>
+<p>I had predicted it would fail again. The pre-registration says in advance what to do about that: &quot;If 1 holds and 2 fails, that is stronger than predicted, and I will say the prediction was too conservative rather than claiming I called it.&quot; So that is what I am saying. I did not call it.</p>
+<p>The parameter is the part worth stealing. <code>rate_margin</code> was fixed at 0.5 in advance, and afterwards I removed the flag from the command line entirely, along with <code>--alpha</code>, because a threshold a reader can dial after seeing the result is not a threshold. The registered value did not change. The knob did.</p>
+<h2>What I might have wrong</h2>
+<p>The weakest link is that this is one suite and two models. Haiku 4.5 beating Sonnet 4.6 here is a claim about a suite made of trap questions, not a capability ranking. A suite built to catch specific slips measures susceptibility to those slips, and I would not carry that sentence anywhere else.</p>
+<p>The reading I cannot rule out is that <code>rate</code> is simply the better rule and <code>strict</code> was never worth defending, in which case the whole discard analysis is an elaborate defence of a mistake. The replication is evidence against that, since <code>strict</code> reached significance on fresh data, but one replication at two models is not much.</p>
+<p>And I should be honest that the pooled result has an innocent reading. Reps 1 to 3 and reps 4 to 6 were run at different times, so pooling them mixes two sampling windows. I attribute the power loss to the discard mechanism because the discard count is the thing that visibly moved, thirteen to seventeen, but I have not run the version of this that would separate those two explanations.</p>
+<p>If you maintain an eval suite with a stability or flakiness filter: count what it discards, and count it again after you add data. If the discard count rises faster than your informative count, your filter is spending your sample size, and the direction of that trade is not obvious from the code.</p>
+<hr>
+<p>I build deterministic evaluation and verification tooling for LLM systems, and I am looking for my first full-time role in AI evaluation or QA engineering. Remote US Eastern, or Charleston SC. <a href="https://erikhill.dev">https://erikhill.dev</a></p>
+<p>Suite, rules, pre-registration and replication: <a href="https://github.com/egnaro9/pi-eval">https://github.com/egnaro9/pi-eval</a></p>
+<p class="note">The numbers above are quoted from <code>FINDINGS.md</code> and <code>runs/PREREGISTRATION.md</code> in that repository. The judgement of whether this was worth saying is mine.</p></div>
+    </header>
+  </article>
+
+  <div class="sub" style="margin-top:40px">
+    <strong>Subscribe</strong>
+    <p>Every note is archived at <a href="/notes/">Drift Notes</a>. To get them as
+    they go out, <a href="https://www.linkedin.com/newsletters/7508403524037148672/"
+    target="erikhill-out" rel="noopener">subscribe on LinkedIn</a>. Weekly when
+    there is something to say, and silent when there is not.</p>
+  </div>
+
+  <footer>
+    Generated from <a href="https://github.com/egnaro9/model-drift">model-drift</a>,
+    which drafts these automatically from the run that produced them. The numbers are
+    generated; the decision to publish is not.
+    <br>Live board: <a href="https://egnaro9.github.io/model-drift/">the drift chart</a>.
+  </footer>
+</div>
+</body>
+</html>

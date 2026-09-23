@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My factual-recall tasks were scoring format, not facts | Erik Hill</title>
+<meta name="description" content="I built a detector that decides whether a day's drift run contains anything worth writing up. The first thing it did was accuse my own suite. One task, fact-element, had failed on three or more providers on the same day, on 46 separate…">
+<link rel="canonical" href="https://erikhill.dev/notes/2026-09-22-my-factual-recall-tasks-were-scoring-format-not-facts/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="My factual-recall tasks were scoring format, not facts">
+<meta property="og:description" content="I built a detector that decides whether a day's drift run contains anything worth writing up. The first thing it did was accuse my own suite. One task, fact-element, had failed on three or more providers on the same day, on 46 separate…">
+<meta property="og:url" content="https://erikhill.dev/notes/2026-09-22-my-factual-recall-tasks-were-scoring-format-not-facts/">
+<meta property="og:site_name" content="Drift Notes">
+<meta property="article:published_time" content="2026-09-22">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="My factual-recall tasks were scoring format, not facts">
+<meta name="twitter:description" content="I built a detector that decides whether a day's drift run contains anything worth writing up. The first thing it did was accuse my own suite. One task, fact-element, had failed on three or more providers on the same day, on 46 separate…">
+<link rel="stylesheet" href="/notes/notes.css">
+</head>
+<body>
+<a href="https://erikhill.dev" aria-label="Back to portfolio" style="position:fixed;top:12px;left:14px;z-index:9999;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;font-weight:600;color:#f2a53c;background:rgba(14,19,22,.86);border:1px solid rgba(242,165,60,.45);border-radius:4px;padding:6px 11px;text-decoration:none;backdrop-filter:blur(4px)">&#8592; Portfolio</a>
+
+<div class="col">
+  <article id="post" class="on">
+    <header style="padding-top:76px">
+      <a class="back" href="/notes/">&#8592; All notes</a>
+      <div class="meta"><span class="date">2026-09-22</span><span class="tag harness">instrument</span><span class="tag">probe-alarm</span></div>
+      <div><h1>My factual-recall tasks were scoring format, not facts</h1>
+<p><strong>This is a finding about my own harness. The suspect is the probe, not the models it measures.</strong></p>
+<h2>What happened</h2>
+<p>I built a detector that decides whether a day's drift run contains anything worth writing up. The first thing it did was accuse my own suite. One task, <code>fact-element</code>, had failed on three or more providers on the same day, on 46 separate days.</p>
+<p>The task is this:</p>
+<blockquote><p>What is the chemical symbol for gold? Two letters only.</p></blockquote>
+<p>Graded by exact match against <code>au</code>, after stripping whitespace and lowercasing.</p>
+<p>Claude Sonnet 5 failed it <strong>60 times out of 60</strong>. GPT-4o mini failed it <strong>59 out of 59</strong>. Llama 3.1 8B, 23 out of 23. Those are not knowledge results. A model that scores 83% across a 35-task suite does not have a 100% failure rate on whether gold is Au.</p>
+<h2>The evidence</h2>
+<div class="twrap"><table><thead><tr><th>claim</th><th>how it was checked</th></tr></thead><tbody><tr><td><code>fact-element</code> failed on 3 or more providers on the same day, 46 times</td><td>cross-provider flip analysis over every stored run in <code>dashboard/drift_board.json</code></td></tr><tr><td>those were graded failures, not outages</td><td>every run counted had <code>reliability: 1.0</code>, so no call errored and none was truncated</td></tr><tr><td>the models know the answer</td><td><code>gpt-4o-mini</code> answered <code>'The chemical symbol for gold is Au.'</code>; <code>claude-sonnet-5</code> answered <code>'**Au**\n\nThat's the chemical symbol for gold, derived from the Latin word *aurum*.'</code></td></tr><tr><td>the same models pass a near-identical task</td><td>all three answered <code>fact-capital</code> with exactly <code>'Tokyo'</code>, 0 failures in 59 and 60 runs</td></tr><tr><td>one trailing period is the whole difference</td><td><code>gpt-4o-mini</code> answered <code>fact-planet</code> with <code>'Mercury.'</code> and was recorded wrong 59 times out of 59</td></tr><tr><td>a model that formats tersely passes cleanly</td><td><code>claude-opus-4-8</code> answered <code>'Au'</code>, <code>'Mercury'</code>, <code>'Tokyo'</code>, and fails <code>fact-element</code> on 1 of 60 runs</td></tr></tbody></table></div>
+<p>The answers above are not from the board. They came from nine live calls made through the probe's own call path, printed with <code>repr()</code> so punctuation and markdown are visible rather than inferred.</p>
+<h2>What stayed green anyway</h2>
+<p><code>fact-capital</code> is the control, and it is the reason this is a finding rather than a theory. It asks for the capital of Japan and every model in the table answers <code>'Tokyo'</code>, exactly, on every run. Same grader, same strictness, same models, same day. Nothing about exact matching is broken in general.</p>
+<p>The three tasks differ in one way. <code>fact-capital</code> says <strong>&quot;Answer with only the city name&quot;</strong>, which is an instruction about the shape of the output. <code>fact-element</code> says <strong>&quot;Two letters only&quot;</strong> and <code>fact-planet</code> says <strong>&quot;One word&quot;</strong>, which are descriptions of the answer. Models appear to read the first as a constraint they must obey and the other two as a hint about what is being asked, and then answer in their house style: a full sentence, a bolded token with an etymology, a word with a period after it.</p>
+<h2>What this run could and could not have seen</h2>
+<p>The suite has 35 tasks, so the smallest accuracy change it can print is 100/35 = 2.86 points. <code>fact-element</code> and <code>fact-planet</code> together are 5.7 points of every affected model's score, permanently, for reasons that have nothing to do with the models.</p>
+<p>Worse than the points: these tasks are tagged <code>factual-recall</code>, and that tag feeds a per-category breakdown on the public board. GPT-4o mini's factual-recall score has been reading as a knowledge number when two thirds of it is a formatting number. Anyone comparing models on that column, including me, was comparing how terse they are.</p>
+<h2>What I might have wrong</h2>
+<p>The part I am least sure of is the explanation, not the measurement. The numbers are solid and the live answers are quoted verbatim, but &quot;models treat <em>answer with only X</em> as a constraint and <em>X only</em> as a hint&quot; is one story that fits nine calls. I have not tested it. The honest version is that I know the format differs and I am guessing at why.</p>
+<p>Two things genuinely argue against my reading. Grok 4.5 fails <code>fact-element</code> on 26 of 49 runs, which is close to a coin flip, and a rigid house style should not produce that. And Claude Sonnet 5 failed <code>fact-planet</code> on 38 of 60 historical runs but answered <code>'Mercury'</code> cleanly when I called it today, so at least some of this moves over time and is not a fixed property of the model.</p>
+<p>There is also a real question about what the fix should be, and I do not think it is obviously &quot;loosen the grader&quot;. A grader that accepts <code>'Mercury.'</code> also accepts a model that ignores the instruction, and the instruction was part of the task. Making the grader lenient would convert a visible measurement problem into an invisible one. The alternative is to say plainly that these are instruction-following tasks and retag them, which changes what the board has been reporting for three months.</p>
+<p>If you maintain an eval suite with exact-match graders on short answers: check what your passing models actually return, not just whether they passed. The board I built recorded <em>which</em> tasks failed for three months and never once recorded <em>what the model said</em>, which is why this took a live call to see. That gap is the more embarrassing half of this post.</p>
+<hr>
+<p>I build deterministic evaluation and verification tooling for LLM systems, and I am looking for my first full-time role in AI evaluation or QA engineering. Remote US Eastern, or Charleston SC. <a href="https://erikhill.dev">https://erikhill.dev</a></p>
+<p>Live board: <a href="https://egnaro9.github.io/model-drift/">https://egnaro9.github.io/model-drift/</a> Suite, graders and runner: <a href="https://github.com/egnaro9/model-drift">https://github.com/egnaro9/model-drift</a></p>
+<p class="note">The finding was surfaced automatically by the drift detector. The investigation, the live calls and the judgement of whether it was worth saying are mine.</p></div>
+    </header>
+  </article>
+
+  <div class="sub" style="margin-top:40px">
+    <strong>Subscribe</strong>
+    <p>Every note is archived at <a href="/notes/">Drift Notes</a>. To get them as
+    they go out, <a href="https://www.linkedin.com/newsletters/7508403524037148672/"
+    target="erikhill-out" rel="noopener">subscribe on LinkedIn</a>. Weekly when
+    there is something to say, and silent when there is not.</p>
+  </div>
+
+  <footer>
+    Generated from <a href="https://github.com/egnaro9/model-drift">model-drift</a>,
+    which drafts these automatically from the run that produced them. The numbers are
+    generated; the decision to publish is not.
+    <br>Live board: <a href="https://egnaro9.github.io/model-drift/">the drift chart</a>.
+  </footer>
+</div>
+</body>
+</html>
