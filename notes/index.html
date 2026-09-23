@@ -89,6 +89,10 @@
   .tag.harness{color:var(--violet); background:var(--violet-soft)}
   .tag.infrastructure{color:var(--teal); background:var(--teal-soft)}
 
+  .sub{border:1px solid var(--line); border-left:3px solid var(--teal); background:var(--panel);
+    border-radius:3px; padding:16px 20px; margin-top:26px}
+  .sub strong{display:block; margin-bottom:6px; font-family:var(--mono); font-size:13.5px}
+  .sub p{margin:0; color:var(--fg-dim); font-size:14.5px; max-width:64ch}
   .empty{border:1px solid var(--line); border-left:3px solid var(--teal); background:var(--panel);
     border-radius:3px; padding:22px}
   .empty strong{display:block; margin-bottom:8px}
@@ -138,6 +142,13 @@
       accident. Most days it finds nothing and nothing is published, because an
       instrument that reports a result every time is measuring its own noise.</p>
     </header>
+    <div class="sub" id="sub">
+      <strong>No subscribe button yet.</strong>
+      <p>These are archived here as they are published. A LinkedIn newsletter is
+      the intended way to follow them and does not exist yet; when it does, its
+      link goes here. Until then the honest answer is that there is nothing to
+      subscribe to.</p>
+    </div>
     <div class="rule"></div>
     <div id="cards"></div>
   </div>
