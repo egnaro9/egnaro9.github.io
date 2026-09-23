@@ -44,6 +44,13 @@ jobs:
       # push for a day. Verified by hand before excluding — a green board that stopped
       # looking is worse than a red one.
       # regardless of whether the profile exists, so they'd only ever false-fail.
+      # erikhill.dev/notes/ is excluded because a generated note carries its
+      # own url as its canonical, so checking it over HTTP asks whether the
+      # Pages deploy this same push triggered has already finished. It had not:
+      # this check ran at 23:13:52Z on 2026-09-23 and the pages went live at
+      # 23:14:23Z, so CI went red on two correct pages and a re-run would have
+      # gone green without fixing anything. Verified on disk in the step below,
+      # which is race-free and catches a wrong slug before it is published.
       - name: Check outbound links
         uses: lycheeverse/lychee-action@v2
         with:
@@ -55,13 +62,6 @@ jobs:
             --timeout 40
             --max-concurrency 8
             --root-dir ${{ github.workspace }}
-            # A generated note carries its own url as its canonical, so checking
-            # it over HTTP asks whether the deploy this push is racing has
-            # already finished. It had not: the check ran at 23:13:52Z on
-            # 2026-09-23 and Pages went live at 23:14:23Z, so CI went red on two
-            # correct pages. A re-run would have gone green and fixed nothing.
-            # Verified on disk instead, in the step below, which is race-free
-            # and catches a wrong slug before it is ever published.
             --exclude erikhill\.dev/notes/
             --exclude asciinema\.org
             --exclude reddit\.com
