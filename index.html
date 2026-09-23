@@ -89,9 +89,11 @@
      with no hover, so nothing said they could be clicked. Full-strength text, a border
      that responds, and the amber only on hover. The accent stays reserved for the
      two things at the top of the page. */
-  .chip{font-family:var(--mono); font-size:13.5px; color:var(--fg-dim); border:1px solid var(--line);
-    background:var(--raised); padding:7px 12px; border-radius:2px; display:inline-flex;
-    align-items:center; gap:7px; transition:border-color .15s, background .15s}
+  /* Seven chips have to fit one row inside --maxw. At 13.5px/12px they needed
+     761px and wrapped "Constellation" onto a line by itself. */
+  .chip{font-family:var(--mono); font-size:13px; color:var(--fg-dim); border:1px solid var(--line);
+    background:var(--raised); padding:7px 10px; border-radius:2px; display:inline-flex;
+    align-items:center; gap:6px; transition:border-color .15s, background .15s}
   @media (hover:hover){.chip:hover{border-color:var(--amber-line); background:var(--amber-soft)}}
   @media (hover:hover){.chip:hover a{color:var(--amber-ink)}}
   .chip a{color:var(--fg); text-decoration:none; transition:color .15s}
@@ -392,7 +394,7 @@
 <div class="col">
 
   <header>
-    <nav class="contact" style="margin:0 0 30px" aria-label="Site">
+    <nav class="contact" style="margin:0 0 30px; gap:7px" aria-label="Site">
       <span class="chip"><a href="#evalmut">Start here</a></span>
       <span class="chip"><a href="#program">Technical proof</a></span>
       <span class="chip"><span class="dot" aria-hidden="true"></span><a href="notes/">Newsletter</a></span>
