@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Findings from a frozen LLM drift suite — published only when a measurement clears the instrument's own resolution, with the evidence table and what stayed green anyway.">
+<title>Drift notes — Erik Hill</title>
+<style>
+  :root {
+    color-scheme: dark light;
+    --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
+    --line-table:rgba(255,255,255,.2);
+    --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
+    --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12);
+    --red:#f87171; --red-soft:rgba(248,113,113,.12);
+    --violet:#a78bfa; --violet-soft:rgba(167,139,250,.12);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --ink:#e9edee; --panel:#f4f6f6; --raised:#ffffff;
+      --line:rgba(12,26,32,.12); --line-2:rgba(12,26,32,.07);
+      --line-table:rgba(12,26,32,.26);
+      --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
+      --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
+      --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1);
+      --red:#b3261e; --red-soft:rgba(179,38,30,.1);
+      --violet:#6d3fb8; --violet-soft:rgba(109,63,184,.1);
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--ink); color:var(--fg); font-family:var(--sans); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased; padding:0 20px 80px;
+    background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:34px 34px}
+  .col{max-width:820px; margin:0 auto}
+  a{color:var(--amber-ink); text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono); color:var(--amber-ink); font-size:.92em}
+  header{padding:76px 0 30px}
+  .eye{display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:12px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--amber-ink); margin-bottom:16px}
+  .eye::before{content:""; width:26px; height:1px; background:var(--amber-line)}
+  h1{font-size:clamp(30px,5vw,42px); line-height:1.12; margin:0 0 16px; letter-spacing:-.02em; text-wrap:balance}
+  .lede{color:var(--fg-dim); max-width:62ch; margin:0}
+  .rule{height:1px; background:var(--line); margin:34px 0}
+
+  .card{display:block; border:1px solid var(--line); border-left:3px solid var(--amber-ink);
+    background:var(--panel); border-radius:3px; padding:18px 20px; margin-bottom:14px; color:inherit}
+  .card:hover{background:var(--raised); text-decoration:none}
+  .card h2{font-size:19px; margin:0 0 8px; line-height:1.3; letter-spacing:-.01em}
+  .card p{margin:0; color:var(--fg-dim); font-size:14.5px}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px;
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase}
+  .date{color:var(--fg-faint)}
+  .tag{padding:2px 8px; border-radius:2px; border:1px solid var(--line)}
+  .tag.models{color:var(--amber-ink); background:var(--amber-soft); border-color:var(--amber-line)}
+  .tag.harness{color:var(--violet); background:var(--violet-soft)}
+  .tag.infrastructure{color:var(--teal); background:var(--teal-soft)}
+
+  .empty{border:1px solid var(--line); border-left:3px solid var(--teal); background:var(--panel);
+    border-radius:3px; padding:22px}
+  .empty strong{display:block; margin-bottom:8px}
+  .empty p{margin:0 0 10px; color:var(--fg-dim); font-size:14.5px}
+  .empty p:last-child{margin:0}
+
+  article{display:none}
+  article.on{display:block}
+  #list.off{display:none}
+  article h1{font-size:clamp(26px,4.4vw,34px)}
+  article h2{font-size:18px; margin:32px 0 12px; letter-spacing:-.01em;
+    font-family:var(--mono); text-transform:uppercase; letter-spacing:.08em; color:var(--amber-ink); font-size:13px}
+  article p{max-width:68ch}
+  /* The scroll lives on a wrapper, not on the table. `display:block` on a
+     <table> makes it a block box and border-collapse stops collapsing, which
+     leaves a visible gap between every row. */
+  .twrap{overflow-x:auto; margin:16px 0}
+  article table{width:100%; border-collapse:collapse; font-size:14px}
+  article th,article td{border:1px solid var(--line-table); padding:9px 12px; text-align:left; vertical-align:top}
+  article th{background:var(--raised); font-family:var(--mono); font-size:12px;
+    text-transform:uppercase; letter-spacing:.07em; color:var(--fg-dim); font-weight:600}
+  article hr{border:0; height:1px; background:var(--line); margin:34px 0}
+  .back{font-family:var(--mono); font-size:12.5px; display:inline-block; margin-bottom:8px}
+  .note{font-size:13.5px; color:var(--fg-faint); font-style:italic}
+  footer{margin-top:54px; padding-top:22px; border-top:1px solid var(--line);
+    font-size:13.5px; color:var(--fg-faint)}
+</style>
+</head>
+<body>
+<a href="https://erikhill.dev" aria-label="Back to portfolio" style="position:fixed;top:12px;left:14px;z-index:9999;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;font-weight:600;color:#f2a53c;background:rgba(14,19,22,.86);border:1px solid rgba(242,165,60,.45);border-radius:4px;padding:6px 11px;text-decoration:none;backdrop-filter:blur(4px)">← Portfolio</a>
+
+<div class="col">
+  <div id="list">
+    <header>
+      <div class="eye">Published on a finding, not a schedule</div>
+      <h1>Drift notes</h1>
+      <p class="lede">A frozen suite runs daily against the live models. These are the
+      times it found something that cleared its own resolution. Most days it finds
+      nothing, and on those days nothing is published — an instrument that reports a
+      result every time is measuring its own noise.</p>
+    </header>
+    <div class="rule"></div>
+    <div id="cards"></div>
+  </div>
+
+  <article id="post">
+    <header style="padding-top:76px">
+      <a class="back" href="#">← All notes</a>
+      <div id="post-meta" class="meta"></div>
+      <div id="post-body"></div>
+    </header>
+  </article>
+
+  <footer>
+    Generated from <a href="https://github.com/egnaro9/model-drift">model-drift</a>,
+    which drafts these automatically from the run that produced them. The numbers are
+    generated; the decision to publish is not.
+    <br>Live board: <a href="https://egnaro9.github.io/model-drift/">the drift chart</a>.
+  </footer>
+</div>
+
+<script>
+// Content lives in model-drift, where it is generated, so the page reads that repo
+// rather than duplicating posts here. A copy on the site would be a second source
+// of truth and would go stale the first time a post was corrected upstream.
+const RAW = "https://raw.githubusercontent.com/egnaro9/model-drift/main/posts/";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// Deliberately a small subset: headings, tables, bold, links, rules, paragraphs.
+// That is exactly what the generator emits. A general markdown library would
+// render things the drafts never produce and hide a change in what they do.
+function md(src) {
+  const out = [];
+  const lines = src.replace(/\r/g, "").split("\n");
+  let i = 0;
+  const inline = (t) => esc(t)
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
+    // The generator emits bare urls (the board link, the repo, the portfolio),
+    // so a renderer that only handles [text](url) leaves every one of them as
+    // plain text. Skip any already inside an href from the rule above.
+    .replace(/(^|[\s(])(https?:\/\/[^\s<)]+[^\s<).,;:])/g,
+             (m, pre, url) => `${pre}<a href="${url}">${url}</a>`)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|\s)\*([^*]+)\*/g, "$1<em>$2</em>");
+
+  while (i < lines.length) {
+    const line = lines[i];
+    if (!line.trim()) { i++; continue; }
+    if (line.startsWith("<!--")) {                       // editor guidance, never shown
+      while (i < lines.length && !lines[i].includes("-->")) i++;
+      i++; continue;
+    }
+    let m = line.match(/^(#{1,4})\s+(.*)$/);
+    if (m) { const n = m[1].length; out.push(`<h${n}>${inline(m[2])}</h${n}>`); i++; continue; }
+    if (/^---+$/.test(line.trim())) { out.push("<hr>"); i++; continue; }
+    if (line.trim().startsWith("|")) {                   // the evidence table
+      const rows = [];
+      while (i < lines.length && lines[i].trim().startsWith("|")) rows.push(lines[i++]);
+      const cells = (r) => r.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+      const head = cells(rows[0]);
+      const body = rows.slice(/^[\s|:-]+$/.test(rows[1] || "") ? 2 : 1);
+      out.push('<div class="twrap"><table><thead><tr>' + head.map(h => `<th>${inline(h)}</th>`).join("") +
+        "</tr></thead><tbody>" +
+        body.map(r => "<tr>" + cells(r).map(c => `<td>${inline(c)}</td>`).join("") + "</tr>").join("") +
+        "</tbody></table></div>");
+      continue;
+    }
+    const para = [];
+    while (i < lines.length && lines[i].trim() && !/^(#{1,4}\s|---+$|\|)/.test(lines[i].trim()))
+      para.push(lines[i++]);
+    const text = para.join(" ");
+    out.push(text.startsWith("*") && text.endsWith("*") && !text.startsWith("**")
+      ? `<p class="note">${inline(text.slice(1, -1))}</p>`
+      : `<p>${inline(text)}</p>`);
+  }
+  return out.join("\n");
+}
+
+function card(p) {
+  const about = ["models", "harness", "infrastructure"].includes(p.about) ? p.about : "";
+  return `<a class="card" href="#${encodeURIComponent(p.slug)}">
+    <div class="meta"><span class="date">${esc(p.date || "")}</span>
+    ${about ? `<span class="tag ${about}">${esc(about)}</span>` : ""}
+    ${p.kind ? `<span class="tag">${esc(p.kind)}</span>` : ""}</div>
+    <h2>${esc(p.title)}</h2><p>${esc(p.summary || "")}</p></a>`;
+}
+
+let INDEX = [];
+
+async function route() {
+  const slug = decodeURIComponent(location.hash.replace(/^#/, ""));
+  const post = INDEX.find(p => p.slug === slug);
+  if (!post) {
+    $("post").classList.remove("on");
+    $("list").classList.remove("off");
+    return;
+  }
+  $("list").classList.add("off");
+  $("post").classList.add("on");
+  const about = ["models", "harness", "infrastructure"].includes(post.about) ? post.about : "";
+  $("post-meta").innerHTML = `<span class="date">${esc(post.date || "")}</span>` +
+    (about ? `<span class="tag ${about}">${esc(about)}</span>` : "");
+  $("post-body").innerHTML = "<p>Loading…</p>";
+  try {
+    const r = await fetch(RAW + post.file, { cache: "no-cache" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const text = await r.text();
+    $("post-body").innerHTML = md(text.replace(/^---\n[\s\S]*?\n---\n/, ""));
+  } catch (e) {
+    // Say which file and why. "Couldn't load" sends a reader away thinking the
+    // post does not exist, when the real answer is usually a renamed file.
+    $("post-body").innerHTML = `<p>Could not load <code>${esc(post.file)}</code> from
+      model-drift (${esc(String(e.message))}). The note is indexed, so this is a fetch
+      problem rather than a missing post.</p>`;
+  }
+  window.scrollTo(0, 0);
+}
+
+(async function init() {
+  try {
+    const r = await fetch(RAW + "index.json", { cache: "no-cache" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    INDEX = await r.json();
+  } catch (e) {
+    $("cards").innerHTML = `<div class="empty"><strong>The index did not load.</strong>
+      <p>This page reads <code>posts/index.json</code> from the model-drift repository
+      (${esc(String(e.message))}). That is a fetch failure, not a statement about
+      whether any notes exist.</p></div>`;
+    return;
+  }
+  if (!INDEX.length) {
+    $("cards").innerHTML = `<div class="empty"><strong>Nothing published yet.</strong>
+      <p>The suite has been running daily, and nothing it has found since this page
+      went up has cleared both the resolution floor and the staleness window.</p>
+      <p>That is the intended state most of the time. A note appears here when a
+      measurement is larger than the smallest change the instrument could print by
+      accident, and not before.</p></div>`;
+    return;
+  }
+  $("cards").innerHTML = INDEX.map(card).join("");
+  await route();
+})();
+
+window.addEventListener("hashchange", route);
+</script>
+</body>
+</html>
