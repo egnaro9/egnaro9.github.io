@@ -64,20 +64,36 @@ jobs:
       # anyway, but "may" is not a property to rely on for the thing that makes
       # every canonical resolve. So this verifies the deployment landed, rather
       # than assuming it did.
-      - name: Prove the page is actually being served
+      # Verified 2026-09-23: a GITHUB_TOKEN push DOES trigger legacy Pages,
+      # which is a platform watcher rather than a workflow run. The bot commit
+      # deployed in about 60 seconds. So this step is not asking whether Pages
+      # works, it is asking whether THIS build reached the live site.
+      #
+      # The first version polled for HTTP 200 and was a check that could not
+      # fail: the url was already 200 before the deploy, because the previous
+      # version of the page was serving. It would have passed on a deploy that
+      # never happened. So compare CONTENT, byte for byte, against the file
+      # that was just built.
+      - name: Prove THIS build is the one being served
         if: steps.commit.outputs.changed == 'true'
         run: |
           set -euo pipefail
           slug=$(git log -1 --name-only --format= -- notes | grep -m1 'notes/.*/index.html' | cut -d/ -f2)
-          echo "checking https://erikhill.dev/notes/$slug/"
+          url="https://erikhill.dev/notes/$slug/"
+          want=$(shasum -a 256 "notes/$slug/index.html" | cut -d" " -f1)
+          echo "want sha256 $want from notes/$slug/index.html"
           for i in $(seq 1 20); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "https://erikhill.dev/notes/$slug/")
-            echo "  attempt $i: $code"
-            [ "$code" = "200" ] && exit 0
+            got=$(curl -fsS "$url" 2>/dev/null | shasum -a 256 | cut -d" " -f1 || echo "fetch-failed")
+            echo "  attempt $i: $got"
+            if [ "$got" = "$want" ]; then
+              echo "the live page is byte-identical to this build"
+              exit 0
+            fi
             sleep 20
           done
-          echo "::error::Pages did not serve /notes/$slug/ within about 7 minutes."
-          echo "::error::The commit landed but the deploy did not. A GITHUB_TOKEN push"
-          echo "::error::does not trigger workflow runs; if legacy Pages stopped picking"
-          echo "::error::these up, the repo needs build_type=workflow and an explicit deploy."
+          echo "::error::$url is not serving this build after about 7 minutes."
+          echo "::error::The commit landed; the deploy did not carry it. Every canonical"
+          echo "::error::pointing at a page built in this run is therefore stale or absent."
+          echo "::error::Remedy: set the repo's Pages build_type to workflow and deploy"
+          echo "::error::explicitly with actions/deploy-pages instead of relying on the push."
           exit 1
