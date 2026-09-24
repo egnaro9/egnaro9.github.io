@@ -53,6 +53,7 @@ const page = (p, bodyHtml) => {
 <meta property="og:url" content="${url}">
 <meta property="og:site_name" content="Drift Notes">
 <meta name="author" content="Erik Hill">
+<meta name="generator" content="model-drift/build-notes">
 <meta property="article:author" content="https://erikhill.dev">
 <meta property="article:published_time" content="${esc(p.date || "")}">
 <meta name="twitter:card" content="summary_large_image">
