@@ -52,6 +52,8 @@ const page = (p, bodyHtml) => {
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:url" content="${url}">
 <meta property="og:site_name" content="Drift Notes">
+<meta name="author" content="Erik Hill">
+<meta property="article:author" content="https://erikhill.dev">
 <meta property="article:published_time" content="${esc(p.date || "")}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(p.title)}">

@@ -1,0 +1,83 @@
+name: notes
+# Build a real page for every published drift note, without Erik's laptop.
+#
+# The posts live in model-drift and are published by flipping front matter there.
+# The pages that carry each post's canonical URL live here. If those two drift
+# apart, every cross-post on dev.to points at a 404 and tells search engines the
+# real article is somewhere it is not. That happened on 2026-09-23.
+#
+# So this watches the published index and rebuilds when it moves. It is cheap:
+# on a quiet run it exits in seconds having changed nothing, which is most runs.
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"   # off the :00 mark on purpose; the hour boundary is crowded
+  workflow_dispatch:
+  push:
+    paths:
+      - "notes/render.js"
+      - "tools/build-notes.mjs"
+      - ".github/workflows/notes.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: notes
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+
+      - name: Build a page per published note
+        run: node tools/build-notes.mjs
+
+      - name: Every published note has a page, and says so correctly
+        run: node tools/check-note-selfrefs.mjs
+
+      - name: Commit only if something actually changed
+        id: commit
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- notes; then
+            echo "nothing changed"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add notes
+          # NO [skip ci] here. The probe in model-drift uses it deliberately, but
+          # this commit MUST be seen: a note page that is committed and never
+          # deployed serves a 404 at the canonical url, which is the failure this
+          # workflow exists to prevent.
+          git commit -m "notes: build pages for the published set"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # A push made with GITHUB_TOKEN does not trigger WORKFLOW runs. Legacy
+      # Pages is a platform watcher rather than a workflow, so it may deploy
+      # anyway, but "may" is not a property to rely on for the thing that makes
+      # every canonical resolve. So this verifies the deployment landed, rather
+      # than assuming it did.
+      - name: Prove the page is actually being served
+        if: steps.commit.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          slug=$(git log -1 --name-only --format= -- notes | grep -m1 'notes/.*/index.html' | cut -d/ -f2)
+          echo "checking https://erikhill.dev/notes/$slug/"
+          for i in $(seq 1 20); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "https://erikhill.dev/notes/$slug/")
+            echo "  attempt $i: $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 20
+          done
+          echo "::error::Pages did not serve /notes/$slug/ within about 7 minutes."
+          echo "::error::The commit landed but the deploy did not. A GITHUB_TOKEN push"
+          echo "::error::does not trigger workflow runs; if legacy Pages stopped picking"
+          echo "::error::these up, the repo needs build_type=workflow and an explicit deploy."
+          exit 1
