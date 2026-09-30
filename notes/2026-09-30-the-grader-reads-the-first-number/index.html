@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My arithmetic grader reads the first number in the sentence, not the answer | Erik Hill</title>
+<meta name="description" content="A week ago I published a post saying three of my factual-recall tasks were scoring format rather than facts, and I ended it with a guess I had not tested. The guess was that models read Answer with only the city name as a constraint on the…">
+<link rel="canonical" href="https://erikhill.dev/notes/2026-09-30-the-grader-reads-the-first-number/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="My arithmetic grader reads the first number in the sentence, not the answer">
+<meta property="og:description" content="A week ago I published a post saying three of my factual-recall tasks were scoring format rather than facts, and I ended it with a guess I had not tested. The guess was that models read Answer with only the city name as a constraint on the…">
+<meta property="og:url" content="https://erikhill.dev/notes/2026-09-30-the-grader-reads-the-first-number/">
+<meta property="og:site_name" content="Drift Notes">
+<meta name="author" content="Erik Hill">
+<meta name="generator" content="model-drift/build-notes">
+<meta property="article:author" content="https://erikhill.dev">
+<meta property="article:published_time" content="2026-09-30">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="My arithmetic grader reads the first number in the sentence, not the answer">
+<meta name="twitter:description" content="A week ago I published a post saying three of my factual-recall tasks were scoring format rather than facts, and I ended it with a guess I had not tested. The guess was that models read Answer with only the city name as a constraint on the…">
+<link rel="stylesheet" href="/notes/notes.css">
+</head>
+<body>
+<a href="https://erikhill.dev" aria-label="Back to portfolio" style="position:fixed;top:12px;left:14px;z-index:9999;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;font-weight:600;color:#f2a53c;background:rgba(14,19,22,.86);border:1px solid rgba(242,165,60,.45);border-radius:4px;padding:6px 11px;text-decoration:none;backdrop-filter:blur(4px)">&#8592; Portfolio</a>
+
+<div class="col">
+  <article id="post" class="on">
+    <header style="padding-top:76px">
+      <a class="back" href="/notes/">&#8592; All notes</a>
+      <div class="meta"><span class="date">2026-09-30</span><span class="tag harness">instrument</span><span class="tag">grader-defect</span></div>
+      <div><h1>My arithmetic grader reads the first number in the sentence, not the answer</h1>
+<p><strong>This is a finding about my own harness. No model got the arithmetic wrong.</strong></p>
+<h2>What happened</h2>
+<p>A week ago I published a post saying three of my factual-recall tasks were scoring format rather than facts, and I ended it with a guess I had not tested. The guess was that models read <code>Answer with only the city name</code> as a constraint on the output and <code>Two letters only</code> as a description of the answer, and that the difference decides whether you get a bare token or a sentence.</p>
+<p>This week the same suite's arithmetic grader failed Claude Opus 4.8 on sixty consecutive clean runs of a task that asks what 0.3 minus 0.1 is.</p>
+<p>So I went and looked, and the guess held in a place I did not plant it.</p>
+<h2>The defect</h2>
+<p>``<code>python def _number(expected: float, tol: float = 1e-6):     def g(out: str) -&gt; bool:         m = re.search(r&quot;-?\d+(?:\.\d+)?&quot;, out.replace(&quot;,&quot;, &quot;&quot;))         return m is not None and abs(float(m.group()) - expected) &lt;= tol     return g </code>``</p>
+<p><code>re.search</code> returns the <strong>first</strong> match. So the grader reads the first number that appears anywhere in the output and compares that to the expected answer. If a model restates the question before answering it, the first number in the output is a number from the question.</p>
+<p>Seven of the eight tasks graded this way put a number in the prompt that is not the answer. <code>Compute 3 + 4 * 5</code> expects 23 and leads with 3. <code>What is 15% of 200</code> expects 30 and leads with 15. <code>What is 0.3 minus 0.1</code> expects 0.2 and leads with 0.3.</p>
+<h2>The evidence</h2>
+<div class="twrap"><table><thead><tr><th>claim</th><th>how it was checked</th></tr></thead><tbody><tr><td>the grader takes the first number, not the answer</td><td><code>modeldrift/suite.py:64</code>, <code>re.search(r&quot;-?\d+(?:\.\d+)?&quot;, ...)</code></td></tr><tr><td>7 of its 8 tasks lead with a number that is not the answer</td><td>enumerated over <code>SUITE</code>: math-order 3 vs 23, math-percent 15 vs 30, reason-older 30 vs 25, multi-step-math 3 vs 8, unit-minutes 2.5 vs 150, compare-negatives -0.5 vs -0.05, float-subtract 0.3 vs 0.2. Only compare-decimals leads with its own answer</td></tr><tr><td>it bites on runs where nothing errored</td><td><code>float-subtract</code> fails on 9 models across runs with <code>reliability: 1.0</code>, worst Claude Opus 4.8 at 60 of 60</td></tr><tr><td>every model had the right answer</td><td>live calls through the probe's own path: gpt-4o-mini <code>'0.3 minus 0.1 equals 0.2. To one decimal place, the answer is 0.2.'</code>; opus-4-8 <code>'0.3 minus 0.1 is **0.2**.'</code>; sonnet-5 <code>'0.3 minus 0.1 equals **0.2**'</code></td></tr><tr><td>changing only the instruction flips the outcome</td><td>same arithmetic, three wordings, three models, nine calls: as-shipped FAIL x3 with first=0.3; <code>Give only the number</code> and <code>Number only</code> PASS x3 with first=0.2</td></tr><tr><td>the same models pass the other number tasks in the same call</td><td>all three answered math-order <code>'23'</code>, math-percent <code>'30'</code>, unit-minutes <code>'150'</code>, bare, no restatement</td></tr></tbody></table></div>
+<h2>What separates the task that fails from the seven that do not</h2>
+<p>This is the part that makes it more than a bug report.</p>
+<p>The tasks that pass say <strong>&quot;Give only the number&quot;</strong> and <strong>&quot;Number only&quot;</strong>. Those are instructions about the shape of the output. The task that fails says <strong>&quot;Give the number to one decimal place&quot;</strong>. That is an instruction about the <em>format of the value</em>, and it appears to invite the model to show that it has formatted it, which means saying what it started from.</p>
+<p>Last week's post guessed exactly that distinction from nine calls on three factual-recall tasks, and said plainly that it was one story fitting nine calls. It now fits twenty one calls, across two different grader families, with the same split: an output-shape instruction gets a bare token, a description of the answer gets a sentence.</p>
+<p>I would rather have found it the other way around. A guess that survives a test I did not design for it is worth more than a guess I go looking to confirm.</p>
+<h2>So I ran the experiment</h2>
+<p>The paragraph above used to say this was a pattern I had observed twice rather than a mechanism I had demonstrated, and that the test was one sweep away. Here is the sweep. Same arithmetic, same three models, three instruction wordings, nine calls. The frozen suite was not edited, because its hash travels in published claims; the variants were sent directly.</p>
+<p>``` as-shipped  &quot;Give the number to one decimal place&quot;   FAIL x3   first=0.3             opus-4-8     '0.3 minus 0.1 equals <strong>0.2</strong>.'             sonnet-5     '0.3 - 0.1 = <strong>0.2</strong>'             gpt-4o-mini  '0.3 minus 0.1 equals 0.2. To one decimal place, the answer is 0.2.'</p>
+<p>&quot;Give only the number&quot;                             PASS x3   first=0.2   all answered '0.2' &quot;Number only&quot;                                      PASS x3   first=0.2   all answered '0.2' ```</p>
+<p>Nine for nine. The only thing that changed was the instruction, and it flipped every row.</p>
+<p>It also kills the alternative I could not rule out. I had written that <code>0.3 minus 0.1</code> is the canonical floating point example and a model might restate it because it recognises the exercise rather than because of the wording. If that were the cause, the restatement would survive <code>Give only the number</code>. It does not survive it once.</p>
+<h2>What I might have wrong</h2>
+<p>The experiment is three models and one task. It demonstrates that the wording controls the restatement here; it does not establish how far that generalises, and I would not carry the claim to a model family I have not called.</p>
+<p>And the count needs a caveat. Seven of eight tasks are vulnerable <em>in principle</em>, because their prompts lead with the wrong number. Only one of them is observed failing at scale. The others pass because these models happen to answer them tersely, which is not a property of my grader, it is a property of this month's models. The grader is one style change away from failing all seven.</p>
+<p>The fix is not obvious either, and I have not made it. Reading the last number instead of the first would pass <code>'0.3 minus 0.1 equals 0.2'</code> and would also pass a model that shows its work and lands on the wrong final value. Requiring a bare number would be honest but would turn an arithmetic task into a formatting task, which is the exact complaint this post is making.</p>
+<p>If you grade numeric answers with a regex: check which end of the string you are reading, and check it against an output that restates the question. Mine had been reading the question back to itself for months, and the board recorded the result as an arithmetic failure.</p>
+<hr>
+<p>I build deterministic evaluation and verification tooling for LLM systems, and I am looking for my first full-time role in AI evaluation or QA engineering. Remote US Eastern, or Charleston SC. <a href="https://erikhill.dev">https://erikhill.dev</a></p>
+<p>Live board: <a href="https://egnaro9.github.io/model-drift/">https://egnaro9.github.io/model-drift/</a> Suite, graders and runner: <a href="https://github.com/egnaro9/model-drift">https://github.com/egnaro9/model-drift</a></p>
+<p class="note">The finding was surfaced by the drift detector. The live calls, the enumeration and the judgement of whether it was worth saying are mine.</p></div>
+    </header>
+  </article>
+
+  <div class="sub" style="margin-top:40px">
+    <strong>Subscribe</strong>
+    <p>Every note is archived at <a href="/notes/">Drift Notes</a>. To get them as
+    they go out, <a href="https://www.linkedin.com/newsletters/7508403524037148672/"
+    target="erikhill-out" rel="noopener">subscribe on LinkedIn</a>. Weekly when
+    there is something to say, and silent when there is not.</p>
+  </div>
+
+  <footer>
+    Generated from <a href="https://github.com/egnaro9/model-drift">model-drift</a>,
+    which drafts these automatically from the run that produced them. The numbers are
+    generated; the decision to publish is not.
+    <br>Live board: <a href="https://egnaro9.github.io/model-drift/">the drift chart</a>.
+  </footer>
+</div>
+</body>
+</html>
