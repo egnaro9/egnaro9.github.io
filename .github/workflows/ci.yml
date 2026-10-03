@@ -78,6 +78,6 @@ jobs:
       # it is the authority: every published note must have a page, and every
       # page's canonical must match the directory it sits in.
       - uses: actions/setup-node@v7
-        with: { node-version: "20" }
+        with: { node-version: "24" }
       - name: Every published note has a page, and says so correctly
         run: node tools/check-note-selfrefs.mjs
