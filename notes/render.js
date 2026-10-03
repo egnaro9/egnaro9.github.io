@@ -46,6 +46,21 @@ function md(src) {
       while (i < lines.length && !lines[i].includes("-->")) i++;
       i++; continue;
     }
+    if (/^```/.test(line.trim())) {                      // fenced code
+      // Consumed BEFORE anything else: a fence's contents are literal, and the
+      // old renderer had no branch for this at all, so every fenced block in
+      // every published note collapsed into a paragraph with its language tag
+      // read as a word and its indentation destroyed. Verified live on
+      // 2026-10-02: the grader note served `` python def _number(...)` as prose.
+      const lang = line.trim().slice(3).trim();
+      const buf = [];
+      i++;
+      while (i < lines.length && !/^```/.test(lines[i].trim())) buf.push(lines[i++]);
+      i++;                                                // the closing fence
+      const cls = /^[\w+-]+$/.test(lang) ? ` class="language-${lang}"` : "";
+      out.push(`<pre><code${cls}>${esc(buf.join("\n"))}</code></pre>`);
+      continue;
+    }
     let m = line.match(/^(#{1,4})\s+(.*)$/);
     if (m) { const n = m[1].length; out.push(`<h${n}>${inline(m[2])}</h${n}>`); i++; continue; }
     if (/^---+$/.test(line.trim())) { out.push("<hr>"); i++; continue; }

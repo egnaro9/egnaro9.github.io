@@ -121,3 +121,9 @@
   .note{font-size:13.5px; color:var(--fg-faint); font-style:italic}
   footer{margin-top:54px; padding-top:22px; border-top:1px solid var(--line);
     font-size:13.5px; color:var(--fg-faint)}
+/* Fenced blocks began rendering as <pre> on 2026-10-02; before that render.js
+   had no branch for them and they collapsed into paragraphs. */
+pre{font-family:var(--mono); font-size:.86em; line-height:1.45;
+    overflow-x:auto; padding:.75em .9em; border-radius:4px;
+    background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.07)}
+pre code{color:inherit; font-size:inherit}

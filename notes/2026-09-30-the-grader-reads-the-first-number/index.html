@@ -36,7 +36,11 @@
 <p>This week the same suite's arithmetic grader failed Claude Opus 4.8 on sixty consecutive clean runs of a task that asks what 0.3 minus 0.1 is.</p>
 <p>So I went and looked, and the guess held in a place I did not plant it.</p>
 <h2>The defect</h2>
-<p>``<code>python def _number(expected: float, tol: float = 1e-6):     def g(out: str) -&gt; bool:         m = re.search(r&quot;-?\d+(?:\.\d+)?&quot;, out.replace(&quot;,&quot;, &quot;&quot;))         return m is not None and abs(float(m.group()) - expected) &lt;= tol     return g </code>``</p>
+<pre><code class="language-python">def _number(expected: float, tol: float = 1e-6):
+    def g(out: str) -&gt; bool:
+        m = re.search(r&quot;-?\d+(?:\.\d+)?&quot;, out.replace(&quot;,&quot;, &quot;&quot;))
+        return m is not None and abs(float(m.group()) - expected) &lt;= tol
+    return g</code></pre>
 <p><code>re.search</code> returns the <strong>first</strong> match. So the grader reads the first number that appears anywhere in the output and compares that to the expected answer. If a model restates the question before answering it, the first number in the output is a number from the question.</p>
 <p>Seven of the eight tasks graded this way put a number in the prompt that is not the answer. <code>Compute 3 + 4 * 5</code> expects 23 and leads with 3. <code>What is 15% of 200</code> expects 30 and leads with 15. <code>What is 0.3 minus 0.1</code> expects 0.2 and leads with 0.3.</p>
 <h2>The evidence</h2>
@@ -48,8 +52,13 @@
 <p>I would rather have found it the other way around. A guess that survives a test I did not design for it is worth more than a guess I go looking to confirm.</p>
 <h2>So I ran the experiment</h2>
 <p>The paragraph above used to say this was a pattern I had observed twice rather than a mechanism I had demonstrated, and that the test was one sweep away. Here is the sweep. Same arithmetic, same three models, three instruction wordings, nine calls. The frozen suite was not edited, because its hash travels in published claims; the variants were sent directly.</p>
-<p>``` as-shipped  &quot;Give the number to one decimal place&quot;   FAIL x3   first=0.3             opus-4-8     '0.3 minus 0.1 equals <strong>0.2</strong>.'             sonnet-5     '0.3 - 0.1 = <strong>0.2</strong>'             gpt-4o-mini  '0.3 minus 0.1 equals 0.2. To one decimal place, the answer is 0.2.'</p>
-<p>&quot;Give only the number&quot;                             PASS x3   first=0.2   all answered '0.2' &quot;Number only&quot;                                      PASS x3   first=0.2   all answered '0.2' ```</p>
+<pre><code>as-shipped  &quot;Give the number to one decimal place&quot;   FAIL x3   first=0.3
+            opus-4-8     '0.3 minus 0.1 equals **0.2**.'
+            sonnet-5     '0.3 - 0.1 = **0.2**'
+            gpt-4o-mini  '0.3 minus 0.1 equals 0.2. To one decimal place, the answer is 0.2.'
+
+&quot;Give only the number&quot;                             PASS x3   first=0.2   all answered '0.2'
+&quot;Number only&quot;                                      PASS x3   first=0.2   all answered '0.2'</code></pre>
 <p>Nine for nine. The only thing that changed was the instruction, and it flipped every row.</p>
 <p>It also kills the alternative I could not rule out. I had written that <code>0.3 minus 0.1</code> is the canonical floating point example and a model might restate it because it recognises the exercise rather than because of the wording. If that were the cause, the restatement would survive <code>Give only the number</code>. It does not survive it once.</p>
 <h2>What I might have wrong</h2>

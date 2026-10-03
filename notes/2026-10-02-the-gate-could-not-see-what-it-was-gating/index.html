@@ -35,7 +35,7 @@
 <p>I keep a pre-commit hook on my portfolio repo that refuses a commit touching a claim-bearing file unless a receipts file carries a receipt for it. It never judges whether a claim is true. It checks that a receipt exists and that its pointer resolves: a local path has to exist, an https pointer has to answer 2xx. Prose alone cannot satisfy it.</p>
 <p>For four days, any file that had been reviewed once was exempt from review forever.</p>
 <h2>The defect is one line</h2>
-<p>``<code>sh LINE=$(grep -F -- &quot;$f ::&quot; &quot;$ACK&quot; 2&gt;/dev/null | head -1) </code>``</p>
+<pre><code class="language-sh">LINE=$(grep -F -- &quot;$f ::&quot; &quot;$ACK&quot; 2&gt;/dev/null | head -1)</code></pre>
 <p><code>head -1</code> on a pathname. The first line in the receipts file that mentioned the path won, whatever it said and whenever it was written. A receipt recorded for an earlier version of a file kept satisfying every later version of it.</p>
 <p>So the gate reported success along a path where it never examined the staged content. That is the precise failure I build tooling to find, sitting in the tooling I built to find it.</p>
 <h2>The evidence</h2>
