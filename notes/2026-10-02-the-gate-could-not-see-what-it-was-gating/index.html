@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The gate could not see what it was gating | Erik Hill</title>
+<meta name="description" content="I keep a pre-commit hook on my portfolio repo that refuses a commit touching a claim-bearing file unless a receipts file carries a receipt for it. It never judges whether a claim is true. It checks that a receipt exists and that its…">
+<link rel="canonical" href="https://erikhill.dev/notes/2026-10-02-the-gate-could-not-see-what-it-was-gating/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The gate could not see what it was gating">
+<meta property="og:description" content="I keep a pre-commit hook on my portfolio repo that refuses a commit touching a claim-bearing file unless a receipts file carries a receipt for it. It never judges whether a claim is true. It checks that a receipt exists and that its…">
+<meta property="og:url" content="https://erikhill.dev/notes/2026-10-02-the-gate-could-not-see-what-it-was-gating/">
+<meta property="og:site_name" content="Drift Notes">
+<meta name="author" content="Erik Hill">
+<meta name="generator" content="model-drift/build-notes">
+<meta property="article:author" content="https://erikhill.dev">
+<meta property="article:published_time" content="2026-10-02">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The gate could not see what it was gating">
+<meta name="twitter:description" content="I keep a pre-commit hook on my portfolio repo that refuses a commit touching a claim-bearing file unless a receipts file carries a receipt for it. It never judges whether a claim is true. It checks that a receipt exists and that its…">
+<link rel="stylesheet" href="/notes/notes.css">
+</head>
+<body>
+<a href="https://erikhill.dev" aria-label="Back to portfolio" style="position:fixed;top:12px;left:14px;z-index:9999;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;font-weight:600;color:#f2a53c;background:rgba(14,19,22,.86);border:1px solid rgba(242,165,60,.45);border-radius:4px;padding:6px 11px;text-decoration:none;backdrop-filter:blur(4px)">&#8592; Portfolio</a>
+
+<div class="col">
+  <article id="post" class="on">
+    <header style="padding-top:76px">
+      <a class="back" href="/notes/">&#8592; All notes</a>
+      <div class="meta"><span class="date">2026-10-02</span><span class="tag harness">instrument</span><span class="tag">gate-defect</span></div>
+      <div><h1>The gate could not see what it was gating</h1>
+<p><strong>This is a finding about my own tooling. The gate it describes is mine, and so is the hole.</strong></p>
+<h2>What happened</h2>
+<p>I keep a pre-commit hook on my portfolio repo that refuses a commit touching a claim-bearing file unless a receipts file carries a receipt for it. It never judges whether a claim is true. It checks that a receipt exists and that its pointer resolves: a local path has to exist, an https pointer has to answer 2xx. Prose alone cannot satisfy it.</p>
+<p>For four days, any file that had been reviewed once was exempt from review forever.</p>
+<h2>The defect is one line</h2>
+<p>``<code>sh LINE=$(grep -F -- &quot;$f ::&quot; &quot;$ACK&quot; 2&gt;/dev/null | head -1) </code>``</p>
+<p><code>head -1</code> on a pathname. The first line in the receipts file that mentioned the path won, whatever it said and whenever it was written. A receipt recorded for an earlier version of a file kept satisfying every later version of it.</p>
+<p>So the gate reported success along a path where it never examined the staged content. That is the precise failure I build tooling to find, sitting in the tooling I built to find it.</p>
+<h2>The evidence</h2>
+<div class="twrap"><table><thead><tr><th>claim</th><th>how it was checked</th></tr></thead><tbody><tr><td>the defect line existed</td><td><code>git show 47f82a1^:.githooks/pre-commit</code> line 61, the <code>head -1</code> shown above</td></tr><tr><td>the window was four days</td><td>the hook's full history is four commits: installed <code>c9af511</code> 2026-08-23, fixed <code>47f82a1</code> 2026-08-27</td></tr><tr><td>selection is now by blob</td><td>the fix reads <code>BLOB=$(git rev-parse &quot;:$f&quot;)</code> and greps <code>&quot;:: blob $BLOB&quot;</code>, so line order decides nothing</td></tr><tr><td>a stale receipt is now refused by name</td><td>the hook prints <code>no receipt carries the staged blob $BLOB</code></td></tr><tr><td>six tests did not catch it</td><td><code>tools/test_claim_receipt_blob.py</code> has 7 tests; the seventh is the one that kills the mutant</td></tr><tr><td>I re-ran the mutant while writing this</td><td>baseline 7 passed. Truncating the comparison to <code>${BLOB:0:4}</code>: 1 failed, 6 passed, and the failure is <code>test_a_blob_prefix_is_not_a_blob</code></td></tr></tbody></table></div>
+<h2>What found it, and what did not</h2>
+<p>I wrote six tests for the fix. A receipt for the previous blob is refused. The refusal names the blob. A legacy path-only receipt satisfies nothing. An honest receipt passes. A stale line sitting first does not shadow a correct one below it. A stale override is refused too, because an escape hatch that never expires is the same hole.</p>
+<p>All six passed. Then I mutated the guard: compare only the blob's first four hex characters.</p>
+<p>All six still passed. The hole was still open.</p>
+<p>The seventh test is the one that kills that mutant, and its docstring says so:</p>
+<blockquote><p>Found by mutation, not by inspection: truncating the comparison to the blob's first four hex characters survived every other test in this file.</p></blockquote>
+<p>Six is not a coverage number. It is how many tests I wrote before I felt finished, and my sense of finished ran out exactly one test before the bug did.</p>
+<h2>I had already written the symptom down and filed it wrong</h2>
+<p>Two days before the fix, in a different commit, I described this:</p>
+<blockquote><p>passing needed two receipts for one file in a specific order, because the generic loop reads the first matching line only. That ordering was load-bearing and recorded nowhere.</p></blockquote>
+<p>I noticed that line order was deciding outcomes. I filed it as a documentation gap.</p>
+<p>It was the bug. Inspection had the evidence in hand and did not convert it into a failing test, because inspection asks what I believe the code does. Mutation does not ask. It breaks the code and reports which assertion noticed.</p>
+<h2>What I might have wrong</h2>
+<p>The hook's own header states the residual and I am not going to soften it: <code>git commit --no-verify</code> skips every client-side hook, so no local hook is a complete policy boundary. This gate stops an accident. It does not stop a decision.</p>
+<p>I know the window and not the damage. Four days is a fact about dates. I did not go back and check whether any claim actually shipped through the hole while it was open, so I cannot tell you the blast radius, only its duration.</p>
+<p>The receipts file is gitignored, so my own migration state is not independently checkable by a reader. Take that part on my word or leave it.</p>
+<p>And the mutation was hand-applied by me to a shell script, which means the operator set is whatever I happened to think of. That is the same limitation that produced the six-test blind spot in the first place, one level up.</p>
+<p>If you have run mutation testing against your <em>guard</em> code rather than your product code, I would like to know what it killed that you were sure was fine.</p>
+<hr>
+<p>I build deterministic evaluation and verification tooling for LLM systems, and I am looking for my first full-time role in AI evaluation or QA engineering. Remote US Eastern, or Charleston SC. <a href="https://erikhill.dev">https://erikhill.dev</a></p>
+<p>The gate, its tests and the fix: <a href="https://github.com/egnaro9/egnaro9.github.io">https://github.com/egnaro9/egnaro9.github.io</a></p>
+<p class="note">Verified by re-running the mutant against the committed hook while writing this. The judgement of whether it was worth saying is mine.</p></div>
+    </header>
+  </article>
+
+  <div class="sub" style="margin-top:40px">
+    <strong>Subscribe</strong>
+    <p>Every note is archived at <a href="/notes/">Drift Notes</a>. To get them as
+    they go out, <a href="https://www.linkedin.com/newsletters/7508403524037148672/"
+    target="erikhill-out" rel="noopener">subscribe on LinkedIn</a>. Weekly when
+    there is something to say, and silent when there is not.</p>
+  </div>
+
+  <footer>
+    Generated from <a href="https://github.com/egnaro9/model-drift">model-drift</a>,
+    which drafts these automatically from the run that produced them. The numbers are
+    generated; the decision to publish is not.
+    <br>Live board: <a href="https://egnaro9.github.io/model-drift/">the drift chart</a>.
+  </footer>
+</div>
+</body>
+</html>
