@@ -43,14 +43,21 @@ jobs:
         id: commit
         run: |
           set -euo pipefail
-          if git diff --quiet -- notes; then
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Stage FIRST, then ask. `git diff --quiet -- notes` cannot see an
+          # UNTRACKED file, and a brand-new note page is untracked, so the old
+          # guard reported "nothing changed" and exited green while the page it
+          # had just built was never committed. The canonical then served a 404,
+          # which is exactly the failure the comment below says this workflow
+          # exists to prevent. It only bit when no EXISTING page also changed,
+          # so it hid until a run regenerated the old pages byte-identically.
+          git add -A notes
+          if git diff --cached --quiet -- notes; then
             echo "nothing changed"
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add notes
           # NO [skip ci] here. The probe in model-drift uses it deliberately, but
           # this commit MUST be seen: a note page that is committed and never
           # deployed serves a 404 at the canonical url, which is the failure this
