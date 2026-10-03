@@ -25,7 +25,7 @@ jobs:
   suite:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # actions/checkout resolves `ref` as a branch or tag unless it is a FULL 40-char sha, so
       # an abbreviated one fails with "could not be found". A local `git clone` accepts short
@@ -38,16 +38,16 @@ jobs:
       # siblings are checked out at fixed commits with full history. This is byte transport, not
       # authority: every artifact is still hash-checked against its pin, and a checkout whose
       # bytes stop matching fails the build rather than quietly changing a public number.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: { repository: egnaro9/evalmut, ref: 7ea9ddc6ad12289e965b4873d4e25b7b695b48d1, path: home/evalmut, fetch-depth: 0 }
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: { repository: egnaro9/reference-fleet, ref: 53f931fafcc20bc19afcbebbe5e884283b055ce8, path: home/reference-fleet, fetch-depth: 0 }
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: { repository: egnaro9/agent-certlab, ref: 9bc001957b06c8e996b789fa0b84f9edf2ca7c7d, path: home/agent-certlab, fetch-depth: 0 }
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: { repository: egnaro9/vac-protocol, ref: c4410114a470d2aca19b9f277efc3895a87a0d80, path: home/vac-protocol, fetch-depth: 0 }
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
