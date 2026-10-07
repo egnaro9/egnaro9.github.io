@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Defects found in other people's code and in my own, by planting the defect each check claims to catch.">
+<title>Checks That Cannot Fail</title>
+<style>:root {
+    color-scheme: dark light;
+    --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
+    --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
+    --amber:#f2a53c; --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12); --teal-line:rgba(72,193,172,.34);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --maxw:880px;
+  }
+:root{
+      --ink:#e9edee; --panel:#f4f6f6; --raised:#ffffff;
+      --line:rgba(12,26,32,.12); --line-2:rgba(12,26,32,.07);
+      --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
+      --amber:#b7761a; --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
+      --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1); --teal-line:rgba(28,143,125,.4);
+    }
+:root[data-theme="dark"]{
+    --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
+    --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
+    --amber:#f2a53c; --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12); --teal-line:rgba(72,193,172,.34);
+  }
+:root[data-theme="light"]{
+    --ink:#e9edee; --panel:#f4f6f6; --raised:#ffffff;
+    --line:rgba(12,26,32,.12); --line-2:rgba(12,26,32,.07);
+    --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
+    --amber:#b7761a; --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
+    --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1); --teal-line:rgba(28,143,125,.4);
+  }
+*{box-sizing:border-box}
+body{margin:0; background:var(--ink)}
+.wrap{
+    background:var(--ink); color:var(--fg); font-family:var(--sans);
+    font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+    background-image:
+      linear-gradient(var(--line-2) 1px,transparent 1px),
+      linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:34px 34px; background-position:center top;
+    padding:0 20px 72px; min-height:100vh;
+  }
+.col{max-width:var(--maxw); margin:0 auto}
+.label{font-family:var(--mono); font-size:19px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--amber-ink)}
+.label .tick{color:var(--fg-faint)}
+h1{font-family:var(--mono); font-weight:600; font-size:clamp(38px,9vw,64px); line-height:.98; letter-spacing:-.02em; margin:18px 0 0; color:var(--fg)}
+a{color:var(--amber-ink); text-decoration:none}
+header{padding:56px 0 30px; border-bottom:1px solid var(--line)}
+.chip{font-family:var(--mono); font-size:13.5px; color:var(--fg-dim); border:1px solid var(--line);
+    background:var(--raised); padding:7px 12px; border-radius:2px; display:inline-flex;
+    align-items:center; gap:7px; transition:border-color .15s, background .15s}
+.chip:hover{border-color:var(--amber-line); background:var(--amber-soft)}
+.chip:hover a{color:var(--amber-ink)}
+.chip a{color:var(--fg); text-decoration:none; transition:color .15s}
+.contact{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+/* --- page-specific, built on the estate shell --- */
+.thesis{font:400 1.12rem/1.55 var(--sans); color:var(--fg-dim); margin:0 0 34px; max-width:38rem}
+h2.sec{font:600 .72rem/1 var(--mono); letter-spacing:.16em; text-transform:uppercase;
+       color:var(--amber-ink); margin:46px 0 14px}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:20px 22px}
+.method ol{margin:0; padding-left:1.1rem; font:.84rem/1.6 var(--mono); color:var(--fg-dim)}
+.method ol li{margin:7px 0}
+.why{margin:18px 0 0; padding-top:16px; border-top:1px solid var(--line-2);
+     color:var(--fg-dim); font:.94rem/1.6 var(--sans)}
+.finding{background:var(--panel); border:1px solid var(--line); border-radius:4px;
+         padding:18px 22px; margin:0 0 12px}
+.finding header{display:flex; gap:12px; align-items:baseline; justify-content:space-between;
+                margin:0 0 12px; border:0; padding:0}
+.repo{font:.9rem/1 var(--mono); color:var(--fg); text-decoration:none;
+      border-bottom:1px solid var(--line)}
+.repo:hover{border-bottom-color:var(--amber-line)}
+.state{font:.64rem/1 var(--mono); letter-spacing:.11em; padding:4px 7px;
+       border:1px solid currentColor; border-radius:2px; white-space:nowrap}
+.s-merged{color:var(--teal); background:var(--teal-soft)}
+.s-open,.s-opened{color:var(--amber-ink); background:var(--amber-soft)}
+.s-closed,.s-unknown{color:var(--fg-faint)}
+dl{margin:0; display:grid; grid-template-columns:10.5rem 1fr; gap:5px 16px}
+dt{font:.66rem/1.5 var(--mono); letter-spacing:.09em; text-transform:uppercase;
+   color:var(--fg-faint); padding-top:3px}
+dd{margin:0; color:var(--fg-dim); font:.94rem/1.55 var(--sans)}
+@media (max-width:560px){ dl{grid-template-columns:1fr; gap:2px} dt{padding-top:10px} }
+.big{font:2.4rem/1 var(--mono); color:var(--amber-ink)}
+.own ul{list-style:none; padding:0; margin:16px 0 0}
+.own li{padding:9px 0; border-top:1px solid var(--line-2); color:var(--fg-dim);
+        font:.92rem/1.55 var(--sans)}
+.own li b{font:.84rem/1 var(--mono); color:var(--fg)}
+.n{font-family:var(--mono); color:var(--amber-ink); margin:0 5px 0 3px}
+.correction{border-left:2px solid var(--amber-line); padding:2px 0 2px 16px; margin:0 0 22px}
+.correction h3{font:600 1rem/1.4 var(--sans); margin:0 0 3px; color:var(--fg)}
+.where{font:.72rem/1.4 var(--mono); color:var(--fg-faint); margin:0 0 7px}
+.correction p{margin:0; color:var(--fg-dim); font:.93rem/1.55 var(--sans)}
+.foot{margin-top:52px; padding-top:18px; border-top:1px solid var(--line);
+      font:.74rem/1.7 var(--mono); color:var(--fg-faint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="col">
+<header>
+<nav class="contact" style="margin:0 0 30px" aria-label="Site"><span class="chip"><a href="../">&larr; Home</a></span><span class="chip"><a href="../about/">About</a></span><span class="chip"><a href="../resume/">R&eacute;sum&eacute;</a></span></nav>
+<div class="label"><span class="tick">//</span> Findings</div>
+<h1>Checks that cannot fail</h1>
+<p class="thesis">Plant the defect a check claims to catch. If the suite stays green, the check is not a check.</p>
+</header>
+<h2 class="sec">Method</h2>
+<div class="card method"><ol>
+<li>Get the suite green and record the exact command and pass count.</li>
+<li>Plant ONE single-line semantic change in the source that a correct check must catch.</li>
+<li>Re-run. A survivor is the finding.</li>
+<li>Rule out an equivalent mutant: a change that leaves behaviour identical proves nothing.</li>
+<li>Report with the input, the wrong output, and the command that produces it.</li>
+</ol><p class="why">A test that accepts both outcomes proves the code RUNS and never that it is CORRECT. Coverage cannot see this: the line executes. Only planting the defect can.</p></div>
+<h2 class="sec">Found in other people's code</h2>
+<article class="finding"><header><a class="repo" href="https://github.com/vals-ai/benchmark-runtime/pull/2" target="erikhill-out">vals-ai/benchmark-runtime#2</a><span class="state s-open" title="open, opened 2026-10-07">OPEN</span></header><dl><dt>The check claimed</dt><dd>a 53-test suite covering the benchmark runtime</dd><dt>What it actually did</dt><dd>grading.py, which decides whether a run counts as complete, had NO test file; 7 single-line mutations all passed, including &#x27;report every success as an error&#x27;</dd><dt>How it was proven</dt><dd>mutation score 0/7 measured; one defect reachable through their own shipped client (HTTP 200 with body null -&gt; status EVALUATED, result None, complete stays True)</dd><dt>Delivered</dt><dd>17 tests + an 11-line fix; suite 53 -&gt; 70, mutation score 0/7 -&gt; 7/7</dd></dl></article>
+<article class="finding"><header><a class="repo" href="https://github.com/heygen-com/hyperframes/pull/5182" target="erikhill-out">heygen-com/hyperframes#5182</a><span class="state s-open" title="open, opened 2026-10-07">OPEN</span></header><dl><dt>The check claimed</dt><dd>11 required status checks on a protected main</dd><dt>What it actually did</dt><dd>one of them, &#x27;Studio: edit accuracy gate&#x27;, had no needs.changes.result guard; a failed changes job leaves its outputs unset, the job skips, and GitHub reports a skipped job as Success</dd><dt>How it was proven</dt><dd>read the branch&#x27;s required set from the public rulesets API and resolved each finding against it; 6 sibling required checks already carry the guard</dd><dt>Delivered</dt><dd>one line, in their own idiom. 16 other findings deliberately not sent: not required checks, so no merge gate passes through them</dd></dl></article>
+<article class="finding"><header><a class="repo" href="https://github.com/promptfoo/promptfoo/pull/11278" target="erikhill-out">promptfoo/promptfoo#11278</a><span class="state s-merged" title="merged, opened 2026-09-28">MERGED</span></header><dl><dt>The check claimed</dt><dd>a BLEU assertion that scores a translation against references</dd><dt>What it actually did</dt><dd>a blank reference scored 9.99e-, not 0</dd><dt>How it was proven</dt><dd>reproduced against the shipped assertion</dd><dt>Delivered</dt><dd>fix + test</dd></dl></article>
+<article class="finding"><header><a class="repo" href="https://github.com/konsoletyper/teavm/pull/1213" target="erikhill-out">konsoletyper/teavm#1213</a><span class="state s-merged" title="merged, opened 2026-07-17">MERGED</span></header><dl><dt>The check claimed</dt><dd>java.util.Calendar compiled to JavaScript</dd><dt>What it actually did</dt><dd>DAY_OF_WEEK computed wrongly when WEEK_OF_MONTH is set (issue #371)</dd><dt>How it was proven</dt><dd>differential against the JVM</dd><dt>Delivered</dt><dd>fix + test</dd></dl></article>
+<article class="finding"><header><a class="repo" href="https://gitlab.com/gitlab-org/cves/-/merge_requests/77" target="erikhill-out">gitlab-org/cves!77</a><span class="state s-opened" title="opened, opened 2026-09-29">OPENED</span></header><dl><dt>What it actually did</dt><dd>CVE-2023-5009, CISA-KEV listed: the CVSS block disagreed with itself. vectorString said AC:H (recomputes 8.2 HIGH) while attackComplexity said LOW and baseScore said 9.6 CRITICAL. The record resolved to a different severity depending on which field a consumer parsed.</dd><dt>How it was proven</dt><dd>GitLab&#x27;s own 16.3.4 release post states &#x27;high severity&#x27; and 8.2 in prose; their CI is ajv schema validation, which by construction cannot see cross-field disagreement</dd></dl></article>
+<article class="finding"><header><a class="repo" href="https://gitlab.com/gitlab-org/cves/-/merge_requests/78" target="erikhill-out">gitlab-org/cves!78</a><span class="state s-opened" title="opened, opened 2026-09-29">OPENED</span></header><dl><dt>What it actually did</dt><dd>CVE-2023-3932 stored baseScore 5.3 MEDIUM against a vector and decomposed metrics that both compute to 8.2; CVE-2023-3399 declared scope UNCHANGED against a vectorString saying S:C</dd><dt>How it was proven</dt><dd>four independent signals to one on 3932, including GitLab&#x27;s character-identical published vector. On 3399 baseScore was DELIBERATELY left alone and the MR says why: the release post gives three different severities, so asserting a direction would be a guess dressed as a finding.</dd></dl></article>
+<h2 class="sec">Found in my own</h2>
+<div class="card own"><div><span class="big">146</span> across 22 repositories</div><p style="color:var(--fg-dim);font:.94rem/1.55 var(--sans);margin:10px 0 0">Same method, turned inward. 22 of my own repositories mutation-audited in one pass; every finding independently reproduced before counting, equivalent mutants discarded.</p><ul>
+<li><b>deadgate</b><span class="n">7</span>its own severity field claimed a judgment that never ran; a boundary table could be INVERTED row by row</li>
+<li><b>agent-certlab</b><span class="n">7</span>the regrader compared 1 of 4 fields; &#x27;fix-did-not-pass-suite&#x27;, the outcome a real failing agent earns, was produced by no test</li>
+<li><b>reference-fleet</b><span class="n">4</span>the seed and member identity were unasserted: every member could break the identical requests, suite green</li>
+<li><b>evalmut</b><span class="n">4</span>aggregate(), &#x27;the only sanctioned way to produce a rate&#x27;, could lose its seal check</li>
+<li><b>pi-eval</b><span class="n">4</span>assert code in (0,1) accepted a pass and a failure equally; tol could be read from a dead key, silently re-grading 162 published tasks</li>
+</ul></div>
+<h2 class="sec">Where I was wrong</h2>
+<article class="correction"><h3>An automated reviewer found a test that cannot fail inside my PR about tests that cannot fail.</h3><p class="where">vals-ai/benchmark-runtime#2, greptile-apps[bot]</p><p>Confirmed by planting it: with score_evaluations dropping every nested result, all 70 tests still passed. Fixed in 006570c and replied with the planted-mutation result rather than agreeing.</p></article>
+<article class="correction"><h3>I reported a repository&#x27;s suite as red when it was my environment that was wrong.</h3><p class="where">evalmut</p><p>CI pins gradecore==0.10.2 deliberately; my venv had an editable newer checkout. The suite was green all along.</p></article>
+<article class="correction"><h3>I measured mutation kills by failure COUNT against a baseline that was already failing.</h3><p class="where">agent-certlab</p><p>Three false &#x27;KILLED&#x27; readings. Redone by comparing failure NAMES, which is the only sound comparison when the baseline is not clean.</p></article>
+<article class="correction"><h3>I over-attributed a root cause in public and a maintainer corrected me.</h3><p class="where">Steam on free Wine, macOS</p><p>Five public surfaces corrected, including the repositories&#x27; own READMEs, which carry the retraction in the body. Written up as &#x27;four wrong root causes before sunrise&#x27;.</p></article>
+<div class="foot">Every status above is fetched from the GitHub and GitLab APIs when this page is built, so a claim here cannot drift from the forge. A status that could not be fetched reads UNKNOWN rather than being guessed.<br><a href="https://github.com/egnaro9" target="erikhill-out">github.com/egnaro9</a></div>
+</div>
+</div>
+</body>
+</html>
