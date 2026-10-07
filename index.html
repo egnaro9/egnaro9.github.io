@@ -89,8 +89,12 @@
      with no hover, so nothing said they could be clicked. Full-strength text, a border
      that responds, and the amber only on hover. The accent stays reserved for the
      two things at the top of the page. */
-  /* Seven chips have to fit one row inside --maxw. At 13.5px/12px they needed
-     761px and wrapped "Constellation" onto a line by itself. */
+  /* The site nav has to fit one row inside --maxw. At 13.5px/12px seven chips needed
+     761px and wrapped "Constellation" onto a line by itself, so the sizes below are the
+     tuned ones. Adding an eighth chip (Findings) re-broke it while .contact was still
+     capped at 760px inside an 880px column: widening the window could not help, because
+     the cap and not the window was the constraint. The nav now uses the column width.
+     If a ninth is ever added, re-measure before assuming it fits. */
   .chip{font-family:var(--mono); font-size:13px; color:var(--fg-dim); border:1px solid var(--line);
     background:var(--raised); padding:7px 10px; border-radius:2px; display:inline-flex;
     align-items:center; gap:6px; transition:border-color .15s, background .15s}
@@ -187,7 +191,7 @@
   .loc{display:inline-flex; align-items:center; gap:10px; margin-top:30px; padding-left:13px;
     border-left:2px solid var(--teal); font-family:var(--mono); font-size:14.5px; color:var(--fg)}
   .loc .sep{color:var(--fg-faint)}
-  .contact{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; max-width:760px}
+  .contact{display:flex; flex-wrap:wrap; gap:7px; margin-top:14px; max-width:var(--maxw)}
   @media (max-width:560px){ .launch .lgrid{grid-template-columns:1fr} }
   /* every other demo is WASM in the reader's tab; this one was a real server until
      its host was retired, and now reads a frozen static archive of its rows. */
