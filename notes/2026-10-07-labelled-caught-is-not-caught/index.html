@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Our mutation score said 42 of 46 caught. It meant 42 of 46 labelled. | Erik Hill</title>
+<meta name="description" content="evalmut takes an eval case your grader already passes, plants a known defect in the output, and reruns the grader. If the grader still passes a provably wrong output, that is a hole: a class of regression your eval would let ship green.">
+<link rel="canonical" href="https://erikhill.dev/notes/2026-10-07-labelled-caught-is-not-caught/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Our mutation score said 42 of 46 caught. It meant 42 of 46 labelled.">
+<meta property="og:description" content="evalmut takes an eval case your grader already passes, plants a known defect in the output, and reruns the grader. If the grader still passes a provably wrong output, that is a hole: a class of regression your eval would let ship green.">
+<meta property="og:url" content="https://erikhill.dev/notes/2026-10-07-labelled-caught-is-not-caught/">
+<meta property="og:site_name" content="Drift Notes">
+<meta name="author" content="Erik Hill">
+<meta name="generator" content="model-drift/build-notes">
+<meta property="article:author" content="https://erikhill.dev">
+<meta property="article:published_time" content="2026-10-07">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Our mutation score said 42 of 46 caught. It meant 42 of 46 labelled.">
+<meta name="twitter:description" content="evalmut takes an eval case your grader already passes, plants a known defect in the output, and reruns the grader. If the grader still passes a provably wrong output, that is a hole: a class of regression your eval would let ship green.">
+<link rel="stylesheet" href="/notes/notes.css">
+</head>
+<body>
+<a href="https://erikhill.dev" aria-label="Back to portfolio" style="position:fixed;top:12px;left:14px;z-index:9999;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;font-weight:600;color:#f2a53c;background:rgba(14,19,22,.86);border:1px solid rgba(242,165,60,.45);border-radius:4px;padding:6px 11px;text-decoration:none;backdrop-filter:blur(4px)">&#8592; Portfolio</a>
+
+<div class="col">
+  <article id="post" class="on">
+    <header style="padding-top:76px">
+      <a class="back" href="/notes/">&#8592; All notes</a>
+      <div class="meta"><span class="date">2026-10-07</span><span class="tag harness">instrument</span><span class="tag">evidence-gap</span></div>
+      <div><h1>Our mutation score said 42 of 46 caught. It meant 42 of 46 labelled.</h1>
+<p><strong>This is a finding about my own tool's evidence, not about its result. The number did not move.</strong></p>
+<h2>What happened</h2>
+<p>evalmut takes an eval case your grader already passes, plants a known defect in the output, and reruns the grader. If the grader still passes a provably wrong output, that is a hole: a class of regression your eval would let ship green.</p>
+<p>The honest test of a tool like that is pointing it at its own dependency, so evalmut runs against gradecore's grader families and the README prints the result:</p>
+<pre><code>  mutation score    91.3%   (42 caught / 46 applied; 223 n/a)
+  holes            4  (2 blind, 2 coverage-gap)</code></pre>
+<p>I shipped that. Then I went looking at what was behind the word &quot;caught&quot;.</p>
+<h2>Two facts, and neither of them is &quot;caught&quot;</h2>
+<p>The run proved gradecore had been imported, via <code>inspect.getfile</code>. And it recorded a label for each row. That was all.</p>
+<p>Import plus label does not reach what a reader hears in &quot;caught&quot;. Caught says a grader looked at a defective output and rejected it. Import says the right module loaded. Between those two sits every way a harness can quietly answer for the library it claims to be measuring: an adapter that falls back to its own comparison when the upstream call raises, a cached result, a guard that returns early before the call happens at all.</p>
+<p>The irritating part is that evalmut already shipped the machinery for this. There is a witness for in-process graders and one for subprocess graders, and the second one refuses outright any row that arrives without proof. The dogfood demo, the one the published number came from, used neither.</p>
+<h2>The obvious fix would have been a second lie</h2>
+<p>Count calls into the grader. One per row, done.</p>
+<p>That would have been a false witness in both directions, because evalmut's own operators call the grader while deciding whether they apply. In this run those probes account for 59 calls. A naive counter would report &quot;multiple calls&quot; on healthy rows and would be satisfied just as happily by a probe on a row where the decision never happened.</p>
+<p>So every entry is attributed by its caller frame. The call on the decision line witnesses a decision. The call in the baseline witnesses the clean control. Anything from the operator module is a probe and satisfies neither. Anything else is unattributed and fails the row closed.</p>
+<p>A row counts as an outcome only when both forms were witnessed. Rows that cannot show it leave the denominator and are listed as incomplete with a reason. A population with zero witnessed rows reports null and renders unavailable. Not 1.0, which is safe arithmetic and unsafe evidence, and not 0.0, which reads as a measured failure.</p>
+<h2>The number did not move</h2>
+<p>42 of 46. Gated score identical to ungated. Zero incomplete rows, zero unattributed calls, and the 59 operator probes sorted into a bucket where they count for nothing.</p>
+<p>An unchanged number is a bad headline and a good result. If the witness had moved the score, I would have had a more exciting post and a worse tool, because it would have meant the old number was counting something other than what it said.</p>
+<p>What changed is not the value. Before, 42 rows carried a label. Now 42 rows carry a label backed by a recorded entry into a named callable and the verdict that came back out of it.</p>
+<h2>The witness shipped with its own broken field</h2>
+<p>Each witness site records a hash that claims to identify the grader implementation. I implemented it as a hash of compiled bytecode, which identifies bytecode on one interpreter instead.</p>
+<p>That cost two things. The committed artifact could not verify anywhere except the machine that produced it, because it was generated on CPython 3.14 and checked by a 3.11 and 3.12 matrix. And worse, bytecode could not distinguish two different adversarial graders whose instructions match and whose closure constants differ, so 88 witness sites carried one hash for two implementations. A provenance field that merges two implementations is not weaker evidence. It is wrong evidence.</p>
+<p>My first attempt at the portability half was to pin the dependency version in CI. That could not have worked: the grader source was byte-identical between my checkout and the published wheel. The variable was the interpreter. Pinning the dependency is the obvious fix and the wrong one.</p>
+<p>And the test that should have caught it had been red since the day it was written:</p>
+<blockquote><p>It is not a test that broke, it is a test that was born unable to pass, which produces the same red and generates none of the urgency.</p></blockquote>
+<p>CI failed on every run from 2026-08-20 and first went green again on 2026-08-30, at the re-emit that followed the fix. Ten days of red that looked exactly like ordinary red.</p>
+<h2>What I might have wrong</h2>
+<p>Portability is argued, not proven. The source-text fingerprint should be interpreter independent, but only one Python is installed on my machine. The CI matrix is the proof and it fails on whichever leg disagrees, which is the right design and is not the same as me having verified it.</p>
+<p>The witness is a separate command. One subcommand gates rows and the other does not, and the README banner is still the ungated one. They agree on this suite. They are not the same claim.</p>
+<p>The stamped evidence bundle still carries the unwitnessed run. The witnessed artifact lives beside it and is not inside the sealed bundle yet.</p>
+<p>And one document in the repo currently contradicts another. The README says 91.3% with four holes. The paper draft still says 91.4% with three. That is mine to fix, not a rounding difference, and I am pointing at it here rather than quietly correcting it before anyone notices.</p>
+<p>The witness proves entry and return, and nothing else. It says nothing about whether the grader judged well. A witnessed row is a row whose numbers are about gradecore. That is the entire claim.</p>
+<p>If you publish a score from a harness that wraps someone else's library: ask what would still be true if the library were never called. If the answer is &quot;the score&quot;, your harness is answering for it.</p>
+<hr>
+<p>I build deterministic evaluation and verification tooling for LLM systems, and I am looking for my first full-time role in AI evaluation or QA engineering. Remote US Eastern, or Charleston SC. <a href="https://erikhill.dev">https://erikhill.dev</a></p>
+<p>The tool, the witness and the dogfood run: <a href="https://github.com/egnaro9/evalmut">https://github.com/egnaro9/evalmut</a></p>
+<p class="note">Every figure above was checked against the repository before publication. The judgement of whether it was worth saying is mine.</p></div>
+    </header>
+  </article>
+
+  <div class="sub" style="margin-top:40px">
+    <strong>Subscribe</strong>
+    <p>Every note is archived at <a href="/notes/">Drift Notes</a>. To get them as
+    they go out, <a href="https://www.linkedin.com/newsletters/7508403524037148672/"
+    target="erikhill-out" rel="noopener">subscribe on LinkedIn</a>. Weekly when
+    there is something to say, and silent when there is not.</p>
+  </div>
+
+  <footer>
+    Generated from <a href="https://github.com/egnaro9/model-drift">model-drift</a>,
+    which drafts these automatically from the run that produced them. The numbers are
+    generated; the decision to publish is not.
+    <br>Live board: <a href="https://egnaro9.github.io/model-drift/">the drift chart</a>.
+  </footer>
+</div>
+</body>
+</html>
