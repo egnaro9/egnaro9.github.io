@@ -13,7 +13,16 @@ WHY THIS NEVER FIXES ANYTHING. Bumping a pin republishes a public claim, so it s
 edit. A job that silently advanced pins would turn the manifest from a promise into a mirror of
 whatever main happens to say today, which is the property this whole arc removed.
 
-    python3 suite/check_pins.py           # exit 0 only when every pin is VALID and current
+A PANEL MAY DECLARE ITS ROUTINE. model-drift's dashboard/drift_board.json is rewritten every day
+by that repo's own probe, so its pin is BEHIND within a day of every bump, and the weekly scheduled
+run went red every Monday on news that was not news. A source entry may carry a "routine" rule
+naming the one author and commit-message prefix its routine updates use and a max_lag_days. When a
+pin is BEHIND and EVERY commit that touched the artifact since the pin matches that rule, and the
+oldest of them is within max_lag_days, the state is ROUTINE: reported, not failed. Any other
+commit, a history that cannot be read, a pinned commit that cannot be found, or a longer lag is
+BEHIND exactly as before. The rule only ever excuses; it never bumps.
+
+    python3 suite/check_pins.py           # exit 0 only when every pin is VALID, current, or ROUTINE
     python3 suite/check_pins.py --pins    # ignore BEHIND; fail only on a BROKEN pin
 """
 from __future__ import annotations
@@ -23,8 +32,11 @@ import json
 import pathlib
 import re
 import sys
+import os
 import urllib.error
+import urllib.parse
 import urllib.request
+from datetime import datetime, timezone
 
 HERE = pathlib.Path(__file__).resolve().parent
 MANIFEST = HERE / "sources.json"
@@ -32,6 +44,7 @@ REQUIREMENTS = HERE / "requirements-dev.txt"
 SUITE_WORKFLOW = HERE.parent / ".github" / "workflows" / "suite.yml"
 REFUSALS = HERE / "refusals.json"
 RAW = "https://raw.githubusercontent.com/"
+API = "https://api.github.com/"
 _VAC_REQ = re.compile(r"vac-protocol\s*@\s*git\+https://github\.com/egnaro9/vac-protocol@([0-9a-f]+)")
 _VAC_CHECKOUT = re.compile(r"repository:\s*egnaro9/vac-protocol\s*,\s*ref:\s*([0-9a-f]+)")
 
@@ -106,6 +119,67 @@ def _get(url: str, attempts: int = 1):
     return None, err, code
 
 
+def _get_json(url: str):
+    """GitHub API GET, returning (parsed, error). Uses GITHUB_TOKEN when present, because the
+    unauthenticated limit is 60 requests an hour and a scheduled runner shares an address."""
+    req = urllib.request.Request(url, headers={"Accept": "application/vnd.github+json",
+                                               "User-Agent": "egnaro9.github.io/check_pins"})
+    tok = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if tok:
+        req.add_header("Authorization", f"Bearer {tok}")
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read()), ""
+    except Exception as e:
+        return None, f"{type(e).__name__}: {e}"
+
+
+def _routine(entry: dict, owner: str, repo: str, path: str, commit: str,
+             now: datetime | None = None) -> tuple[bool, str]:
+    """(True, why) when the lag behind main is made only of the panel's declared routine
+    commits and is within its max_lag_days; (False, why) otherwise. Never raises."""
+    rule = entry.get("routine")
+    if not isinstance(rule, dict):
+        return False, ""
+    author, prefix = rule.get("author"), rule.get("message_prefix")
+    max_lag = rule.get("max_lag_days")
+    if not author or not prefix or not isinstance(max_lag, (int, float)):
+        return False, "routine rule is incomplete, so it excuses nothing"
+    url = (f"{API}repos/{owner}/{repo}/commits?sha=main&per_page=100&path="
+           f"{urllib.parse.quote(path)}")
+    data, err = _get_json(url)
+    if not isinstance(data, list):
+        return False, f"routine rule not applied: commit history unreadable ({err or 'not a list'})"
+    since = []
+    for c in data:
+        if str(c.get("sha", "")).startswith(commit):
+            break
+        since.append(c)
+    else:
+        return False, (f"routine rule not applied: the pinned commit {commit} is not among the "
+                       f"last {len(data)} commits touching {path}")
+    if not since:
+        return False, "routine rule not applied: main's bytes differ but no commit since the pin touched the artifact"
+    for c in since:
+        cm = c.get("commit") or {}
+        who = (cm.get("author") or {}).get("name", "")
+        msg = cm.get("message", "")
+        if who != author or not msg.startswith(prefix):
+            return False, (f"not routine: {str(c.get('sha', ''))[:7]} by {who!r} "
+                           f"({msg.splitlines()[0][:60] if msg else 'no message'!r}) is not a declared routine update")
+    dates = [(c.get("commit") or {}).get("committer", {}).get("date", "") for c in since]
+    try:
+        oldest = min(datetime.fromisoformat(d.replace("Z", "+00:00")) for d in dates)
+    except ValueError:
+        return False, "routine rule not applied: a commit date could not be read"
+    lag = ((now or datetime.now(timezone.utc)) - oldest).total_seconds() / 86400
+    if lag > max_lag:
+        return False, (f"{len(since)} routine update(s), but the oldest is {lag:.1f} days old, past "
+                       f"max_lag_days {max_lag}: bump the pin")
+    return True, (f"{len(since)} routine update(s) since the pin, oldest {lag:.1f} days old, within "
+                  f"max_lag_days {max_lag}")
+
+
 def check(entry: dict) -> tuple[str, str]:
     p = _parts(entry)
     if not p:
@@ -139,8 +213,13 @@ def check(entry: dict) -> tuple[str, str]:
             "drift was NOT measured on this run")
     hh = hashlib.sha256(head).hexdigest()
     if hh != got:
+        ok, why = _routine(entry, owner, repo, path, commit)
+        if ok:
+            return "ROUTINE", (f"pin verified; {repo}@main now serves {hh[:12]} (pinned "
+                               f"{got[:12]}), and the lag is routine: {why}")
         return "BEHIND", (f"pin verified, but {repo}@main now serves {hh[:12]} "
-                          f"(pinned {got[:12]}); a human decides whether to bump")
+                          f"(pinned {got[:12]}); a human decides whether to bump"
+                          + (f". {why}" if why else ""))
     return "VALID", f"pin verified and current with {repo}@main"
 
 

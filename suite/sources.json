@@ -31,7 +31,13 @@
       "issuer_commit": "d4e7115a7455",
       "sha256": "a0879c39c6b51e1d8050b36d785bfa7699df69b811bf38235aa48874993dcf5b",
       "public_url": "https://github.com/egnaro9/model-drift/blob/d4e7115a7455/dashboard/drift_board.json",
-      "derivation": "drift_metrics@1"
+      "derivation": "drift_metrics@1",
+      "routine": {
+        "_": "dashboard/drift_board.json is rewritten every day by model-drift's own probe, so this pin is BEHIND within a day of every bump and the weekly pin-drift run went red each Monday on news that is not news. A lag made ONLY of commits by this author with this message prefix is ROUTINE for up to max_lag_days. Any other commit, an unreadable history, or a longer lag is BEHIND as before. This rule excuses; it never bumps.",
+        "author": "github-actions[bot]",
+        "message_prefix": "chore: update drift standings",
+        "max_lag_days": 14
+      }
     },
     {
       "panel": "agent-certlab",

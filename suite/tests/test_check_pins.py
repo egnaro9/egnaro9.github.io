@@ -117,9 +117,95 @@ def test_a_differing_upstream_is_behind_not_unmeasured(monkeypatch):
     ("BEHIND", True, False),
     ("BROKEN", True, True),
     ("VALID", False, False),
+    ("ROUTINE", False, False),
+    ("ROUTINE", True, False),
 ])
 def test_unmeasured_fails_the_scheduled_job_but_not_a_pull_request(state, only_pins, expected):
     """Mirrors main()'s predicate. UNMEASURED sorts with BEHIND: the pin itself is
     intact, so a PR that never touched the panel is not the place to fail."""
     fails = state == "BROKEN" or (state in ("BEHIND", "UNMEASURED") and not only_pins)
     assert fails is expected
+
+
+
+# ── a declared routine excuses a lag, and nothing else ─────────────────────
+
+from datetime import datetime, timedelta, timezone  # noqa: E402
+
+NOW = datetime(2026, 10, 13, 18, 0, tzinfo=timezone.utc)
+RULE = {"author": "github-actions[bot]", "message_prefix": "chore: update drift standings",
+        "max_lag_days": 14}
+
+
+def _c(sha, days_ago, author="github-actions[bot]",
+       msg="chore: update drift standings [skip ci]"):
+    when = (NOW - timedelta(days=days_ago)).isoformat().replace("+00:00", "Z")
+    return {"sha": sha, "commit": {"author": {"name": author}, "message": msg,
+                                   "committer": {"date": when}}}
+
+
+def _history(monkeypatch, commits, err=""):
+    monkeypatch.setattr(check_pins, "_get_json",
+                        lambda url: (commits, err) if commits is not None else (None, err))
+
+
+def _routine(entry):
+    return check_pins._routine(entry, "owner", "repo", "some/artifact.json", "0123456789ab", now=NOW)
+
+
+def test_routine_commits_within_the_lag_are_routine(monkeypatch):
+    _history(monkeypatch, [_c("c3", 1), _c("c2", 2), _c("c1", 3), _c("0123456789abcdef", 4)])
+    ok, why = _routine(_entry(routine=RULE))
+    assert ok, why
+    assert "3 routine update(s)" in why
+
+
+def test_one_non_routine_commit_makes_it_behind(monkeypatch):
+    """The point of the rule is that only the declared updates are excused. A human
+    commit, or a bot commit with any other message, is news and stays BEHIND."""
+    _history(monkeypatch, [_c("c2", 1), _c("c1", 2, author="egnaro9", msg="change the suite"),
+                           _c("0123456789abcdef", 4)])
+    ok, why = _routine(_entry(routine=RULE))
+    assert not ok and "not routine" in why
+    _history(monkeypatch, [_c("c1", 1, msg="feat: something else"), _c("0123456789abcdef", 4)])
+    assert not _routine(_entry(routine=RULE))[0]
+
+
+def test_a_routine_lag_past_max_is_behind(monkeypatch):
+    _history(monkeypatch, [_c("c2", 1), _c("c1", 15), _c("0123456789abcdef", 16)])
+    ok, why = _routine(_entry(routine=RULE))
+    assert not ok and "bump the pin" in why
+
+
+def test_an_unreadable_history_or_a_missing_pin_excuses_nothing(monkeypatch):
+    _history(monkeypatch, None, err="HTTPError: 403 rate limited")
+    assert not _routine(_entry(routine=RULE))[0]
+    _history(monkeypatch, [_c("c2", 1), _c("c1", 2)])  # pinned commit never appears
+    ok, why = _routine(_entry(routine=RULE))
+    assert not ok and "not among" in why
+
+
+def test_a_panel_without_a_rule_is_never_routine(monkeypatch):
+    _history(monkeypatch, [_c("c1", 1), _c("0123456789abcdef", 2)])
+    assert _routine(_entry()) == (False, "")
+
+
+def test_check_reports_routine_through_the_real_behind_branch(monkeypatch):
+    _responses(monkeypatch, b'{"pinned": false}\n')
+    _history(monkeypatch, [_c("c1", 1), _c("0123456789abcdef", 2)])
+    monkeypatch.setattr(check_pins, "datetime", type("D", (), {
+        "now": staticmethod(lambda tz=None: NOW),
+        "fromisoformat": staticmethod(datetime.fromisoformat)}))
+    state, why = check_pins.check(_entry(routine=RULE))
+    assert state == "ROUTINE", why
+    state, _ = check_pins.check(_entry())
+    assert state == "BEHIND"
+
+
+def test_only_model_drift_declares_a_routine():
+    """The live manifest: one panel, the one whose artifact its issuer rewrites daily."""
+    import json
+    man = json.loads(check_pins.MANIFEST.read_text())
+    declared = {s["panel"]: s["routine"] for s in man["sources"] if "routine" in s}
+    assert set(declared) == {"model-drift"}
+    assert declared["model-drift"]["max_lag_days"] <= 14

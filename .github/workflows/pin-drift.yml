@@ -30,7 +30,12 @@ jobs:
 
       # check_pins.py uses only the standard library, so this job needs no install step and
       # cannot be broken by a dependency resolving differently than it did last week.
+      # The token is read-only here (the job declares no write permission). It lets a declared
+      # routine rule read the issuer's commit history without the 60-an-hour anonymous limit,
+      # which would otherwise turn an excusable lag back into a red run.
       - name: Resolve and validate every manifest pin
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: python suite/check_pins.py
 
       - name: Say what a failure means
