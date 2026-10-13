@@ -32,6 +32,24 @@ END = "<!-- drift:end -->"
 USER_AGENT = "egnaro9.github.io/refresh-drift (+https://egnaro9.github.io)"
 MIN_CHARS = 120          # a real paragraph; below this something went wrong
 
+# House style: nothing published on this site carries an em-dash (Erik's standing
+# rule). model-drift's generator still writes them, and changing the wording
+# there would change what its frozen VAC bundle re-derives, so the punctuation is
+# settled here, on the way in. Only punctuation moves: every number and name in
+# each predicate is carried across untouched. An em-dash this cannot place is a
+# refusal, not a guess.
+_HOUSE_STYLE = [
+    (re.compile(r"</strong>\s*\u2014\s*"), "</strong>: "),
+    (re.compile(r"\s*\u2014\s*this paragraph"), ". This paragraph"),
+    (re.compile(r"\s+\u2014\s+"), ", "),
+]
+
+
+def house_style(paragraph: str) -> str:
+    for pattern, replacement in _HOUSE_STYLE:
+        paragraph = pattern.sub(replacement, paragraph)
+    return paragraph
+
 
 def fetch(url: str) -> dict:
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
@@ -82,7 +100,11 @@ def main(argv=None) -> int:
         print(f"could not read {args.source}: {e}", file=sys.stderr)
         return 1
 
-    paragraph = (data.get("html") or "").strip()
+    paragraph = house_style((data.get("html") or "").strip())
+    if "\u2014" in paragraph:
+        print("generated paragraph has an em-dash house_style() cannot place; "
+              "refusing rather than guessing the punctuation", file=sys.stderr)
+        return 1
     if len(paragraph) < MIN_CHARS:
         print(f"generated paragraph is {len(paragraph)} chars — refusing to "
               f"splice something that short", file=sys.stderr)

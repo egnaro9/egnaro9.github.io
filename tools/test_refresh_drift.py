@@ -164,3 +164,56 @@ def test_print_current_strips_tags_and_whitespace(tmp_path, capsys):
     rc = rd.main(["--print-current", "--index", str(page)])
     assert rc == 0
     assert capsys.readouterr().out.strip() == "Hi there friend"
+
+
+# --- house style: no em-dash reaches the page ------------------------------
+
+GENERATED_WITH_DASHES = (
+    "A frozen, deterministically-graded suite against <strong>17 models across 5 labs</strong>. "
+    "<strong>OpenAI's cheaper tiers match its own flagship</strong> \u2014 GPT-5 mini at 100% and "
+    "GPT-5 nano at 100%, against GPT-5 at 100% \u2014 so within that lab, on this suite, paying "
+    "more buys no accuracy. <strong>Grok 4.3 answers fastest and scores lowest</strong> "
+    "(300 ms at 80%) \u2014 a speed/quality tradeoff you can see rather than argue about. "
+    "<em>Generated from the run of 13 Oct 2026 \u2014 this paragraph is rebuilt from the "
+    "board's own numbers, never hand-written.</em>")
+
+
+def test_house_style_places_every_generated_em_dash():
+    """The four shapes model-drift's narrative.py actually emits, 2026-10-13."""
+    out = rd.house_style(GENERATED_WITH_DASHES)
+    assert "\u2014" not in out
+    assert "flagship</strong>: GPT-5 mini" in out
+    assert "at 100%, so within that lab" in out
+    assert "(300 ms at 80%), a speed/quality tradeoff" in out
+    assert "13 Oct 2026. This paragraph is rebuilt" in out
+
+
+def test_house_style_moves_only_punctuation():
+    """Every number and name survives: strip the punctuation that changed and
+    the two texts carry the same words in the same order."""
+    import re
+    words = lambda s: re.findall(r"[a-z0-9%]+(?:[.-][a-z0-9%]+)*", s.lower())
+    out = rd.house_style(GENERATED_WITH_DASHES)
+    assert words(out) == words(GENERATED_WITH_DASHES)
+
+
+def test_main_writes_the_page_without_em_dashes(tmp_path):
+    page = _page(tmp_path)
+    rc = rd.main(["--source", _src(tmp_path, {"html": GENERATED_WITH_DASHES}),
+                  "--index", str(page)])
+    assert rc == 0
+    body = page.read_text(encoding="utf-8")
+    para = body[body.find("-->", body.find("drift:start")) + 3:body.find("drift:end")]
+    assert "\u2014" not in para
+    assert "GPT-5 nano at 100%" in para
+
+
+def test_main_refuses_an_em_dash_it_cannot_place(tmp_path):
+    """A dash with no spaces around it has no safe replacement. Refuse and
+    leave the page alone, as every other refusal here does."""
+    page = _page(tmp_path)
+    before = page.read_text(encoding="utf-8")
+    rc = rd.main(["--source", _src(tmp_path, {"html": GOOD + " A\u2014B."}),
+                  "--index", str(page)])
+    assert rc == 1
+    assert page.read_text(encoding="utf-8") == before
