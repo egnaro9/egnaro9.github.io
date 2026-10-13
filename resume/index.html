@@ -114,73 +114,95 @@
     <h1>Erik Hill</h1>
     <div class="role">AI Evaluation &amp; Testing Engineer</div>
     <div class="rmeta">
-      Summerville, SC (Charleston area) <span class="sep">·</span> <a href="mailto:contact@erikhill.dev">contact@erikhill.dev</a> <span class="sep">·</span> 808-765-0240<br>
+      Summerville, SC (Charleston area) <span class="sep">·</span> <a href="mailto:contact@erikhill.dev">contact@erikhill.dev</a><br>
       <a href="https://linkedin.com/in/erik-hill-98895575" target="erikhill-out">linkedin.com/in/erik-hill-98895575</a>
       <span class="sep">·</span> <a href="../">erikhill.dev</a>
       <span class="sep">·</span> <a href="https://orcid.org/0009-0002-5912-967X" target="erikhill-out">ORCID 0009-0002-5912-967X</a>
       <span class="sep">·</span> Open to remote (US) or relocation
     </div>
     <div style="margin-top:22px">
-      <a class="plive" href="Erik_Hill_Resume.pdf" download>↓ Download the PDF, one page</a>
+      <a class="plive" href="Erik_Hill_Resume.pdf" download>↓ Download the PDF, two pages</a>
     </div>
   </header>
 
   <section>
     <h2>Summary</h2>
     <p>Self-taught AI evaluation and testing engineer building deterministic, replayable systems for measuring coding agents and LLM applications.</p>
-  <p>Career-changing from professional kitchens in under a year, I built a <strong>verifiable-evaluation suite</strong>: seeded-defect task families with provable answer keys, a
-    <strong>certification lab for coding agents</strong>, a <strong>published mutation-tester for eval graders</strong>,
-    and an evidence protocol under which <strong>eleven published evaluation claims are independently replayed in
-    CI</strong>, deterministic, no LLM judges, failures published by design. Also <strong>shipped a game to Google
-    Play</strong>; <strong>30+ public repos, two PyPI packages, one npm package, a merged fix to TeaVM (a 12-year-old compiler), and two merged PRs to Promptfoo (25.8k stars): a scoring fix and a feature adding ROUGE-L/ROUGE-S assertions.</strong> <a href="../findings/">Every one of these is listed with the defect, the proof and its live status &rarr;</a></p>
+  <p>I build <strong>verifiable-evaluation systems</strong> whose claims are
+  checked rather than asserted: <strong>eleven published evaluation claims are replayed from pinned artifacts in CI</strong>,
+  deterministic, no LLM judges, failures published by design. Code merged upstream at promptfoo and TeaVM; a game shipped to Google Play;
+  <strong>30+ public repos, three PyPI packages, one npm package.</strong> <a href="../findings/">Every one of these is listed with the defect, the proof and its live status &rarr;</a></p>
   </section>
 
   <section class="skills">
     <h2>Skills</h2>
-    <p><b>Agentic / AI:</b> Multi-agent orchestration · LangGraph · Model Context Protocol (MCP) · LLM application
-    development · Tool-calling &amp; guardrails · RAG · Evals &amp; regression gating (nDCG) · Prompt &amp; context
-    engineering · Safety (OWASP LLM Top 10, human-in-the-loop) · Differential-oracle, property-based &amp; mutation testing · No-LLM-judge grading</p>
+    <p><b>Evals &amp; AI:</b> Evals · No-LLM-judge grading · Mutation testing · Differential-oracle testing · Property-based testing · Regression gating (nDCG) · Pre-registration &amp; minimum-detectable-effect analysis · RAG · LLM application development · Tool-calling &amp; guardrails · Safety (OWASP LLM Top 10, human-in-the-loop) · Prompt engineering · Context engineering · Model Context Protocol (MCP) · LangGraph · Multi-agent orchestration</p>
     <p><b>Backend &amp; data:</b> Python · FastAPI · Pydantic · SQLAlchemy 2.0 · PostgreSQL · pgvector · Alembic · REST / OpenAPI</p>
-    <p><b>Frontend / mobile:</b> TypeScript · JavaScript · React · Next.js 15 · Java · Capacitor · Android (adb) · WebAssembly (Pyodide, TeaVM)</p>
-    <p><b>Ship &amp; verify:</b> pytest · Vitest · JUnit · jqwik · Playwright · PyPI / npm packaging · GitHub Actions (matrix CI) · Docker · Cloudflare Pages (Wrangler) · Neon</p>
+    <p><b>Frontend / mobile:</b> TypeScript · JavaScript · React · Next.js 16 · Java · Capacitor · Android (adb) · WebAssembly (Pyodide) · TeaVM (JVM to JavaScript)</p>
+    <p><b>Ship &amp; verify:</b> pytest · Vitest · JUnit · jqwik · Playwright · PyPI / npm packaging · GitHub Actions (matrix CI) · Docker · Cloudflare Pages (Wrangler) · Neon · Test automation · QA for LLM systems</p>
   </section>
 
   <section>
     <h2>Selected Projects<span class="hnote">, all public at <a href="https://github.com/egnaro9" target="erikhill-out">github.com/egnaro9</a></span></h2>
-    <div class="proj">&bull; <b>agent-certlab</b>: <strong>Certification lab for coding agents</strong>: three <strong>seeded-defect task families</strong> with provable answer keys (incl. <strong>coordinated two-file defects</strong> no single-file patch can pass), a <strong>precondition prover</strong> (clean passes, every seed fails, it refused one of my own defects), and <strong>calibration agents</strong> the harness must separate before certifying. Two real agents certified; every verdict <strong>regradeable from artifacts</strong>.</div>
-    <div class="proj">&bull; <b>reference-fleet</b>: <strong>An answer key for eval suites</strong>: six models each broken <strong>one documented way at an exact seeded rate</strong>, so detection rates are measurable against ground truth, a naive suite detects <strong>1 of 6</strong> (paired protocol). Plus a <strong>LoRA-trained native defect</strong>: mixture 0.507 &rarr; realized <strong>0.200</strong>, training's rate control is lossy, measured.</div>
-    <div class="proj">&bull; <b>vac-protocol</b>: <strong>Verifiable Agent Claims</strong>: an evidence-bundle format + <strong>offline verifier</strong>; a registry where <strong>eleven real claims are hash-checked and re-earned in CI</strong>, with a <strong>public record of it rejecting my own evidence</strong>. Plus <b>vac-gate</b>: replayable evidence or no green check.</div>
-    <div class="proj">&bull; <b>evalmut</b>: <strong>Mutation testing for eval graders</strong> (<strong>PyPI</strong>, with its <strong>gradecore</strong> engine): inject known defects, report which checks stayed green. Found <strong>4 holes in the graders of gradecore</strong>, the library it depends on, <strong>8 in ports of a widely-used framework's assertions</strong>. <strong>No LLM judge</strong>; every operator tied to a documented real failure. <span class="tests">319 tests.</span></div>
-    <div class="proj">&bull; <b>deadgate</b>: <strong>a linter for CI checks that cannot fail</strong> (<strong>PyPI</strong>). Reads GitHub Actions workflows for gates a failure cannot reach. Across <strong>275 repositories</strong> I hand-labelled every one of its 653 findings and <strong>deleted two of its four detectors</strong> because the census said they had never once been right: <strong>36.1% false, measured rather than estimated</strong>. Found live gate holes in <strong>ruff</strong> and an unguarded required status check in <strong>heygen-com/hyperframes</strong>. <span class="tests">223 tests.</span></div>
-    <div class="proj">&bull; <b>rag-eval-lab</b>, deterministic RAG <strong>eval harness</strong> that catches a planted hallucination in CI; from-scratch <strong>BM25 matching the published SciFact baseline (0.664 vs 0.665)</strong>. <span class="tests">45 tests.</span></div>
-    <div class="proj">&bull; <b>Also:</b> <b><a href="https://crashkit.erikhill.dev">crashkit</a></b>, deterministic adversarial stress-test, BYOK browser-direct &middot; <b>model-drift</b>, public board re-running a <strong>frozen, hash-fingerprinted suite</strong> across <strong>17 models / 5 labs</strong>, with a derived minimum-detectable-regression floor &middot; <b>eval-history</b>, deployed FastAPI/Postgres eval store &middot; <b>mcp-tools</b>. MCP server from the spec, no SDK &middot; <b>llm-wire-stub</b> (npm) &middot; a merged <strong>TeaVM</strong> compiler fix &middot; <strong>two merged PRs to Promptfoo</strong>, a scoring fix and a ROUGE-L/ROUGE-S feature &middot; <a href="../findings/">the findings ledger</a>.</div>
+    <div class="proj">&bull; <b>agent-certlab</b>: <strong>Two real coding agents certified, every verdict regradeable from artifacts</strong>. A certification lab built on three <strong>seeded-defect task families</strong> with provable answer keys (incl. <strong>coordinated two-file defects</strong> no single-file patch can pass), a <strong>precondition prover</strong> (clean passes, every seed fails, it refused one of my own defects), and <strong>calibration agents</strong> the harness must separate before certifying.</div>
+  <div class="proj">&bull; <b>reference-fleet</b>: <strong>An answer key for eval suites</strong>: six models each broken <strong>one documented way at an exactly reproducible seeded rate</strong>, so detection rates are measurable against ground truth, a naive suite detects <strong>1 of 6</strong> (paired protocol). Plus a <strong>LoRA-trained native defect</strong>: mixture 0.507 &rarr; realized <strong>0.20 greedy, 0.31 at temp 1.0</strong>: training's rate control is lossy, measured.</div>
+  <div class="proj">&bull; <b>vac-protocol</b>: <strong>Verifiable Agent Claims</strong>: an evidence-bundle format + <strong>offline verifier</strong>; a registry where <strong>eleven real claims are hash-checked and re-earned in CI</strong>, with a <strong>public record of it rejecting my own evidence</strong>. Plus <b>vac-gate</b>: replayable evidence or no green check.</div>
+  <div class="proj">&bull; <b>evalmut</b>: <strong>Mutation testing for eval graders</strong> (<strong>PyPI</strong>, with its <strong>gradecore</strong> engine): inject known defects, report which checks stayed green. Found <strong>4 holes in the graders of gradecore</strong>, the library it depends on, and <strong>8 in ports of a widely-used framework's assertions</strong>. <strong>No LLM judge</strong>; every operator tied to a documented real failure. Fixed <strong>three fail-open graders</strong> in gradecore 0.10.3, each reproduced against shipped code first. <span class="tests">319 tests.</span></div>
+  <div class="proj">&bull; <b>deadgate</b>: <strong>a linter for CI checks that cannot fail</strong> (<strong>PyPI</strong>). Reads GitHub Actions workflows for gates a failure cannot reach. Across <strong>275 repositories</strong> I hand-labelled every one of its 653 findings and <strong>deleted two of its four detectors</strong> because the census said they had never once been right: <strong>36.1% false, measured rather than estimated</strong>. Found live gate holes in <strong>ruff</strong> and an unguarded required status check in <strong>heygen-com/hyperframes</strong>. <span class="tests">228 tests.</span></div>
+  <div class="proj">&bull; <b>deadcheck</b>: <strong>does an eval rubric catch what it claims?</strong> Run on <strong>three rubrics I did not write</strong>: OpenAI evals' <code>Match</code> accepts "10" for ideal "1"; a promptfoo example passes refusal-then-compliance. Seven probe rounds found <strong>23 defects under its own green suite</strong>. <span class="tests">185 tests.</span></div>
+  <div class="proj">&bull; <b>rag-eval-lab</b>: deterministic RAG <strong>eval harness</strong> that catches a planted hallucination in CI; from-scratch <strong>BM25 matching the published SciFact baseline (0.664 vs 0.665)</strong>. <span class="tests">60 tests.</span></div>
+  <div class="proj">&bull; <b>agent-graph</b>: a <strong>LangGraph ReAct agent</strong> whose multi-step tool use is
+  <strong>unit-testable</strong>: a swappable mock/LLM policy so the graph runs deterministically without a key, a
+  <strong>safe AST calculator</strong> instead of eval, and a max-step guard. <span class="tests">67 tests.</span></div>
+  <div class="proj">&bull; <b>model-drift</b>: public board, <strong>frozen hash-fingerprinted suite</strong> across <strong>17 models / 5 labs</strong>, with a derived <strong>minimum-detectable-regression floor</strong>.</div>
+  <div class="proj">&bull; <b>harness-builder</b>: <strong>More scaffolding scored worse, for 22x the cost</strong>. Three harness shapes on one 20-task suite, <strong>zero errors in 60 runs</strong>: one drafter 95%, planner plus drafter 90%, four-call panel with judge 80%. The panel won <strong>0 of 20 tasks</strong>, and the tool reported <strong>&ldquo;this suite cannot decide&rdquo;</strong> rather than ranking.</div>
+  <div class="proj">&bull; <b>tapdodge-engine</b>: <strong>One rulebook, two runtimes, and a check that fails when they stop agreeing</strong>. A JVM-versus-browser (TeaVM) differential fails CI when the two disagree. In a committed fault injection, the differential was the <strong>only</strong> check that caught a runtime-supplied-RNG fault: the same-runtime determinism test and the golden file both passed it.</div>
+  <div class="proj">&bull; <b>Also public:</b> <b>crashkit</b> (live) &middot; <b>mcp-tools</b> (MCP server, no SDK) &middot; <b>evals-differential-oracle</b> (two independently written implementations agree across <strong>3,000 seeded boards</strong>) &middot; <b>llm-wire-stub</b> (npm) &middot; <b>readme-test-count</b> (fails CI when a README's advertised test count disagrees with the suite; runs in the CI of six of my repos)</div>
+  </section>
+
+  <section>
+    <h2>Reviewed by Others</h2>
+    <div class="proj">&bull; <strong>Two pull requests merged into promptfoo</strong> (26k stars), both merged by its co-founder and CTO. #11278: a blank BLEU reference, such as an unset template variable, let a one-word answer score 1 against a longer reference; the fix shipped in promptfoo 0.124.0. #10256: the <code>rouge-l</code> / <code>rouge-s</code> assertion types, merged 2026-10-09.</div>
+  <div class="proj">&bull; <strong>External audit of vac-protocol:</strong> an outside engineer falsified my own verifier,
+  cheapest forgery <strong>four bytes</strong>. Fix merged, then I found the same defect class <strong>four
+  more times</strong> (arXiv, below). <strong>Sole maintainer through the audit</strong>: merged four of his pull requests and answered his four specification issues in SPEC.md (protocol v0.2). On two I showed the fix he proposed would not close the hole and shipped a wider one, reasoning public.</div>
+  <div class="proj">&bull; <strong>Peer review with Bartłomiej Nawara, PhD</strong>, senior AI/ML engineer:
+  his missing-not-at-random critique of my rate-limit handling shaped <b>model-drift</b>'s <strong>reliability
+  floor</strong>, credited in the repo. I found <strong>two design faults</strong> in his pre-registered study, both acknowledged.</div>
+  <div class="proj">&bull; <strong>Closed a bug report open in TeaVM since 2018</strong> that its own suite could not catch: a <strong>one-character error</strong> in TeaVM's GregorianCalendar emulation, found by differential-testing the browser port against the JVM. The four assertions covering that line had been commented out; the patch re-enables them. Merged same day by the maintainer.</div>
   </section>
 
   <section>
     <h2>Publications</h2>
-    <p>&ldquo;Four Ways to Forge a Bundle My Own Verifier Calls Clean: Refusal-Site Mutation Testing of an Evidence-Bundle Verifier.&rdquo; Erik Hill. <strong>arXiv preprint, 2026</strong>. <a href="https://arxiv.org/abs/2608.26183" target="erikhill-out">arXiv:2608.26183</a></p>
+    <p>&ldquo;Four Ways to Forge a Bundle My Own Verifier Calls Clean: Refusal-Site Mutation Testing of an <span style="white-space:nowrap">Evidence-Bundle</span> Verifier.&rdquo; Erik Hill. <strong>arXiv preprint, 2026</strong>. <a href="https://arxiv.org/abs/2608.26183" target="erikhill-out">arXiv:2608.26183</a><br><strong>25 articles</strong> on evaluation and testing failures, <strong>100+ comments from 25+ readers</strong>. <a href="https://dev.to/agentdev9" target="erikhill-out">dev.to/agentdev9</a> &middot; <strong>Drift Notes</strong>: <a href="https://erikhill.dev/notes/" target="erikhill-out">erikhill.dev/notes</a></p>
   </section>
 
   <section>
     <h2>Experience</h2>
-    <div class="job">Independent AI Evaluation &amp; Testing Engineer. Solo Practice <span class="meta">· Remote · Mar 2026 – Present</span></div>
-    <ul>
-      <li>Designed a five-stage agent loop (Strategy → Execution → Critic → Evaluation → Ops) that plans, builds, reviews, and validates changes to a real React / Capacitor product, human-in-the-loop on every consequential step.</li>
-      <li>Built per-role model routing and hook-based automation that hands work between stages with no manual relaunch; enforced rules with <strong>property-based invariants</strong> (jqwik) over a native engine and <strong>adb-driven on-device validation</strong>. Case study: <strong>github.com/egnaro9/agentic-dev-harness</strong></li>
-    </ul>
-    <div class="job">Indie Game Developer. SeraphLight Studios <span class="meta">· Remote · Nov 2025 – Present</span></div>
-    <ul>
-      <li><strong>Shipped Tap Dodge Rush to Google Play</strong> (Kotlin / Java, Android Views + Canvas, AdMob), closed testing with 12+ testers, then store review, then launch. Building a second, larger game (React / Capacitor), the product the harness above operates on.</li>
-    </ul>
-    <div class="job">Kitchen Manager / Shift Lead. Big Island Brewhaus &amp; other high-volume kitchens <span class="meta">· Hawaii · 2018 – 2025</span></div>
-    <ul>
-      <li>Led shifts and trained staff; owned prep, inventory, and food-safety under sustained pressure, the reliability I bring to software now.</li>
-    </ul>
+    <div class="job">AI/ML Engineer &middot; Epix Devo LLC <span class="meta">· Contract · Remote · Oct 2026 – Present</span></div>
+  <ul>
+    <li>Contract AI/ML engineering against approved requirements: model and framework evaluation, proof-of-concept prototyping, and integration with APIs, data stores and application backends.</li>
+  </ul>
+  <div class="job">Independent AI Evaluation &amp; Testing Engineer &middot; Solo Practice <span class="meta">· Remote · Mar 2026 – Present</span></div>
+  <ul>
+    <li>Designed <strong>five roles across a four-stage production loop</strong> (Strategy → Execution → Critic → Ops) that plans, builds, reviews, and validates changes to a real React / Capacitor product, human-in-the-loop on every consequential step, plus an <strong>asynchronous Evaluation harness</strong> that scores completed batches.</li>
+    <li>Built per-role model routing and hook-based automation that hands work between stages with no manual relaunch; enforced rules with <strong>property-based invariants</strong> (jqwik) over a native engine and <strong>adb-driven <span style="white-space:nowrap">on-device</span> validation</strong>. Write-up: <strong>github.com/egnaro9/agentic-dev-harness</strong></li>
+    <li><strong>Operate model-drift as a running service, not a demo</strong>: its scheduled probe has run on every calendar day since 2026-07-19 (87 in a row as of 2026-10-13, 86 with a clean run) and publishes a public board.</li>
+    <li>Diagnosed an apparent <strong>66-point overnight drop</strong> on that board (69% to 3% on a frozen suite) as a <strong>provider rate cap rather than model drift</strong>: 34 of 35 calls hit a 429 against a 30 RPM shared tier. Shipped Retry-After-aware retries, a per-host throttle, and a reliability floor that drops low-reliability probes from the accuracy line, so a rate limit can no longer render as a regression.</li>
+  </ul>
+  <div class="job">Indie Game Developer &middot; SeraphLight Studios <span class="meta">· Remote · Nov 2025 – Present</span></div>
+  <ul>
+    <li><strong>Shipped Tap Dodge Rush to Google Play</strong> (Kotlin / Java, Android Views + Canvas, AdMob), closed testing with 12+ testers, then store review, then launch. Building a second, larger game (React / Capacitor), the product the harness above operates on.</li>
+  </ul>
+  <div class="job">Kitchen Manager / Shift Lead &middot; Big Island Brewhaus &amp; other high-volume kitchens <span class="meta">· Hawaii · 2018 – 2025</span></div>
+  <ul>
+    <li>Led shifts and trained staff; owned prep, inventory, and food safety under sustained pressure.</li>
+  </ul>
   </section>
 
   <section>
     <h2>Education</h2>
-    <p><strong>freeCodeCamp</strong>, self-directed software curriculum.</p>
+    <p><strong>Clark College</strong>, 2007&ndash;2009 (some college, no degree).</p>
   </section>
 
   <section style="padding-top:28px">
