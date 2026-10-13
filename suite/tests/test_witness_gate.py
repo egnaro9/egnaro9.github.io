@@ -189,7 +189,7 @@ def test_the_pinned_url_must_serve_the_declared_bytes():
     real = json.loads(REAL_MANIFEST.read_text())
 
     # the corrected pin: the commit that actually serves the declared bytes
-    assert real["pinned_commit"].startswith("7ea9ddc6ad12")
+    assert real["pinned_commit"].startswith("d92f24fe3b66")
     assert real["pinned_commit"] in real["public_url"]
     assert real["issuer_commit"] != real["pinned_commit"], (
         "issuer_commit and pinned_commit are different facts and must not be collapsed")

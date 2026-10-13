@@ -9,12 +9,12 @@ implementations against another.
 Three corpora, all materialised to real directories so both verifiers read
 identical bytes:
 
-  whole    the 26 fixtures + examples/outsider, exactly as committed.
+  whole    the 27 fixtures + examples/outsider, exactly as committed.
   sliced   the same bundles with the profiles the browser port does not
            implement (modeldrift-board-v1, crashkit-variance-v1) removed,
            along with the evidence only those checks read and the summary
            subtree only those checks recompute. Without this the port abstains
-           on 25 of 27 bundles and the comparison proves nothing.
+           on 26 of 28 bundles and the comparison proves nothing.
   derived  minimal edits that provoke refusal classes no fixture reaches, and
            that pin each rule the port gained from c441011's verify.py on
            the fixture it would otherwise go unexercised by.

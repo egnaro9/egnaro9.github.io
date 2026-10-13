@@ -1,8 +1,8 @@
 {
  "derived_from": {
   "path": "vac/verify.py",
-  "sha256": "4c0cf48dce7817d51120a46be9de639a424e1861f21a90a6b0d2ded0ef48a125",
-  "lines": 2148
+  "sha256": "3b8fd390bfaa627ae0a07fb9a4848bf4b777013ca3b2dd9d4e5ac72a8dcd4dc9",
+  "lines": 2161
  },
  "refusals": [
   {
@@ -17,7 +17,7 @@
    "name": "check-artifact-not-listed",
    "const": "CHECK_ARTIFACT_NOT_LISTED",
    "sites": 1,
-   "first_line": 1925,
+   "first_line": 1938,
    "archive_only": false,
    "symlink_only": false
   },
@@ -49,7 +49,7 @@
    "name": "evidence-unchecked",
    "const": "EVIDENCE_UNCHECKED",
    "sites": 1,
-   "first_line": 1968,
+   "first_line": 1981,
    "archive_only": false,
    "symlink_only": false
   },
@@ -89,7 +89,7 @@
    "name": "missing-manifest",
    "const": "MISSING_MANIFEST",
    "sites": 2,
-   "first_line": 1984,
+   "first_line": 1997,
    "archive_only": false,
    "symlink_only": false
   },
@@ -137,7 +137,7 @@
    "name": "summary-outruns-checks",
    "const": "SUMMARY_OUTRUNS_CHECKS",
    "sites": 3,
-   "first_line": 1865,
+   "first_line": 1878,
    "archive_only": false,
    "symlink_only": false
   },
@@ -161,7 +161,7 @@
    "name": "unsafe-archive",
    "const": "UNSAFE_ARCHIVE",
    "sites": 1,
-   "first_line": 2137,
+   "first_line": 2150,
    "archive_only": true,
    "symlink_only": false
   },
@@ -177,7 +177,7 @@
    "name": "unscopable-check",
    "const": "UNSCOPABLE_CHECK",
    "sites": 2,
-   "first_line": 1946,
+   "first_line": 1959,
    "archive_only": false,
    "symlink_only": false
   }

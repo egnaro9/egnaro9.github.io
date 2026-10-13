@@ -16,4 +16,4 @@
 #   PATH="$PWD/.venv/bin:$PATH" .venv/bin/python suite/runner.py
 
 pytest>=8
-vac-protocol @ git+https://github.com/egnaro9/vac-protocol@c4410114a470d2aca19b9f277efc3895a87a0d80
+vac-protocol @ git+https://github.com/egnaro9/vac-protocol@69c95101808a7ae31a8ad4dc248c703c553e92c9

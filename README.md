@@ -29,7 +29,7 @@ contract** backed by a **replayable evidence bundle**.
   committed contract independently re-graded in CI; one certification earned
   entirely inside GitHub Actions.
 - **[vac-protocol](https://github.com/egnaro9/vac-protocol)** — the VAC spec
-  and [registry](https://erikhill.dev/vac-protocol/) (11 accepted
+  and [registry](https://erikhill.dev/vac-protocol/) (12 accepted
   bundles, none pending, two-gated acceptance: structural verification, then
   semantic replay by the issuer's own deterministic grader). Every bundle
   replays from sha256 pins addressed to a commit; two were once refused by the

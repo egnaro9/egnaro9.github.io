@@ -1,13 +1,13 @@
 {
   "_": "The exact evidence this console is willing to publish. The sibling checkout is byte transport; THIS is the pin. If evalmut regenerates the artifact without an intentional update here, the sha256 stops the build. public_url is what makes the pin checkable by a reader instead of only by the author, and it is addressed at pinned_commit, never at issuer_commit: the two are different facts. issuer_commit is the code state the run was stamped at and is cross-checked against the artifact's own stamp. pinned_commit is the commit whose tree actually contains these bytes, which is normally a later one, because a run is made first and its artifact is committed afterwards. Addressing the URL at the issuer commit sent readers to a tree where the file did not yet have these bytes.",
   "artifact": "evalmut/docs/dogfood_gradecore_witnessed.json",
-  "sha256": "779b0b565670d80b1aebcc45c26cfaaf3e9c48005f1425dba55cbe702e215e9f",
+  "sha256": "b44002e3f1d6dd4333b6462498284ceba78ee9a83fbe14d1d6e54966b0d5dfd4",
   "protocol": "evalmut-invocation-witness-v1",
   "library": {
     "name": "gradecore",
-    "version": "0.10.2"
+    "version": "0.10.3"
   },
-  "issuer_commit": "772bd93",
-  "pinned_commit": "7ea9ddc6ad12289e965b4873d4e25b7b695b48d1",
-  "public_url": "https://github.com/egnaro9/evalmut/blob/7ea9ddc6ad12289e965b4873d4e25b7b695b48d1/docs/dogfood_gradecore_witnessed.json"
+  "issuer_commit": "d620efd",
+  "pinned_commit": "d92f24fe3b66886ef8d01c52a9cfa6988b272dd5",
+  "public_url": "https://github.com/egnaro9/evalmut/blob/d92f24fe3b66886ef8d01c52a9cfa6988b272dd5/docs/dogfood_gradecore_witnessed.json"
 }

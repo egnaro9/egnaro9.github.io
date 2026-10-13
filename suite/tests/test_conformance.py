@@ -65,11 +65,15 @@ def report():
 
 
 def test_the_whole_committed_corpus_is_present(report):
-    """26 fixtures + examples/outsider, none dropped on the way in."""
+    """27 fixtures + examples/outsider, none dropped on the way in. 26 until the
+    verifier pin moved to vac-protocol 69c9510, whose tree carries 34f87fa's
+    attack-fleet-stamp-deleted. Both implementations name the same two
+    stamp-mismatch refusals; on the whole bundle the port abstains (INCOMPLETE,
+    its unported modeldrift-board-v1 profile) and on the slice it refuses."""
     whole = [r for r in report["records"] if r["family"] == "whole"]
-    assert len(whole) == 27, [r["name"] for r in whole]
+    assert len(whole) == 28, [r["name"] for r in whole]
     fixtures = [r["name"] for r in whole if r["name"] != "outsider"]
-    assert len(fixtures) == 26
+    assert len(fixtures) == 27
     assert "make_fixtures.py" not in fixtures
 
 
@@ -85,12 +89,13 @@ def test_no_mismatch_between_the_two_implementations(report):
 
 
 def test_every_case_is_classified_and_nothing_is_skipped(report):
-    """27 whole, 25 sliced, 38 derived. The derived count rose from 22 when the
+    """28 whole, 26 sliced, 38 derived (27 and 25 before the 69c9510 pin added one
+    fixture, which also adds one slice). The derived count rose from 22 when the
     port took c441011's rules: each new case is one of those rules on a bundle
     that exercises it, and each one fails this file when it is run against the
     port as it stood before them."""
     recs = report["records"]
-    assert len(recs) == 90, len(recs)
+    assert len(recs) == 92, len(recs)
     assert all(r["status"] in (C.MATCH, C.DIVERGENT, C.MISMATCH) for r in recs)
     # a divergence with no reason is a silent skip wearing a label
     for r in recs:
