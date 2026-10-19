@@ -133,7 +133,7 @@ The canonical, always-current map is the site itself:
 | **[eval-dashboard](https://github.com/egnaro9/eval-dashboard)** | Next.js + strict-TS dashboard for eval runs | TypeScript · runtime schema validation · static export |
 | **[match3-engine](https://github.com/egnaro9/match3-engine)** | Standalone match-3 rules engine (Java) | property-based testing (16 jqwik invariants, 59 tests) · JVM→JS porting |
 | **[evals-differential-oracle](https://github.com/egnaro9/evals-differential-oracle)** | The same logic written twice + invariant tests | differential testing / cross-implementation correctness |
-| **[agentic-dev-harness](https://github.com/egnaro9/agentic-dev-harness)** | Architecture case study | system-design write-up of the harness that builds these |
+| **[Harness case study](https://github.com/egnaro9/exposure-watch/blob/main/docs/HARNESS.md)** | Architecture case study | system-design write-up of the harness that builds these (the harness repo itself is private) |
 
 ## About this repo specifically
 
