@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="How Erik Hill designs multi-agent pipelines and measures whether the orchestration earns its cost: the rules, the measurements, and the failures behind them.">
+<title>Agent Orchestration, Measured</title>
+<style>
+  :root {
+    color-scheme: dark light;
+    --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
+    --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
+    --amber:#f2a53c; --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12); --teal-line:rgba(72,193,172,.34);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --maxw:880px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --ink:#e9edee; --panel:#f4f6f6; --raised:#ffffff;
+      --line:rgba(12,26,32,.12); --line-2:rgba(12,26,32,.07);
+      --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
+      --amber:#b7761a; --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
+      --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1); --teal-line:rgba(28,143,125,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.05);
+    --fg:#dae2e4; --fg-dim:#8a989e; --fg-faint:#5e6c72;
+    --amber:#f2a53c; --amber-ink:#f2a53c; --amber-soft:rgba(242,165,60,.13); --amber-line:rgba(242,165,60,.34);
+    --teal:#48c1ac; --teal-soft:rgba(72,193,172,.12); --teal-line:rgba(72,193,172,.34);
+  }
+  :root[data-theme="light"]{
+    --ink:#e9edee; --panel:#f4f6f6; --raised:#ffffff;
+    --line:rgba(12,26,32,.12); --line-2:rgba(12,26,32,.07);
+    --fg:#131c20; --fg-dim:#4d5a60; --fg-faint:#7c888d;
+    --amber:#b7761a; --amber-ink:#b7761a; --amber-soft:rgba(200,128,26,.12); --amber-line:rgba(200,128,26,.4);
+    --teal:#1c8f7d; --teal-soft:rgba(28,143,125,.1); --teal-line:rgba(28,143,125,.4);
+  }
+*{box-sizing:border-box}
+body{margin:0; background:var(--ink)}
+.wrap{
+    background:var(--ink); color:var(--fg); font-family:var(--sans);
+    font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+    background-image:
+      linear-gradient(var(--line-2) 1px,transparent 1px),
+      linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:34px 34px; background-position:center top;
+    padding:0 20px 72px; min-height:100vh;
+  }
+.col{max-width:var(--maxw); margin:0 auto}
+.label{font-family:var(--mono); font-size:19px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--amber-ink)}
+.label .tick{color:var(--fg-faint)}
+h1{font-family:var(--mono); font-weight:600; font-size:clamp(38px,9vw,64px); line-height:.98; letter-spacing:-.02em; margin:18px 0 0; color:var(--fg)}
+a{color:var(--amber-ink); text-decoration:none}
+header{padding:56px 0 30px; border-bottom:1px solid var(--line)}
+.chip{font-family:var(--mono); font-size:13.5px; color:var(--fg-dim); border:1px solid var(--line);
+    background:var(--raised); padding:7px 12px; border-radius:2px; display:inline-flex;
+    align-items:center; gap:7px; transition:border-color .15s, background .15s}
+.chip:hover{border-color:var(--amber-line); background:var(--amber-soft)}
+.chip:hover a{color:var(--amber-ink)}
+.chip a{color:var(--fg); text-decoration:none; transition:color .15s}
+.contact{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px}
+
+/* --- page-specific, built on the estate shell --- */
+.thesis{font:400 1.12rem/1.55 var(--sans); color:var(--fg-dim); margin:0 0 34px; max-width:40rem}
+h2.sec{font:600 .72rem/1 var(--mono); letter-spacing:.16em; text-transform:uppercase;
+       color:var(--amber-ink); margin:46px 0 14px}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:20px 22px}
+.rules ol{margin:0; padding-left:1.2rem; color:var(--fg-dim); font:.95rem/1.6 var(--sans)}
+.rules li{margin:9px 0}
+.rules li b{color:var(--fg)}
+.why{margin:18px 0 0; padding-top:16px; border-top:1px solid var(--line-2);
+     color:var(--fg-dim); font:.94rem/1.6 var(--sans)}
+.lede{color:var(--fg-dim); font:.98rem/1.6 var(--sans); margin:0 0 16px; max-width:40rem}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font:.86rem/1.4 var(--mono); font-variant-numeric:tabular-nums}
+th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line-2); white-space:nowrap}
+th{font:.66rem/1.4 var(--mono); letter-spacing:.09em; text-transform:uppercase; color:var(--fg-faint); font-weight:400}
+td{color:var(--fg-dim)} td.num{text-align:right} th.num{text-align:right}
+tr.best td:first-child{color:var(--teal)}
+@media (max-width:560px){ th,td{padding:8px 6px} td:first-child{white-space:normal; min-width:7.5rem} th{font-size:.58rem; letter-spacing:.05em} table{font-size:.8rem} }
+.after{color:var(--fg-dim); font:.94rem/1.6 var(--sans); margin:16px 0 0}
+.after b{color:var(--fg)}
+.fail{border-left:2px solid var(--amber-line); padding:2px 0 2px 16px; margin:0 0 24px}
+.fail h3{font:600 1rem/1.4 var(--sans); margin:0 0 3px; color:var(--fg)}
+.where{font:.72rem/1.4 var(--mono); color:var(--fg-faint); margin:0 0 7px}
+.where a{color:var(--fg-faint); border-bottom:1px solid var(--line)}
+.where a:hover{color:var(--amber-ink)}
+.fail p{margin:0; color:var(--fg-dim); font:.93rem/1.6 var(--sans)}
+.stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px}
+.stat{background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:16px 18px}
+.stat .big{font:1.9rem/1 var(--mono); color:var(--amber-ink); font-variant-numeric:tabular-nums}
+.stat .u{display:block; margin-top:8px; color:var(--fg-dim); font:.84rem/1.4 var(--sans)}
+.note{color:var(--fg-faint); font:.8rem/1.6 var(--mono); margin:12px 0 0}
+.offer ul{margin:0; padding-left:1.1rem; color:var(--fg-dim); font:.95rem/1.6 var(--sans)}
+.offer li{margin:8px 0}
+.src{list-style:none; padding:0; margin:0}
+.src li{padding:8px 0; border-top:1px solid var(--line-2); font:.86rem/1.5 var(--sans); color:var(--fg-dim)}
+.src li a{font-family:var(--mono); font-size:.84rem}
+.foot{margin-top:52px; padding-top:18px; border-top:1px solid var(--line);
+      font:.74rem/1.7 var(--mono); color:var(--fg-faint)}
+a:focus-visible{outline:2px solid var(--amber-line); outline-offset:2px}
+@media (max-width:360px){ h1{font-size:31px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="col">
+<header>
+<nav class="contact" style="margin:0 0 30px" aria-label="Site"><span class="chip"><a href="../">&larr; Home</a></span><span class="chip"><a href="../about/">About</a></span><span class="chip"><a href="../findings/">Findings</a></span><span class="chip"><a href="../resume/">R&eacute;sum&eacute;</a></span></nav>
+<div class="label"><span class="tick">//</span> Orchestration</div>
+<h1>Agent orchestration, measured</h1>
+<p class="thesis">I design multi-agent pipelines, then measure whether the orchestration earns its cost. Several of the rules below were tightened after something failed, and four of those failures are written up here, each with a source you can read.</p>
+</header>
+
+<h2 class="sec">How I run agents</h2>
+<div class="card rules"><ol>
+<li><b>Route by role.</b> Judgment roles (planning, critique, evaluation) run on stronger models and execution runs on cheaper ones, so cost follows how hard the decision is. A model gate refuses to run a judgment role on an under-powered model.</li>
+<li><b>Nothing closes without proof.</b> A unit of work stays open until an automated check finds its evidence on disk. A report that the work is done is not evidence that it is.</li>
+<li><b>Review from zero context.</b> Consequential changes go to a separate model session that never saw the code being written. It gets the diff and the standard. It can flag; it cannot ship.</li>
+<li><b>Agents never approve their own consequences.</b> Commits and deploys wait for a person, and an approval counts only if it came from the operator's own input. An agent that types its own approval is refused.</li>
+<li><b>Automate the clicks, never the gates.</b> Handoffs between roles run on their own. Autonomy climbs a named ladder from L0 to L4; the harness runs at L2, and each higher level removes a click, never a gate.</li>
+</ol><p class="why">Orchestration multiplies whatever the agents get wrong, so agent output stays unverified until a check a machine can run says otherwise, and a failure is made loud rather than quiet.</p></div>
+
+<h2 class="sec">Measured, not assumed</h2>
+<p class="lede">I assumed a planner and a judge would improve the output, so I built a tool to measure it: three pipeline shapes, the same 20 coding tasks, real models, $0.99 in total. Scoring executes the generated code; no model grades anything.</p>
+<div class="card"><div class="tablewrap"><table>
+<thead><tr><th>Shape</th><th class="num">Calls</th><th class="num">Score</th><th class="num">Cost</th><th class="num">Latency</th></tr></thead>
+<tbody>
+<tr class="best"><td>one drafter</td><td class="num">1</td><td class="num">95%</td><td class="num">$0.031</td><td class="num">2.2s</td></tr>
+<tr><td>planner, then drafter</td><td class="num">2</td><td class="num">90%</td><td class="num">$0.264</td><td class="num">9.1s</td></tr>
+<tr><td>planner, two drafters, judge</td><td class="num">4</td><td class="num">80%</td><td class="num">$0.692</td><td class="num">18.3s</td></tr>
+</tbody></table></div>
+<p class="where" style="margin:10px 0 0">Calls per task; cost is the total for all 20 tasks; latency is the mean per task.</p>
+<p class="after">The four-call panel beat the single drafter on <b>0 of 20</b> tasks, lost 3 and tied 17, at <b>22.1x the cost</b> and <b>8.4x the latency</b>. Nothing errored across 60 runs. On this run it scored lower and took longer.</p>
+<p class="after">The tool then refused to call the panel worse. Only 3 tasks separated the two, and even a clean sweep of 3 gives p = 0.25 at best. So the result is three separate statements rather than a ranking: no evidence the panel helps on this suite, a measured cost for trying, and too few tasks to settle the rest.</p>
+<p class="where" style="margin-top:14px">Source: <a href="https://github.com/egnaro9/harness-builder/blob/main/docs/field-note-first-result.md" target="erikhill-out">Harness Builder field note</a> and the <a href="https://github.com/egnaro9/harness-builder/blob/main/results/sweep_2026-07-25.json" target="erikhill-out">committed result file</a>, July 2026</p></div>
+
+<h2 class="sec">Where it fails quietly</h2>
+<article class="fail"><h3>The model became the gate.</h3><p class="where"><a href="https://github.com/egnaro9/pi-gates" target="erikhill-out">pi-gates</a>, July 2026</p><p>A banner announcing the armed gate sat in the conversation. The model took the rule on as its own job, saying it would watch for the approval, and the gate looked enforced in a transcript where no command had run (<a href="https://github.com/egnaro9/pi-gates/commit/3edde6c" target="erikhill-out">3edde6c</a>, <a href="https://github.com/egnaro9/pi-gates/commit/c7203c2" target="erikhill-out">c7203c2</a>). The banner moved outside model context, and the gate is now verified by firing its handler directly with no model in the loop. A public demo fires the real handlers with a self-issued approval, marked as coming from an extension rather than the keyboard, and shows the push refused.</p></article>
+<article class="fail"><h3>The tests checked the consumer, never the producer.</h3><p class="where"><a href="https://github.com/egnaro9/llm-wire-stub" target="erikhill-out">llm-wire-stub</a>, August 2026</p><p>The approval-gate tests for a multi-agent app staged model output straight into app state, so they exercised the code that reads a proposal and never the code that writes one. The fix moved the fake down to the wire: the real SDK client runs unmodified and only the bytes are scripted. The recorded request bodies then exposed a context leak between agents, one agent's output never reaching the next agent's prompt, which no state-level test could see.</p></article>
+<article class="fail"><h3>The gate could not see what it was gating.</h3><p class="where"><a href="../notes/2026-10-02-the-gate-could-not-see-what-it-was-gating/">write-up</a>, the receipt gate on this site, incident August 2026</p><p>A pre-commit gate accepted a receipt for an earlier version of a file as proof for every later version, for four days. The fix binds each receipt to the staged blob. Six tests written for that fix all passed against a mutant that compared only the first four characters of the hash; a seventh test kills it.</p></article>
+<article class="fail"><h3>Eight rounds of adversarial review before I trusted a tool.</h3><p class="where"><a href="https://github.com/egnaro9/evalmut/blob/v0.1-paper/paper/evalmut.md" target="erikhill-out">evalmut paper</a>, August 2026</p><p>Independent agents tried to break the tool's verdicts, each finding reproduced by a runnable script and triaged against the source. False findings on a well-formed suite reached zero by round six and stayed there through round eight. Every confirmed finding is pinned by a regression test in a 90-test suite, and two fixes proposed during review were rejected as circular.</p></article>
+
+<h2 class="sec">Operating record</h2>
+<div class="stats">
+<div class="stat"><span class="big">~200</span><span class="u">completed work-arcs</span></div>
+<div class="stat"><span class="big">~190</span><span class="u">human-gated checkpoints</span></div>
+<div class="stat"><span class="big">74</span><span class="u">zero-context critic reviews</span></div>
+<div class="stat"><span class="big">13</span><span class="u">periodic self-evaluations</span></div>
+</div>
+<p class="note">One development harness, spring to summer 2026, counted from its private on-disk archive, so the counts are self-reported, and described in the <a href="https://dev.to/agentdev9/i-built-an-ai-dev-harness-that-isnt-allowed-to-trust-itself-53mh" target="erikhill-out">harness write-up</a>. Two of its gates are ported to the open-source pi-gates; the harness prompts and failure specifics stay private.</p>
+
+<h2 class="sec">What I would do on your team</h2>
+<div class="card offer"><ul>
+<li>Design agent pipelines in which every stage can fail loudly, with verification as a stage of its own rather than a step inside generation.</li>
+<li>Measure whether an added agent pays for itself before it ships: cost, latency, and which tasks it actually changes.</li>
+<li>Put a gate on anything irreversible, and prove each gate fires with no model in the loop.</li>
+<li>Keep evidence on disk for every closed unit of work, so a reviewer can check the claim instead of trusting it.</li>
+</ul></div>
+
+<h2 class="sec">Read the sources</h2>
+<ul class="src">
+<li><a href="https://dev.to/agentdev9/i-built-an-ai-dev-harness-that-isnt-allowed-to-trust-itself-53mh" target="erikhill-out">I built an AI dev harness that isn't allowed to trust itself</a>, July 2026</li>
+<li><a href="https://dev.to/agentdev9/the-cold-context-critic-a-reviewer-that-never-remembers-writing-the-code-40fp" target="erikhill-out">The cold-context critic: a reviewer that never remembers writing the code</a>, July 2026</li>
+<li><a href="https://dev.to/agentdev9/i-built-a-tool-to-prove-my-multi-agent-harness-was-worth-it-it-told-me-it-wasnt-do" target="erikhill-out">I built a tool to prove my multi-agent harness was worth it. It told me it wasn't.</a>, July 2026</li>
+<li><a href="https://dev.to/agentdev9/my-ai-gate-tests-were-green-theater-the-fix-was-to-stub-the-wire-and-nothing-above-it-338m" target="erikhill-out">My AI gate tests were green theater</a>, August 2026</li>
+<li><a href="../notes/2026-10-02-the-gate-could-not-see-what-it-was-gating/">The gate could not see what it was gating</a>, October 2026</li>
+</ul>
+
+<div class="foot">Every number on this page comes from a public repository or article linked on it; the operating-record counts are self-reported from a private archive.<br><a href="https://github.com/egnaro9" target="erikhill-out">github.com/egnaro9</a> &middot; <a href="mailto:contact@erikhill.dev">contact@erikhill.dev</a></div>
+</div>
+</div>
+</body>
+</html>
