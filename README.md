@@ -1,6 +1,6 @@
 # egnaro9.github.io
 
-Portfolio site for **Erik Hill** — AI evaluation & testing engineer.
+Portfolio site for **Erik Hill**, AI evaluation & testing engineer.
 
 **Live:** https://erikhill.dev · Hand-written HTML/CSS, no framework, nothing compiled at deploy time. The pages under `suite/` are the exception: they are generated from committed artifacts by `suite/build.py`, `suite/runner.py` and `suite/refusals.py`, and the output is checked in.
 
@@ -16,26 +16,30 @@ The top layer of this work is a program on **Agent Release
 Readiness**, where a claim about an AI system ships as a **capability
 contract** backed by a **replayable evidence bundle**.
 
-- **[evalmut](https://github.com/egnaro9/evalmut)** — mutation testing for
+- **[evalmut](https://github.com/egnaro9/evalmut)**: mutation testing for
   eval suites ([on PyPI](https://pypi.org/project/evalmut/)): inject a known
   defect mined from a real failure; a grader that stays green has a hole.
-  Found 3 real holes in `gradecore`'s own graders.
-- **[reference-fleet](https://github.com/egnaro9/reference-fleet)** — six
+  Found 4 real holes in `gradecore`'s own graders (2 blind, 2 coverage-gap).
+- **[reference-fleet](https://github.com/egnaro9/reference-fleet)**: six
   reference models broken in exactly one documented way each, at a stated,
   seeded rate, plus a [live audit board](https://erikhill.dev/reference-fleet/)
   of which suite styles notice. CI re-runs the audit before the board deploys.
-- **[agent-certlab](https://github.com/egnaro9/agent-certlab)** — capability
+- **[agent-certlab](https://github.com/egnaro9/agent-certlab)**: capability
   contracts for coding agents: seeded defects, artifacts-only grading, every
-  committed contract independently re-graded in CI; one certification earned
+  committed contract independently re-graded in CI; five of eight certifications earned
   entirely inside GitHub Actions.
-- **[vac-protocol](https://github.com/egnaro9/vac-protocol)** — the VAC spec
+- **[vac-protocol](https://github.com/egnaro9/vac-protocol)**: the VAC spec
   and [registry](https://erikhill.dev/vac-protocol/) (12 accepted
   bundles, none pending, two-gated acceptance: structural verification, then
-  semantic replay by the issuer's own deterministic grader). Every bundle
-  replays from sha256 pins addressed to a commit; two were once refused by the
-  verifier over their own evidence and stayed unreplayable until repaired.
-- **[vac-gate](https://github.com/egnaro9/vac-gate)** — a composite GitHub
+  semantic replay by the issuer's own deterministic grader). Every bundle is
+  pinned by sha256 to a commit and replayed weekly in CI; 11 of 12 replayed
+  green on 2026-10-19. Two were once refused by the verifier over their own
+  evidence and stayed unreplayable until repaired.
+- **[vac-gate](https://github.com/egnaro9/vac-gate)**: a composite GitHub
   Action: no verified contract, no green check.
+  [vac-gate-demo](https://github.com/egnaro9/vac-gate-demo) is a worked
+  example: a staged PR whose CI will not go green without the agent's
+  capability contract.
 
 `model-drift` and `crashkit` each emit their central claim into that registry
 as a bundle (`emit_vac.py`).
@@ -43,9 +47,9 @@ as a bundle (`emit_vac.py`).
 ## The system these repos form
 
 Underneath that layer is a working eval stack, and its substrate is
-**`eval-history`**, a deployed FastAPI + Postgres service that other repos
-write to and read from. Every arrow below is a real data path in the code,
-not an aspiration.
+**`eval-history`**, a FastAPI + Postgres regression store: model-drift and
+rag-eval-lab CI write runs to its database, and it publishes a daily static
+archive. Every arrow below is a real data path in the code, not an aspiration.
 
 ```mermaid
 flowchart TD
@@ -59,11 +63,12 @@ flowchart TD
     MCP["<b>mcp-tools</b><br/>from-scratch MCP server · stdlib-only"]
     HUB["<b>egnaro9.github.io</b><br/>this hub · refresh_drift.py"]
 
-    MD -->|metrics.json / narrative.json| HUB
+    MD -->|narrative.json| HUB
     MD -->|live metrics lookup| MCP
+    MD -->|writes each run to its database| EH
     REL -->|post_run.py stores runs| EH
-    PR -->|stores PR run · reads main baseline| EH
-    MCP -->|live eval-run lookup| EH
+    PR -->|reads main baseline from the archive| EH
+    MCP -->|eval-run lookup, from the archive| EH
     REL -->|eval_run.json| DASH
 
     classDef svc fill:#0d3b66,stroke:#0d3b66,color:#fff;
@@ -73,7 +78,7 @@ flowchart TD
 `llm-gateway` and `agent-graph` stand alone (a service and an agent you run
 directly); everything else feeds into or reads from `eval-history`.
 
-## Backend & infra — where the depth is
+## Backend & infra: where the depth is
 
 Most of these read as libraries or CLIs. The backend story lives in one place
 and is easy to miss, so, plainly:
@@ -97,21 +102,23 @@ and is easy to miss, so, plainly:
 - **`llm-gateway`** is production-shaped API discipline: versioned `/v1` routes,
   correct status semantics (401/429 with integer `Retry-After`/502/422), DI
   bearer auth, token-bucket rate limiting, retry, per-model cost accounting, and
-  SSE streaming — behind one OpenAI-compatible contract.
+  SSE streaming, behind one OpenAI-compatible contract.
 - The **CI/infra habits** repeat across repos: green CI as the default, zero
-  committed secrets, deterministic tests, and — in `model-drift` — a daily cron
+  committed secrets, deterministic tests, and, in `model-drift`, a daily cron
   that files a regression as a GitHub issue.
 
 Framed as *managed Postgres · health checks · IaC · migrations · CI-against-real-DB*,
 this is a cloud/infra story that maps concept-for-concept onto AWS primitives
 (RDS · ALB health checks · CloudFormation · CodePipeline). It was built on Render +
-Neon; the hosting is gone and its read routes are now published as a hashed
-static archive, and it's honest to say so.
+Neon; the Render host is gone, the Neon database is still written by CI every
+day, and its read routes are published as a hashed static archive. It's honest
+to say so.
 
 ## The repos
 
-The canonical, always-current map is the site itself:
-[erikhill.dev](https://erikhill.dev).
+The canonical map is the site itself: [erikhill.dev](https://erikhill.dev).
+How the agents behind this work are run is on the
+[Orchestration page](https://erikhill.dev/orchestration/).
 
 | Repo | What it is | What it proves |
 |---|---|---|
@@ -121,17 +128,25 @@ The canonical, always-current map is the site itself:
 | **[vac-protocol](https://github.com/egnaro9/vac-protocol)** | Verifiable Agent Claims spec + registry | replayable evidence bundles · two-gated acceptance |
 | **[vac-gate](https://github.com/egnaro9/vac-gate)** | Composite Action gating CI on a verified contract | integrity gate · sha256-checked registry fetch |
 | **[crashkit](https://github.com/egnaro9/crashkit)** | BYOK adversarial crash test, deployed on Cloudflare Workers | deterministic severity-weighted grading · twin-control mocks |
-| **[gradecore](https://github.com/egnaro9/gradecore)** | The shared deterministic grading engine | one grader package under crashkit + model-drift, byte-identical `suite_hash` |
+| **[gradecore](https://github.com/egnaro9/gradecore)** | The shared deterministic grading engine | the grader package used by crashkit, evalmut, rag-eval-lab and pi-eval; wire-compatible with model-drift (identical `suite_hash`) |
 | **[harness-builder](https://github.com/egnaro9/harness-builder)** | Harness-shape sweep tool | paired sign test that refuses to over-claim · deterministic scoring |
+| **[exposure-watch](https://github.com/egnaro9/exposure-watch)** | Known-exploited-vulnerability triage, plain code against agent pipelines | pre-registered held-out round of 57 pairs · a tie on correct answers (47 vs 45, exact McNemar p = 0.69) · the agent pipeline with a skeptic wrong on 0, code + keywords wrong on 12 |
+| **[deadgate](https://github.com/egnaro9/deadgate)** | Finds CI checks that cannot fail ([PyPI](https://pypi.org/project/deadgate/)) | hand-labelled census of 653 findings · detectors deleted on evidence rather than tuned |
+| **[deadcheck](https://github.com/egnaro9/deadcheck)** | Measures what an eval rubric can and cannot see | rubrics from promptfoo, OpenAI evals and Inspect AI, each with a finding on its first fair run |
+| **[readme-test-count](https://github.com/egnaro9/readme-test-count)** | Fails CI when a README's prose test count disagrees with pytest | refuses the cases where a looser check passes (no count, collection errors, a file that collects nothing) |
 | **[eval-history](https://github.com/egnaro9/eval-history)** | FastAPI + Postgres regression store for LLM eval runs | API design · data modeling · Alembic migrations · dual-DB CI · health/readiness |
 | **[llm-gateway](https://github.com/egnaro9/llm-gateway)** | Multi-provider LLM gateway, OpenAI-shaped | API contract design · auth · rate limiting · caching · retries · cost accounting |
 | **[model-drift](https://github.com/egnaro9/model-drift)** | Daily public LLM regression tracker | deterministic grading · frozen fingerprinted suite · cron CI · regression-as-issue |
 | **[rag-eval-lab](https://github.com/egnaro9/rag-eval-lab)** | Dependency-free RAG pipeline + eval harness | IR/ML metrics (BM25 · precision@k · recall@k · faithfulness) · pgvector · honest negatives |
 | **[mcp-tools](https://github.com/egnaro9/mcp-tools)** | From-scratch MCP server (stdio, stdlib-only) | protocol implementation · safe tool sandboxing (AST allow-list) · live service lookups |
+| **[pi-gates](https://github.com/egnaro9/pi-gates)** | Refusal gates for the pi coding agent | a public port of the site's commit gate: an approval the session types for itself is refused |
+| **[pi-eval](https://github.com/egnaro9/pi-eval)** | Deterministic grading for pi, over `gradecore` | fixed predicates, no LLM judge |
 | **[agent-graph](https://github.com/egnaro9/agent-graph)** | LangGraph ReAct agent with guarded tools | multi-step tool use · deterministic/testable tools · max-step safety guard |
-| **[prompt-regress](https://github.com/egnaro9/prompt-regress)** | PR merge gate that blocks on eval regression | CI gating · dependency inversion · built on `eval-history` |
+| **[prompt-regress](https://github.com/egnaro9/prompt-regress)** | PR eval gate: reads baselines from eval-history's archive; storing a run needs a writable eval-history | CI gating · dependency inversion · built on `eval-history` |
 | **[eval-dashboard](https://github.com/egnaro9/eval-dashboard)** | Next.js + strict-TS dashboard for eval runs | TypeScript · runtime schema validation · static export |
+| **[llm-wire-stub](https://github.com/egnaro9/llm-wire-stub)** | Scripted Anthropic Messages API for Playwright tests (npm) | stubs the wire and nothing above it: real SDK, real SSE decode, real tool loop |
 | **[match3-engine](https://github.com/egnaro9/match3-engine)** | Standalone match-3 rules engine (Java) | property-based testing (16 jqwik invariants, 59 tests) · JVM→JS porting |
+| **[tapdodge-engine](https://github.com/egnaro9/tapdodge-engine)** | The Play Store game's rules engine, compiled for the JVM and to JavaScript with TeaVM | a check that fails when the JVM and browser builds stop agreeing, which a same-runtime determinism test cannot see |
 | **[evals-differential-oracle](https://github.com/egnaro9/evals-differential-oracle)** | The same logic written twice + invariant tests | differential testing / cross-implementation correctness |
 | **[Harness case study](https://github.com/egnaro9/exposure-watch/blob/main/docs/HARNESS.md)** | Architecture case study | system-design write-up of the harness that builds these (the harness repo itself is private) |
 
@@ -142,7 +157,7 @@ development harness (a self-reviewing agent loop: Strategy → Execution → Cri
 Evaluation → Ops), a differential oracle that proves correctness across two
 independent implementations, and a human-in-the-loop autonomy ladder.
 
-One paragraph on the homepage — the drift board summary — is **generated**, not
+One paragraph on the homepage, the drift board summary, is **generated**, not
 hand-written: `tools/refresh_drift.py` splices in the text `model-drift`
 produces, where every sentence is a predicate over the board's own numbers. It
 refuses more readily than it writes (an empty, too-short, wrong-tag, or

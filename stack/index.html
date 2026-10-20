@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Five projects, one loop — an agent that retrieves, a gateway that governs its model calls, a harness that grades its answers, a dashboard that shows the grades, and a Postgres service that remembers every run. Four run live in your browser; the fifth is a real API.">
-<title>The whole stack — Erik Hill</title>
+<meta name="description" content="Five projects, one loop: an agent that retrieves, a gateway that governs its model calls, a harness that grades its answers, a dashboard that shows the grades, and a Postgres service that remembers every run. Four run live in your browser; the fifth reads a real service's archive.">
+<title>The whole stack: Erik Hill</title>
 <style>
   :root {
     color-scheme: dark light;
@@ -89,7 +89,7 @@
   .proj.r{color:var(--teal); background:var(--teal-soft); border:1px solid var(--teal)}
   .proj.g{color:var(--violet); background:var(--violet-soft); border:1px solid var(--violet)}
   .proj.d{color:var(--blue); background:var(--blue-soft); border:1px solid var(--blue)}
-  /* eval-history — the one that isn't in this tab */
+  /* eval-history: the one that isn't in this tab */
   .proj.h{color:var(--pink); background:var(--pink-soft); border:1px solid var(--pink)}
   .arr{color:var(--fg-faint); font-size:11px}
   /* The terminus of the map: the only box in it that isn't running in this tab. */
@@ -161,14 +161,14 @@
   <header>
     <div class="eye">All five, one loop</div>
     <h1>The whole stack</h1>
-    <p class="lede">Five separate repos that <b>actually call each other</b>: an agent that retrieves, a gateway governing its model calls, an eval harness grading its answers, a dashboard showing the grades, and a database that remembers every run. This page installs <b>each project's own published wheel</b> — the exact artifact its CI built — and runs them together in your browser. The last one isn't in your browser at all: it's a <b>live FastAPI + Postgres service</b>, and this page really calls it. The arrows below are function calls, not a diagram.</p>
+    <p class="lede">Five separate repos that <b>actually call each other</b>: an agent that retrieves, a gateway governing its model calls, an eval harness grading its answers, a dashboard showing the grades, and a database that remembers every run. This page installs <b>each project's own published wheel</b>, the exact artifact its CI built, and runs them together in your browser. The last one isn't in your browser at all: it's eval-history's <b>hashed static archive</b> of a real FastAPI + Postgres service, and this page really reads it. The arrows below are function calls, not a diagram.</p>
     <div class="status" id="status"><span class="dot"></span><span id="statusText">Booting…</span></div>
     <div class="chips">
       <span class="chip" id="chip-rag-eval-lab">rag-eval-lab</span>
       <span class="chip" id="chip-llm-gateway">llm-gateway</span>
       <span class="chip" id="chip-agent-graph">agent-graph</span>
-      <span class="chip" id="chip-eval-dashboard" style="opacity:1">eval-dashboard <span style="color:var(--fg-faint)">— at the end</span></span>
-      <span class="chip" id="chip-eval-history" style="opacity:1; border-color:var(--pink); color:var(--pink)">eval-history <span style="color:var(--fg-faint)">— a real server</span></span>
+      <span class="chip" id="chip-eval-dashboard" style="opacity:1">eval-dashboard <span style="color:var(--fg-faint)">(at the end)</span></span>
+      <span class="chip" id="chip-eval-history" style="opacity:1; border-color:var(--pink); color:var(--pink)">eval-history <span style="color:var(--fg-faint)">(archive)</span></span>
     </div>
   </header>
 
@@ -189,16 +189,16 @@
       <span class="arr">eval_run.json ──►</span>
       <span class="proj h">eval-history</span>
       <span class="arr">──what changed?──►</span>
-      <span class="verdict-chip">a real Postgres</span>
+      <span class="verdict-chip">eval-history's archive</span>
     </div>
 
     <button id="run" disabled>▶ Run the whole stack</button>
-    <p class="intro" style="margin-top:14px">Four questions go through all five projects, ending with an <code>eval_run.json</code> you can open in the dashboard — and a verdict from a real database. <b>Watch question 4</b> — it isn't in the corpus, and that's the interesting one.</p>
+    <p class="intro" style="margin-top:14px">Four questions go through all five projects, ending with an <code>eval_run.json</code> you can open in the dashboard, and a verdict from eval-history's archive. <b>Watch question 4</b>: it isn't in the corpus, and that's the interesting one.</p>
 
     <div class="ask">
-      <div class="asklab">— or ask it your own —</div>
+      <div class="asklab">or ask it your own</div>
       <div class="askrow">
-        <input type="text" id="myq" placeholder="Ask anything — the corpus only knows about planets…" aria-label="Your question">
+        <input type="text" id="myq" placeholder="Ask anything; the corpus only knows about planets…" aria-label="Your question">
         <button id="runMine" class="ghost" disabled>Run my question</button>
       </div>
       <div class="asksug">
@@ -210,8 +210,8 @@
     </div>
     <div class="corpuswrap">
       <div class="whatis">
-        <b>What's a corpus?</b> Just the pile of documents the system is allowed to look things up in — its entire world knowledge. That's the whole idea behind RAG: instead of letting a model answer from memory, you force it to answer from documents <i>you</i> chose. Which is exactly why the answer can then be <b>checked</b> — a model answering from memory can't be audited; one answering from your documents can.
-        <br><br>So the stack handles <b>any topic</b> — you just have to hand it the documents. Ask about something that <i>isn't</i> in there and it won't know, which is the interesting case.
+        <b>What's a corpus?</b> Just the pile of documents the system is allowed to look things up in: its entire world knowledge. That's the whole idea behind RAG: instead of letting a model answer from memory, you force it to answer from documents <i>you</i> chose. Which is exactly why the answer can then be <b>checked</b>: a model answering from memory can't be audited; one answering from your documents can.
+        <br><br>So the stack handles <b>any topic</b>; you just have to hand it the documents. Ask about something that <i>isn't</i> in there and it won't know, which is the interesting case.
       </div>
       <div class="asksug" style="margin:12px 0 10px">
         <button class="tiny" data-corpus="planets" disabled>🪐 planets</button>
@@ -219,23 +219,23 @@
         <button class="tiny" data-corpus="company" disabled>🏢 an HR handbook</button>
         <span style="font-family:var(--mono);font-size:11px;color:var(--fg-faint);margin-left:6px">← swap the whole world it knows about</span>
       </div>
-      <div class="asklab" style="text-align:left; margin-bottom:8px">…or write your own — one <code>id: text</code> per line</div>
+      <div class="asklab" style="text-align:left; margin-bottom:8px">…or write your own, one <code>id: text</code> per line</div>
       <textarea id="corpusBox" rows="7" spellcheck="false" aria-label="The corpus">Loading…</textarea>
       <div class="askrow" style="margin-top:8px">
         <button id="reindex" class="ghost" disabled>Re-index this corpus</button>
         <button id="corpusReset" class="tiny" disabled>reset to planets</button>
       </div>
-      <div class="corpusnote" id="corpusNote">Paste your own documents and the retriever rebuilds around them — the planets are just what the demo shipped with. Then ask a question about <b>your</b> corpus above.</div>
+      <div class="corpusnote" id="corpusNote">Paste your own documents and the retriever rebuilds around them; the planets are just what the demo shipped with. Then ask a question about <b>your</b> corpus above.</div>
     </div>
 
     <div id="flow"></div>
     <div id="finale"></div>
 
-    <div class="note"><b>What's real and what isn't, plainly.</b> The retrieval, the grading, the gateway's auth/cache/cost accounting and the agent's graph are all genuinely executing — installed from each project's published wheel. The <b>provider</b> is llm-gateway's deterministic mock, which echoes its prompt rather than writing prose; that's what lets this run with no API key and no spend. So the grade is computed against the <b>agent's own composed answer</b>, not the mock's echo. Point the gateway at a real key and nothing about the wiring changes.</div>
+    <div class="note"><b>What's real and what isn't, plainly.</b> The retrieval, the grading, the gateway's auth/cache/cost accounting and the agent's graph are all genuinely executing, installed from each project's published wheel. The <b>provider</b> is llm-gateway's deterministic mock, which echoes its prompt rather than writing prose; that's what lets this run with no API key and no spend. So the grade is computed against the <b>agent's own composed answer</b>, not the mock's echo. Point the gateway at a real key and nothing about the wiring changes.</div>
   </section>
 
   <footer>
-    <p>Each project also stands alone — <a href="https://erikhill.dev/rag-eval-lab/">try to fool the eval harness</a> ·
+    <p>Each project also stands alone: <a href="https://erikhill.dev/rag-eval-lab/">try to fool the eval harness</a> ·
       <a href="https://erikhill.dev/agent-graph/">watch the agent think</a> ·
       <a href="https://erikhill.dev/llm-gateway/">poke the gateway</a> ·
       <a href="https://erikhill.dev/eval-dashboard/">open the dashboard</a>.</p>

@@ -129,7 +129,7 @@
     <h2>Summary</h2>
     <p>Self-taught AI evaluation and testing engineer building deterministic, replayable systems for measuring coding agents and LLM applications.</p>
   <p>I build <strong>verifiable-evaluation systems</strong> whose claims are
-  checked rather than asserted: <strong>eleven published evaluation claims are replayed from pinned artifacts in CI</strong>,
+  checked rather than asserted: <strong>a public registry of 12 accepted evaluation claims, each hash-pinned to a commit and replayed weekly in CI</strong> (11 of 12 replayed green on 2026-10-19):
   deterministic, no LLM judges, failures published by design. Code merged upstream at promptfoo and TeaVM; a game shipped to Google Play;
   <strong>30+ public repos, three PyPI packages, one npm package.</strong> <a href="../findings/">Every one of these is listed with the defect, the proof and its live status &rarr;</a></p>
   </section>
@@ -146,9 +146,9 @@
     <h2>Selected Projects<span class="hnote">, all public at <a href="https://github.com/egnaro9" target="erikhill-out">github.com/egnaro9</a></span></h2>
     <div class="proj">&bull; <b>agent-certlab</b>: <strong>Two real coding agents certified, every verdict regradeable from artifacts</strong>. A certification lab built on three <strong>seeded-defect task families</strong> with provable answer keys (incl. <strong>coordinated two-file defects</strong> no single-file patch can pass), a <strong>precondition prover</strong> (clean passes, every seed fails, it refused one of my own defects), and <strong>calibration agents</strong> the harness must separate before certifying.</div>
   <div class="proj">&bull; <b>reference-fleet</b>: <strong>An answer key for eval suites</strong>: six models each broken <strong>one documented way at an exactly reproducible seeded rate</strong>, so detection rates are measurable against ground truth, a naive suite detects <strong>1 of 6</strong> (paired protocol). Plus a <strong>LoRA-trained native defect</strong>: mixture 0.507 &rarr; realized <strong>0.20 greedy, 0.31 at temp 1.0</strong>: training's rate control is lossy, measured.</div>
-  <div class="proj">&bull; <b>vac-protocol</b>: <strong>Verifiable Agent Claims</strong>: an evidence-bundle format + <strong>offline verifier</strong>; a registry where <strong>eleven real claims are hash-checked and re-earned in CI</strong>, with a <strong>public record of it rejecting my own evidence</strong>. Plus <b>vac-gate</b>: replayable evidence or no green check.</div>
-  <div class="proj">&bull; <b>evalmut</b>: <strong>Mutation testing for eval graders</strong> (<strong>PyPI</strong>, with its <strong>gradecore</strong> engine): inject known defects, report which checks stayed green. Found <strong>4 holes in the graders of gradecore</strong>, the library it depends on, and <strong>8 in ports of a widely-used framework's assertions</strong>. <strong>No LLM judge</strong>; every operator tied to a documented real failure. Fixed <strong>three fail-open graders</strong> in gradecore 0.10.3, each reproduced against shipped code first. <span class="tests">319 tests.</span></div>
-  <div class="proj">&bull; <b>deadgate</b>: <strong>a linter for CI checks that cannot fail</strong> (<strong>PyPI</strong>). Reads GitHub Actions workflows for gates a failure cannot reach. Across <strong>275 repositories</strong> I hand-labelled every one of its 653 findings and <strong>deleted two of its four detectors</strong> because the census said they had never once been right: <strong>36.1% false, measured rather than estimated</strong>. Found live gate holes in <strong>ruff</strong> and an unguarded required status check in <strong>heygen-com/hyperframes</strong>. <span class="tests">228 tests.</span></div>
+  <div class="proj">&bull; <b>vac-protocol</b>: <strong>Verifiable Agent Claims</strong>: an evidence-bundle format + <strong>offline verifier</strong>; a registry where <strong>12 accepted claims are hash-checked and replayed weekly in CI</strong> (11 of 12 replayed green on 2026-10-19), with a <strong>public record of it rejecting my own evidence</strong>. Plus <b>vac-gate</b>: replayable evidence or no green check.</div>
+  <div class="proj">&bull; <b>evalmut</b>: <strong>Mutation testing for eval graders</strong> (<strong>PyPI</strong>, with its <strong>gradecore</strong> engine): inject known defects, report which checks stayed green. Found <strong>4 holes in the graders of gradecore</strong>, the library it depends on, and <strong>8 in ports of a widely-used framework's assertions</strong>. <strong>No LLM judge</strong>; every operator tied to a documented real failure. Fixed <strong>three fail-open graders</strong> in gradecore 0.10.3, each reproduced against shipped code first. <span class="tests">325 tests.</span></div>
+  <div class="proj">&bull; <b>deadgate</b>: <strong>a linter for CI checks that cannot fail</strong> (<strong>PyPI</strong>). Reads GitHub Actions workflows for gates a failure cannot reach. Across <strong>275 repositories</strong> I hand-labelled every one of its 653 findings and <strong>deleted two of its four detectors</strong> because hand-labelled evidence said they had never once been right: <strong>36.1% false, measured rather than estimated</strong>. Found live gate holes in <strong>ruff</strong> and an unguarded required status check in <strong>heygen-com/hyperframes</strong>. <span class="tests">228 tests.</span></div>
   <div class="proj">&bull; <b>deadcheck</b>: <strong>does an eval rubric catch what it claims?</strong> Run on <strong>three rubrics I did not write</strong>: OpenAI evals' <code>Match</code> accepts "10" for ideal "1"; a promptfoo example passes refusal-then-compliance. Seven probe rounds found <strong>23 defects under its own green suite</strong>. <span class="tests">185 tests.</span></div>
   <div class="proj">&bull; <b>rag-eval-lab</b>: deterministic RAG <strong>eval harness</strong> that catches a planted hallucination in CI; from-scratch <strong>BM25 matching the published SciFact baseline (0.664 vs 0.665)</strong>. <span class="tests">60 tests.</span></div>
   <div class="proj">&bull; <b>agent-graph</b>: a <strong>LangGraph ReAct agent</strong> whose multi-step tool use is
@@ -157,7 +157,7 @@
   <div class="proj">&bull; <b>model-drift</b>: public board, <strong>frozen hash-fingerprinted suite</strong> across <strong>17 models / 5 labs</strong>, with a derived <strong>minimum-detectable-regression floor</strong>.</div>
   <div class="proj">&bull; <b>harness-builder</b>: <strong>More scaffolding scored worse, for 22x the cost</strong>. Three harness shapes on one 20-task suite, <strong>zero errors in 60 runs</strong>: one drafter 95%, planner plus drafter 90%, four-call panel with judge 80%. The panel won <strong>0 of 20 tasks</strong>, and the tool reported <strong>&ldquo;this suite cannot decide&rdquo;</strong> rather than ranking.</div>
   <div class="proj">&bull; <b>tapdodge-engine</b>: <strong>One rulebook, two runtimes, and a check that fails when they stop agreeing</strong>. A JVM-versus-browser (TeaVM) differential fails CI when the two disagree. In a committed fault injection, the differential was the <strong>only</strong> check that caught a runtime-supplied-RNG fault: the same-runtime determinism test and the golden file both passed it.</div>
-  <div class="proj">&bull; <b>Also public:</b> <b>crashkit</b> (live) &middot; <b>mcp-tools</b> (MCP server, no SDK) &middot; <b>evals-differential-oracle</b> (two independently written implementations agree across <strong>3,000 seeded boards</strong>) &middot; <b>llm-wire-stub</b> (npm) &middot; <b>readme-test-count</b> (fails CI when a README's advertised test count disagrees with the suite; runs in the CI of six of my repos)</div>
+  <div class="proj">&bull; <b>Also public:</b> <b>exposure-watch</b> (AI agents vs. plain code at known-exploited-vulnerability triage; on a pre-registered held-out set of 57 pairs, a <strong>tie on correct answers</strong>, 47 to 45, p = 0.69, but the skeptic-checked agent pipeline gave <strong>0 wrong answers</strong> to 12 from code plus a keyword rule) &middot; <b>crashkit</b> (live) &middot; <b>mcp-tools</b> (MCP server, no SDK) &middot; <b>pi-gates</b> (fail-closed commit and model gates for the pi coding agent) &middot; <b>pi-eval</b> (no-LLM-judge grading for pi, on gradecore) &middot; <b>llm-wire-stub</b> (npm) &middot; <b>readme-test-count</b> (fails CI when a README's advertised test count disagrees with the suite; runs in the CI of six of my repos)</div>
   </section>
 
   <section>
@@ -166,35 +166,32 @@
   <div class="proj">&bull; <strong>External audit of vac-protocol:</strong> an outside engineer falsified my own verifier,
   cheapest forgery <strong>four bytes</strong>. Fix merged, then I found the same defect class <strong>four
   more times</strong> (arXiv, below). <strong>Sole maintainer through the audit</strong>: merged four of his pull requests and answered his four specification issues in SPEC.md (protocol v0.2). On two I showed the fix he proposed would not close the hole and shipped a wider one, reasoning public.</div>
-  <div class="proj">&bull; <strong>Peer review with Bartłomiej Nawara, PhD</strong>, senior AI/ML engineer:
+  <div class="proj">&bull; <strong>Peer review with Bartłomiej Nawara</strong>, senior AI/ML engineer:
   his missing-not-at-random critique of my rate-limit handling shaped <b>model-drift</b>'s <strong>reliability
-  floor</strong>, credited in the repo. I found <strong>two design faults</strong> in his pre-registered study, both acknowledged.</div>
+  floor</strong>, credited in the repo. I found <strong>two design faults</strong> in his pre-registered study.</div>
   <div class="proj">&bull; <strong>Closed a bug report open in TeaVM since 2018</strong> that its own suite could not catch: a <strong>one-character error</strong> in TeaVM's GregorianCalendar emulation, found by differential-testing the browser port against the JVM. The four assertions covering that line had been commented out; the patch re-enables them. Merged same day by the maintainer.</div>
   </section>
 
   <section>
     <h2>Publications</h2>
-    <p>&ldquo;Four Ways to Forge a Bundle My Own Verifier Calls Clean: Refusal-Site Mutation Testing of an <span style="white-space:nowrap">Evidence-Bundle</span> Verifier.&rdquo; Erik Hill. <strong>arXiv preprint, 2026</strong>. <a href="https://arxiv.org/abs/2608.26183" target="erikhill-out">arXiv:2608.26183</a><br><strong>25 articles</strong> on evaluation and testing failures, <strong>100+ comments from 25+ readers</strong>. <a href="https://dev.to/agentdev9" target="erikhill-out">dev.to/agentdev9</a> &middot; <strong>Drift Notes</strong>: <a href="https://erikhill.dev/notes/" target="erikhill-out">erikhill.dev/notes</a></p>
+    <p>&ldquo;Four Ways to Forge a Bundle My Own Verifier Calls Clean: Refusal-Site Mutation Testing of an <span style="white-space:nowrap">Evidence-Bundle</span> Verifier.&rdquo; Erik Hill. <strong>arXiv preprint, 2026</strong>. <a href="https://arxiv.org/abs/2608.26183" target="erikhill-out">arXiv:2608.26183</a><br><strong>25+ articles</strong> on evaluation and testing failures, <strong>100+ comments from 25+ readers</strong>. <a href="https://dev.to/agentdev9" target="erikhill-out">dev.to/agentdev9</a> &middot; <strong>Drift Notes</strong>: <a href="https://erikhill.dev/notes/" target="erikhill-out">erikhill.dev/notes</a></p>
   </section>
 
   <section>
     <h2>Experience</h2>
-    <div class="job">AI/ML Engineer &middot; Epix Devo LLC <span class="meta">· Contract · Remote · Oct 2026 – Present</span></div>
-  <ul>
-    <li>Contract AI/ML engineering against approved requirements: model and framework evaluation, proof-of-concept prototyping, and integration with APIs, data stores and application backends.</li>
-  </ul>
-  <div class="job">Independent AI Evaluation &amp; Testing Engineer &middot; Solo Practice <span class="meta">· Remote · Mar 2026 – Present</span></div>
+    <div class="job">AI/ML Engineer &middot; Epix Devo LLC <span class="meta">· Contract · Oct 2026 to Present</span></div>
+  <div class="job">Independent AI Evaluation &amp; Testing Engineer &middot; Solo Practice <span class="meta">· Remote · Mar 2026 to Present</span></div>
   <ul>
     <li>Designed <strong>five roles across a four-stage production loop</strong> (Strategy → Execution → Critic → Ops) that plans, builds, reviews, and validates changes to a real React / Capacitor product, human-in-the-loop on every consequential step, plus an <strong>asynchronous Evaluation harness</strong> that scores completed batches.</li>
-    <li>Built per-role model routing and hook-based automation that hands work between stages with no manual relaunch; enforced rules with <strong>property-based invariants</strong> (jqwik) over a native engine and <strong>adb-driven <span style="white-space:nowrap">on-device</span> validation</strong>. Write-up: <strong>github.com/egnaro9/agentic-dev-harness</strong></li>
-    <li><strong>Operate model-drift as a running service, not a demo</strong>: its scheduled probe has run on every calendar day since 2026-07-19 (87 in a row as of 2026-10-13, 86 with a clean run) and publishes a public board.</li>
+    <li>Built per-role model routing with manager-driven handoffs: each stage runs as a fresh subagent pinned to the model its role needs; enforced rules with <strong>property-based invariants</strong> (jqwik) over a native engine and <strong>adb-driven <span style="white-space:nowrap">on-device</span> validation</strong>. Case study: <a href="https://github.com/egnaro9/exposure-watch/blob/main/docs/HARNESS.md" target="erikhill-out">exposure-watch/docs/HARNESS.md</a></li>
+    <li><strong>Operate model-drift as a running service, not a demo</strong>: its scheduled probe has run on every calendar day since 2026-07-19 and publishes a public board.</li>
     <li>Diagnosed an apparent <strong>66-point overnight drop</strong> on that board (69% to 3% on a frozen suite) as a <strong>provider rate cap rather than model drift</strong>: 34 of 35 calls hit a 429 against a 30 RPM shared tier. Shipped Retry-After-aware retries, a per-host throttle, and a reliability floor that drops low-reliability probes from the accuracy line, so a rate limit can no longer render as a regression.</li>
   </ul>
-  <div class="job">Indie Game Developer &middot; SeraphLight Studios <span class="meta">· Remote · Nov 2025 – Present</span></div>
+  <div class="job">Indie Game Developer &middot; SeraphLight Studios <span class="meta">· Remote · Nov 2025 to Present</span></div>
   <ul>
-    <li><strong>Shipped Tap Dodge Rush to Google Play</strong> (Kotlin / Java, Android Views + Canvas, AdMob), closed testing with 12+ testers, then store review, then launch. Building a second, larger game (React / Capacitor), the product the harness above operates on.</li>
+    <li><strong>Shipped Tap Dodge Rush to Google Play</strong> (Kotlin / Java, Android Views + Canvas, AdMob), closed testing with 12+ testers, then store review, then launch. A second, larger game (React / Capacitor) is in development, the product the harness above operates on.</li>
   </ul>
-  <div class="job">Kitchen Manager / Shift Lead &middot; Big Island Brewhaus &amp; other high-volume kitchens <span class="meta">· Hawaii · 2018 – 2025</span></div>
+  <div class="job">Kitchen Manager / Shift Lead &middot; Big Island Brewhaus &amp; other high-volume kitchens <span class="meta">· Hawaii · 2018 to 2025</span></div>
   <ul>
     <li>Led shifts and trained staff; owned prep, inventory, and food safety under sustained pressure.</li>
   </ul>
@@ -202,7 +199,7 @@
 
   <section>
     <h2>Education</h2>
-    <p><strong>Clark College</strong>, 2007&ndash;2009 (some college, no degree).</p>
+    <p><strong>Clark College</strong>, 2007 to 2009 (some college, no degree).</p>
   </section>
 
   <section style="padding-top:28px">

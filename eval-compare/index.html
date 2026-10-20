@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>eval-history · run comparison — Erik Hill</title>
-<meta name="description" content="A rendered view of a live eval-history run comparison: the deployed FastAPI + Postgres service answering which cases regressed between two runs.">
+<title>eval-history · run comparison: Erik Hill</title>
+<meta name="description" content="A rendered view of an archived eval-history run comparison: which cases regressed between two runs, as the FastAPI + Postgres service answered it, now published as a static archive.">
 <style>
   :root{
     --ink:#0e1316; --panel:#141c21; --raised:#1b252b;
@@ -100,7 +100,7 @@
 <a href="https://erikhill.dev" aria-label="Back to portfolio" style="position:fixed;top:12px;left:14px;z-index:9999;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;font-weight:600;color:#f2a53c;background:rgba(14,19,22,.86);border:1px solid rgba(242,165,60,.45);border-radius:4px;padding:6px 11px;text-decoration:none;backdrop-filter:blur(4px)">← Portfolio</a>
 <a class="back" href="https://erikhill.dev">← Portfolio</a>
 <div class="wrap">
-  <div class="eye">// eval-history · live comparison</div>
+  <div class="eye">// eval-history · archived comparison</div>
   <h1>Did this change make things worse?</h1>
   <p class="sub">Two runs of the same suite, compared by the same code a <strong>FastAPI + Postgres service</strong> ran, whose read routes are now published as a <strong>hashed static archive</strong>. Not a mock, not a screenshot. It won't let a better average bury the one case that broke. This page renders the recorded answer.</p>
   <div id="out"><div class="loading"><div class="spin"></div>Reading the archived comparison…</div></div>
@@ -133,13 +133,13 @@ function render(d){
   const metricUp = Object.entries(d.metric_deltas||{}).filter(([k,v])=>v>1e-9).map(([k])=>k);
   let why;
   if (bad && metricUp.length && nReg){
-    why = `${metricUp.join(" and ")} <b>improved</b> — and the run still <b>regressed</b>. ` +
+    why = `${metricUp.join(" and ")} <b>improved</b>, and the run still <b>regressed</b>. ` +
           `${nReg} case crossed the faithfulness threshold, and a rising average can't be allowed to hide it. ` +
           `That's the whole point: <b>a metric dip is noise; a case that breaks is news.</b>`;
   } else if (bad){
     why = `The run <b>regressed</b>: ${nReg} case(s) got worse where it counts.`;
   } else {
-    why = `No regression — ${nImp} case(s) improved, none crossed a threshold the wrong way.`;
+    why = `No regression: ${nImp} case(s) improved, none crossed a threshold the wrong way.`;
   }
   const metrics = Object.entries(d.metric_deltas||{}).map(([k,v]) =>
     `<div class="metric"><div class="mk">${esc(k)}</div><div class="mv ${cls(v)}">${signed(v)}</div></div>`).join("");
@@ -156,7 +156,7 @@ function render(d){
           <div class="rm">${esc(d.candidate.git_sha)} · ${when(d.candidate.created_at)}</div></div>
       </div>
     </div>
-    <h2>Metric deltas <span style="color:var(--fg-faint);font-weight:400">— the averages</span></h2>
+    <h2>Metric deltas <span style="color:var(--fg-faint);font-weight:400">(the averages)</span></h2>
     <div class="metrics">${metrics}</div>
     ${nReg?`<h2>Regressions <span class="tag bad">${nReg}</span></h2>
       <table><thead><tr><th>Case</th><th>Metric</th><th>Before → after</th><th>Δ</th></tr></thead>
@@ -164,7 +164,7 @@ function render(d){
     ${nImp?`<h2>Improvements <span class="tag good">${nImp}</span></h2>
       <table><thead><tr><th>Case</th><th>Metric</th><th>Before → after</th><th>Δ</th></tr></thead>
       <tbody>${rowsFor(d.improvements)}</tbody></table>`:""}
-    <details class="raw"><summary>▶ view the raw JSON (it's a real API)</summary>
+    <details class="raw"><summary>▶ view the raw JSON (archived API response)</summary>
       <pre>${esc(JSON.stringify(d, null, 2))}</pre></details>`;
 }
 

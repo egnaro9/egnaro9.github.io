@@ -194,7 +194,7 @@
   .contact{display:flex; flex-wrap:wrap; gap:7px; margin-top:14px; max-width:var(--maxw)}
   @media (max-width:560px){ .launch .lgrid{grid-template-columns:1fr} }
   /* every other demo is WASM in the reader's tab; this one was a real server until
-     its host was retired, and now reads a frozen static archive of its rows. */
+     its host was retired, and now reads a static archive of its rows, exported daily. */
   .proj .pci.api{color:#f472b6; border-color:#f472b6; background:rgba(244,114,182,.09)}
   .proj .pci.api .v{background:#f472b6; animation:pulse 2s ease-in-out infinite}
   @media (prefers-reduced-motion:reduce){.proj .pci.api .v{animation:none}}
@@ -418,12 +418,13 @@
     <div class="tldr">
       <div class="tldr-h">If you only read one thing</div>
       <ul>
-        <li><a href="#program"><strong>Eleven claims replay from a public registry</strong></a>, each pinned by sha256 to a specific commit, with a grading recipe a stranger can re-run. Two were held pending for a while, refused by the verifier over their own evidence, until their issuers repaired it. The registry page re-verifies every bundle before it deploys.</li>
+        <li><a href="#program"><strong>Twelve claims sit in a public registry</strong></a>, each pinned by sha256 to a specific commit, with a grading recipe a stranger can re-run, and replayed weekly in CI: 11 of 12 replayed green on 2026-10-19. Two were held pending for a while, refused by the verifier over their own evidence, until their issuers repaired it. The registry page re-verifies every bundle before it deploys.</li>
         <li><a href="#program"><strong>Six models are broken on purpose, exactly</strong></a>: point a benchmark at them and it grades the benchmark. A naive suite caught 1 of 6.</li>
         <li><a href="#board"><strong>A live board</strong></a> has tracked <strong>17 LLMs across 5 labs</strong> for drift, every day, on a frozen suite. It reports how many of them returned a clean run that day, and names the rest as unmeasured rather than scoring them. No model grading anything.</li>
         <li><a href="#crash-test"><strong>My own grader was wrong once</strong></a> and its fail cards caught it: a real model read 29% vulnerable, re-graded to 0%.</li>
         <li><a href="#harness-builder"><strong>I measured my own architecture assumption and it was wrong</strong></a>: more scaffolding scored worse, for 22&times; the cost.</li>
-        <li><a href="#harness"><strong>The agent cannot approve its own commits.</strong></a> It has tried. There is a recording of it being refused.</li>
+        <li><a href="#exposure-watch"><strong>I asked whether an AI agent beats plain code at vulnerability triage</strong></a>, pre-registered a held-out round, and got a tie on correct answers: 47 against 45 of 57 pairs (exact McNemar p = 0.69). The difference was where the errors went: the agent pipeline sent the 10 it was unsure of to a person and was wrong on none; plain code with a keyword rule was wrong on 12.</li>
+        <li><a href="#harness"><strong>The agent cannot approve its own commits.</strong></a> There is a recording of the gate refusing a direct commit and push, five disguised commands and two forged approval files, driven with crafted payloads in a sandbox. A public port of the same gate for the pi agent: <a href="https://github.com/egnaro9/pi-gates" target="erikhill-out">pi-gates</a>.</li>
       </ul>
       <p class="tldr-f">Everything below is the long version, and every claim on this page has something running underneath it.</p>
     </div>
@@ -435,7 +436,7 @@
 
     <div class="cta" style="margin-top:18px; justify-content:flex-start; gap:10px; flex-wrap:wrap">
       <a class="plive" href="https://erikhill.dev/suite/runner.html">&#9654; See Evalmut's proof console. A witnessed run, checked in your browser</a>
-      <a class="plive" href="https://erikhill.dev/vac-protocol/">▶ Open the claim registry: 11 replayable bundles, none pending</a>
+      <a class="plive" href="https://erikhill.dev/vac-protocol/">▶ Open the claim registry: 12 accepted bundles, none pending; 11 of 12 replayed green on 2026-10-19</a>
       <a class="plive" href="https://erikhill.dev/model-drift/">▶ Open the live board: 17 LLMs, 5 metrics</a>
       <a class="plive" href="https://erikhill.dev/notes/">▶ Read the drift notes: published on a finding, never on a schedule</a>
       <a class="plive alt" href="https://crashkit.erikhill.dev" target="erikhill-out">▶ Crash-test a model with your own key. Your key never leaves the browser</a>
@@ -451,7 +452,7 @@
       <div class="lgrid">
         <a href="https://erikhill.dev/stack/"><span class="arrow">▶</span>the five-service stack</a>
         <a href="https://erikhill.dev/evals-differential-oracle/"><span class="arrow">▶</span>differential oracle</a>
-        <a href="https://erikhill.dev/match3-engine/"><span class="arrow">▶</span>match3-engine (Java → WASM)</a>
+        <a href="https://erikhill.dev/match3-engine/"><span class="arrow">▶</span>match3-engine (Java to JavaScript)</a>
         <a href="https://erikhill.dev/seraphlight-studios/tap-dodge-rush/play/"><span class="arrow">▶</span>Tap Dodge Rush (the Play Store game, in your tab)</a>
       </div>
     </div>
@@ -466,7 +467,6 @@
       <span class="chip"><a href="https://dev.to/AgentDev9" target="erikhill-out">dev.to</a></span>
       <span class="chip"><a href="https://www.linkedin.com/in/erik-hill-98895575" target="erikhill-out">LinkedIn</a></span>
       <span class="chip"><a href="https://x.com/AgentDev9" target="erikhill-out">X</a></span>
-      <span class="chip"><a href="https://www.reddit.com/user/AgentDev9" target="erikhill-out">Reddit</a></span>
     </div>
   </header>
 
@@ -474,9 +474,9 @@
     <div class="label"><span class="tick">//</span> The Mutation Tester</div>
     <h2>Your eval suite passes. Does it check anything?</h2>
     <p class="lens-kicker">The flagship. The same discipline, turned on the eval suites themselves.</p>
-    <p class="intro"><strong><a href="https://github.com/egnaro9/evalmut" target="erikhill-out">evalmut</a></strong> is mutation testing for eval graders: inject a <strong>known defect mined from a real failure</strong> into an output a grader passed, and if the grader still passes, that's a hole your eval ships green. It never infers a hole from a verdict flip. Only from an output <em>proven</em> wrong against ground truth, so where it can't prove wrongness it declines rather than guess. <strong>25 operators</strong>: 17 defect operators mined from real failures rather than authored to pad coverage, and 8 equivalent-mutant controls whose output changed but is still correct, so flagging one is a false positive rather than a catch; <strong>306 tests</strong>; no LLM-as-judge anywhere.</p>
+    <p class="intro"><strong><a href="https://github.com/egnaro9/evalmut" target="erikhill-out">evalmut</a></strong> is mutation testing for eval graders: inject a <strong>known defect mined from a real failure</strong> into an output a grader passed, and if the grader still passes, that's a hole your eval ships green. It never infers a hole from a verdict flip. Only from an output <em>proven</em> wrong against ground truth, so where it can't prove wrongness it declines rather than guess. <strong>25 operators</strong>: 17 defect operators mined from real failures rather than authored to pad coverage, and 8 equivalent-mutant controls whose output changed but is still correct, so flagging one is a false positive rather than a catch; <strong>300+ tests</strong>; no LLM-as-judge anywhere.</p>
     <p class="intro">Pointed at <code>gradecore</code>, the grader package under <a href="#crash-test">the crash test</a>: it scored the suite <strong>42/46</strong> and found <strong>four real holes</strong> (2 blind, 2 coverage-gap), and was fair about which were broken versus merely missing. Pointed at this repo's committed <em>ports</em> of promptfoo's documented deterministic assertions, it scored them <strong>9/17 with eight holes</strong> (2 vacuous, 4 blind, 2 coverage-gap): a statement about those ported assertion patterns, not about promptfoo the product. Every number in both tallies recomputes from committed per-mutation rows. The evalmut bundle was held <em>pending</em> in the registry for a while rather than accepted, because its own verifier refused it: two fixture files were listed as evidence that no check read. That is repaired and the bundle is accepted now.</p>
-    <p class="intro"><a href="https://github.com/egnaro9/reference-fleet" target="erikhill-out">reference-fleet</a> then answers the obvious objection: <em>"your injected defects are hand-picked"</em>: with defects certified at stated rates, and its v2 goes a level deeper: the refuse-then-comply defect <strong>trained into the weights</strong> of a 0.5B model by LoRA, on consumer hardware. The training mixture was 0.507; the model that came out fails at <strong>0.200 greedy</strong> and <strong>0.380 sampled</strong>: rate control through training is lossy, and a trained member's <strong>decoding config is part of its defect spec</strong>. That result is <a href="https://github.com/egnaro9/reference-fleet/blob/main/native/paper/paper2.md" target="erikhill-out">paper #2</a> (draft); the method paper is <a href="https://github.com/egnaro9/evalmut/blob/main/paper/evalmut.pdf" target="erikhill-out">the evalmut paper</a>.</p>
+    <p class="intro"><a href="https://github.com/egnaro9/reference-fleet" target="erikhill-out">reference-fleet</a> then answers the obvious objection: <em>"your injected defects are hand-picked"</em>: with defects certified at stated rates, and its v2 goes a level deeper: the refuse-then-comply defect <strong>trained into the weights</strong> of a 0.5B model by LoRA, on consumer hardware. The training mixture was 0.507; the model that came out fails at <strong>0.200 greedy</strong> and <strong>0.380 sampled</strong>: rate control through training is lossy, and a trained member's <strong>decoding config is part of its defect spec</strong>. That result is <a href="https://github.com/egnaro9/reference-fleet/blob/main/native/paper/paper2.md" target="erikhill-out">paper #2</a> (draft); the method paper is <a href="https://github.com/egnaro9/evalmut/blob/main/paper/evalmut.pdf" target="erikhill-out">the evalmut paper</a> (August 2026 snapshot; current numbers above).</p>
 
     <div style="margin-top:16px; display:flex; flex-wrap:wrap; gap:10px">
       <a class="plive" href="https://pypi.org/project/evalmut/" target="erikhill-out">▶ pip install evalmut. On PyPI</a>
@@ -485,7 +485,7 @@
     </div>
     <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px">
       <a class="plink" href="https://github.com/egnaro9/evalmut" target="erikhill-out">evalmut. The source <span>→</span></a>
-      <a class="plink" href="https://github.com/egnaro9/evalmut/blob/main/paper/evalmut.pdf" target="erikhill-out">the paper (PDF) <span>→</span></a>
+      <a class="plink" href="https://github.com/egnaro9/evalmut/blob/main/paper/evalmut.pdf" target="erikhill-out">the paper (PDF, August 2026 snapshot) <span>→</span></a>
       <a class="plink" href="https://dev.to/agentdev9/i-built-an-answer-key-for-eval-suites-six-models-broken-on-purpose-exactly-5f98" target="erikhill-out">the fleet write-up <span>→</span></a>
     </div>
   </section>
@@ -511,11 +511,11 @@
     <div class="bridge">
       <div class="bridge-row">
         <span class="bridge-b">The registry</span>
-        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/vac-protocol" target="erikhill-out">vac-protocol</a></strong>: VAC, Verifiable Agent Claims. <strong>12 accepted entries, none pending.</strong> Every entry replays from sha256-pinned, commit-addressed artifacts. Two were once refused by the verifier over their own evidence, not by hash drift, and stayed unreplayable until their issuers repaired them. All are my own repos, which makes the registry one multi-repository fixture rather than five independent issuers. That is the honest weak point, and it is now open: <a href="https://github.com/egnaro9/vac-protocol/blob/main/ISSUING.md" target="erikhill-out">ISSUING.md</a> plus a generic <code>rows-aggregate-v1</code> profile mean an outsider can issue in their own artifact shape without adopting mine. Acceptance is two-gated: structural verification (<code>python -m vac.verify</code>: manifest, hashes, closure, mandatory limitations), then semantic replay by the issuer's own deterministic grader. The <a href="https://erikhill.dev/vac-protocol/">live registry page</a> re-verifies every bundle over fetched artifacts before each deploy.</span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/vac-protocol" target="erikhill-out">vac-protocol</a></strong>: VAC, Verifiable Agent Claims. <strong>12 accepted entries, none pending.</strong> Every entry is built from sha256-pinned, commit-addressed artifacts and replayed weekly in CI; 11 of 12 replayed green on 2026-10-19. Two were once refused by the verifier over their own evidence, not by hash drift, and stayed unreplayable until their issuers repaired them. All are my own repos, which makes the registry one multi-repository fixture rather than five independent issuers. That is the honest weak point, and it is now open: <a href="https://github.com/egnaro9/vac-protocol/blob/main/ISSUING.md" target="erikhill-out">ISSUING.md</a> plus a generic <code>rows-aggregate-v1</code> profile mean an outsider can issue in their own artifact shape without adopting mine. Acceptance is two-gated: structural verification (<code>python -m vac.verify</code>: manifest, hashes, closure, mandatory limitations), then semantic replay by the issuer's own deterministic grader. The <a href="https://erikhill.dev/vac-protocol/">live registry page</a> re-verifies every bundle over fetched artifacts before each deploy.</span>
       </div>
       <div class="bridge-row">
         <span class="bridge-b">The contracts</span>
-        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/agent-certlab" target="erikhill-out">agent-certlab</a></strong>: capability contracts for coding agents. <strong>Seven committed certifications</strong>: two agents &times; three task families with seeded, known defects, every run <strong>6/6</strong>, and one earned <strong>entirely inside GitHub Actions</strong> on an ephemeral runner. Grading reads only the artifacts on disk, never the agent's account of itself; CI independently re-grades every committed contract (<code>python -m certlab.regrade</code>), and the mechanically compiled <a href="https://github.com/egnaro9/agent-certlab/blob/main/COMPARISON.md" target="erikhill-out">COMPARISON.md</a> is diff-checked against the bundles it summarizes.</span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/agent-certlab" target="erikhill-out">agent-certlab</a></strong>: capability contracts for coding agents. <strong>Eight committed certifications</strong>: two agents across three task families with seeded, known defects, every run <strong>6/6</strong>, and five earned <strong>entirely inside GitHub Actions</strong> on an ephemeral runner. Grading reads only the artifacts on disk, never the agent's account of itself; CI independently re-grades every committed contract (<code>python -m certlab.regrade</code>), and the mechanically compiled <a href="https://github.com/egnaro9/agent-certlab/blob/main/COMPARISON.md" target="erikhill-out">COMPARISON.md</a> is diff-checked against the bundles it summarizes.</span>
       </div>
       <div class="bridge-row">
         <span class="bridge-b">The answer key</span>
@@ -523,7 +523,7 @@
       </div>
       <div class="bridge-row">
         <span class="bridge-b">The gate</span>
-        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/vac-gate" target="erikhill-out">vac-gate</a></strong>: the integrity gate: a composite GitHub Action that holds a workflow to a verified contract, re-earning every declared number from the pinned artifacts. <strong>No verified contract, no green check.</strong></span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/vac-gate" target="erikhill-out">vac-gate</a></strong>: the integrity gate: a composite GitHub Action that holds a workflow to a verified contract, re-earning every declared number from the pinned artifacts. <strong>No verified contract, no green check.</strong> A worked example: <a href="https://github.com/egnaro9/vac-gate-demo" target="erikhill-out">vac-gate-demo</a>, a staged PR whose CI will not go green without the agent's capability contract.</span>
       </div>
     </div>
 
@@ -585,11 +585,11 @@
       </div>
       <div class="bridge-row">
         <span class="bridge-b">History</span>
-        <span class="bridge-d">Every run serializes to the same <code>eval_run.json</code> and posts to <a href="https://erikhill.dev/eval-history/" target="erikhill-out">eval-history</a>, tagged <code>source=crash_test</code>: so a public, key-in-the-browser test can <em>never</em> scribble on the drift history it shares a database with.</span>
+        <span class="bridge-d">Every run serializes to the same <code>eval_run.json</code> wire shape <a href="https://erikhill.dev/eval-history/" target="erikhill-out">eval-history</a> ingests, tagged <code>source=crash_test</code>, and is kept in crashkit's own run store, so a public, key-in-the-browser test can <em>never</em> write to the drift history.</span>
       </div>
     </div>
 
-    <p class="compose-note" style="margin-top:14px">So it's one engine turned four ways, not four engines: the same <code>gradecore</code> predicate set, the same wire format, the same store. In <a href="#board">the drift board</a> and <a href="#system">the integrated stack</a>, those same pieces do the job they were built for.</p>
+    <p class="compose-note" style="margin-top:14px">So it's one engine turned four ways, not four engines: the same <code>gradecore</code> predicate set inside the crash test, and the same wire format and suite fingerprint as the drift board. In <a href="#board">the drift board</a> and <a href="#system">the integrated stack</a>, those same pieces do the job they were built for.</p>
   
     <figure class="cast">
       <img src="https://raw.githubusercontent.com/egnaro9/crashkit/main/docs/demo.gif" alt="Adversarial battery against a deliberately-vulnerable mock: vulnerability 1.00, one fail card per broken guarantee" loading="lazy">
@@ -640,7 +640,7 @@
 
   <p class="compose-note" style="margin-top:16px">A harness config is <strong>data</strong>, roles, models, prompts, topology, so you can draw the shape and it writes the JSON, or paste the JSON and it draws the shape. Declare the axes you want to vary and it runs the matrix.</p>
     <p class="compose-note">Scoring is deterministic: fixed predicates execute the generated code and return a verdict, and <strong>no model grades anything</strong>. There is an assistant in the page. It may read scores and explain them, and it may not produce one.</p>
-    <p class="compose-note"><strong>Every score-shaped number in its prose is checked against the run data</strong>, with anything it invented named and quoted back rather than rendered quietly. That check was a line of system prompt until I tested it; now it is a predicate with nine tests. <strong>188 tests</strong>: 136 Python, 52 JavaScript.</p>
+    <p class="compose-note"><strong>Every score-shaped number in its prose is checked against the run data</strong>, with anything it invented named and quoted back rather than rendered quietly. That check was a line of system prompt until I tested it; now it is a predicate with nine tests. <strong>188 tests</strong>: 136 Python (130 passing, plus 6 expected failures that pin known holes) and 52 JavaScript.</p>
 
   <p class="compose-note" style="margin-top:10px">Honest scope: harness and prompt comparison is not a new category. Promptfoo, LangSmith and Braintrust all do more. The narrow thing here is the intersection: browser-BYOK, deterministic no-LLM-judge grading, and a comparison that reports when it <em>cannot</em> decide. Grading is deterministic; generation is not. No temperature, no seed, one run per config, so a 5-point move between two runs of the same shape sits inside sampling noise. That is a second reason it won't call a winner here, and it is stated in the field note rather than buried.</p>
 
@@ -648,17 +648,48 @@
   
     <figure class="cast">
       <img src="https://raw.githubusercontent.com/egnaro9/gradecore/main/docs/demo.gif" alt="A paired comparison declining to name a winner: four informative tasks cannot clear p<0.05, so the suite reports that it cannot decide" loading="lazy">
-      <figcaption>The refusal above, in the engine that produced it. Only the tasks where two configs
-        <em>disagree</em> carry information. And four disagreements cannot clear p&lt;0.05 even under a
-        clean sweep, so the honest output is a statement about the instrument rather than about the
-        configs. <a href="https://asciinema.org/a/GnfWEFk2DzH8QJyn" target="erikhill-out">play it as a terminal session</a>: the text is selectable.</figcaption>
+      <figcaption>The same refusal logic in gradecore's own demo: eight tasks, two prompt variants,
+        four disagreements. Only the tasks where two configs <em>disagree</em> carry information, and
+        four cannot clear p&lt;0.05 even under a clean sweep, so the honest output is a statement about
+        the instrument rather than about the configs. <a href="https://asciinema.org/a/GnfWEFk2DzH8QJyn" target="erikhill-out">play it as a terminal session</a>: the text is selectable.</figcaption>
     </figure>
+  </section>
+
+  <section id="exposure-watch">
+    <div class="label"><span class="tick">//</span> The Triage Test</div>
+    <h2>Does an AI agent beat plain code at vulnerability triage?</h2>
+    <p class="lens-kicker">The Harness Builder's question again, asked of a real job: is this installed software exposed to a known-exploited vulnerability?</p>
+
+    <p class="intro"><strong><a href="https://github.com/egnaro9/exposure-watch" target="erikhill-out">exposure-watch</a></strong> scores five approaches against an answer key built from CISA's Known Exploited Vulnerabilities catalog and NVD: a plain version matcher, the matcher plus one keyword rule, a triage agent, the agent with a deterministic evidence check, and that pipeline with a skeptic agent on top. Each one's cost is reported next to its score.</p>
+
+    <p class="intro"><strong>Round 1, 22 inventory and CVE pairs:</strong> the matcher plus one keyword rule scored as well as the best agent pipeline, at $0. I wrote that rule after reading those same descriptions, so its score was an upper bound. What the agents did find was one error in my own answer key and one label that turned out to be contested.</p>
+
+    <p class="intro"><strong>Then a held-out round, pre-registered.</strong> 57 pairs from 30 KEV vulnerabilities first published by NVD on or after 2026-07-01, with the pre-registration and the frozen answer key pushed before anything ran on them:</p>
+
+    <div class="bridge">
+      <div class="bridge-row">
+        <span class="bridge-b">code + keywords</span>
+        <span class="bridge-d"><strong>45 correct</strong> &middot; 12 wrong, one of them a missed exposure &middot; $0</span>
+      </div>
+      <div class="bridge-row">
+        <span class="bridge-b">agent + verify + skeptic</span>
+        <span class="bridge-d"><strong>47 correct</strong> &middot; 10 sent to a person &middot; 0 wrong &middot; $33.34 for the 57 pairs</span>
+      </div>
+    </div>
+
+    <p class="intro" style="margin-top:22px">On correct answers that is still a tie: the exact McNemar p is 0.69, and 57 pairs cannot tell the two apart. The difference is where the errors go. The code's 12 wrong answers were firm verdicts with nothing to warn whoever reads them; the agent pipeline sent the pairs it was unsure of to a person instead. The keyword rule caught 2 of the 12 conditional pairs it exists for.</p>
+
+    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px">
+      <a class="plink" href="https://github.com/egnaro9/exposure-watch" target="erikhill-out">exposure-watch. The source and every recorded answer <span>&rarr;</span></a>
+      <a class="plink" href="https://github.com/egnaro9/exposure-watch/blob/main/eval/heldout/PREREG.md" target="erikhill-out">the pre-registration <span>&rarr;</span></a>
+      <a class="plink" href="https://github.com/egnaro9/exposure-watch/blob/main/docs/HARNESS.md" target="erikhill-out">how I run agents on real work <span>&rarr;</span></a>
+    </div>
   </section>
 
   <section id="board">
     <div class="label"><span class="tick">//</span> The Board</div>
     <h2>A public board watching 17 models for drift</h2>
-    <p class="lens-kicker">The same discipline, turned on time. A frozen suite, run week after week.</p>
+    <p class="lens-kicker">The same discipline, turned on time. A frozen suite, run every day.</p>
     <p class="intro">The stack you'll see below isn't only a demo of itself. It runs a <strong>live public tracker</strong>. A frozen, deterministically-graded suite hits <strong>17 models across 5 labs</strong>, OpenAI, Anthropic, Google, xAI, Qwen, on a daily cron, and every run is kept: <strong>accuracy, speed, verbosity, reliability, refusal rate</strong>. No LLM-as-judge. Every task is scored by a fixed deterministic check (exact match, substring, regex, numeric compare, set membership), so a score change means the <em>model</em> moved, not the test. When one regresses against its previous run it opens a GitHub issue by itself. The post about it stays a human decision.</p>
 
     <div class="projects-flow">
@@ -681,7 +712,7 @@
       </div>
     </div>
 
-    <p class="compose-note" style="margin-top:14px">Since August the board's whole derivation layer, the standings table, the generated paragraph above, the per-task flip analysis, also ships as a <a href="#program">replayable evidence bundle</a> in the VAC registry, recomputable offline, byte-identically, from the repo's committed per-run rows.</p>
+    <p class="compose-note" style="margin-top:14px">Since August the board's whole derivation layer, the standings table, the generated paragraph above, the per-task flip analysis, also ships as a <a href="#program">replayable evidence bundle</a> in the VAC registry, built to recompute offline, byte-identically, from the repo's committed per-run rows. It is the one entry of 12 that did not replay green on 2026-10-19.</p>
 
     <figure class="cast">
       <img src="https://raw.githubusercontent.com/egnaro9/model-drift/main/docs/demo.gif" alt="Flip analysis separating harness failures from model regressions" loading="lazy">
@@ -693,11 +724,11 @@
     <div class="label"><span class="tick">//</span> Systems Integration</div>
     <h2>Five real tools, integrated end to end</h2>
     <p class="lens-kicker">Don't read them. Run them. The same discipline, turned inward: a pipeline that grades its own answer before it speaks.</p>
-    <p class="intro">Five of them here, <strong>all five live right now</strong>: no install, no signup, no API key. Four run in your browser; three of those are the <em>real compiled Python</em> that runs in CI, installed from the wheel CI built. The fifth is a <strong>deployed service on a real Postgres</strong>, and you can ask it a question.</p>
+    <p class="intro">Five of them here: no install, no signup, no API key. Four run in your browser; three of those are the <em>real compiled Python</em> that runs in CI, installed from the wheel CI built. The fifth is <strong>eval-history</strong>: a FastAPI + Postgres service whose read routes are now published as a hashed static archive, exported daily from the database.</p>
     <p class="intro">They were built separately to solve different problems, and this page wires their real interfaces together: <strong>five independently useful tools, composed without a mock layer</strong>. The grounding check <a href="#crash-test">the crash test</a> above runs against your model is literally this stack's own; <em>this</em> is where it does its day job. (The other two turn up in <a href="#oracle">The Oracle</a>.)</p>
 
     <div class="arch-wrap">
-      <svg class="arch" viewBox="0 0 800 390" role="img" aria-label="Architecture: agent-graph retrieves via rag-eval-lab and routes its LLM calls through llm-gateway; rag-eval-lab grades the answers into eval_run.json, which eval-dashboard renders and eval-history archived in Postgres to compare against earlier runs and is now a frozen static archive.">
+      <svg class="arch" viewBox="0 0 800 390" role="img" aria-label="Architecture: agent-graph retrieves via rag-eval-lab and routes its LLM calls through llm-gateway; rag-eval-lab grades the answers into eval_run.json, which eval-dashboard renders and eval-history stores in Postgres to compare against earlier runs, and is now published as a static archive, exported daily.">
         <defs>
           <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="var(--fg-faint)"/>
@@ -753,9 +784,9 @@
           <text class="ns" x="646" y="264" text-anchor="middle">shows what failed</text>
         </a>
 
-        <!-- the same file the dashboard renders is what the API ingests, verbatim -->
+        <!-- the same file the dashboard renders is what eval-history stores, verbatim -->
         <path d="M404,270 L404,310" fill="none" stroke="var(--fg-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
-        <text class="edge" x="414" y="296">POST /runs</text>
+        <text class="edge" x="414" y="296">post_run.py</text>
 
         <path d="M500,339 L556,339" fill="none" stroke="var(--fg-faint)" stroke-width="1.5" marker-end="url(#ah)"/>
         <text class="edge" x="528" y="330" text-anchor="middle">Neon</text>
@@ -770,15 +801,15 @@
         <text class="nm dim" x="631" y="334" text-anchor="middle">Postgres</text>
         <text class="ns" x="631" y="352" text-anchor="middle">every run, kept</text>
       </svg>
-      <div class="arch-legend">Five of the eight boxes are live, click one. The dashed three are what the live ones talk to. Every arrow is a real call, not a decoration, most in-process, the last two over the wire. Everything above the last row runs in your tab. <b>eval-history was a live FastAPI and Postgres service until its host was retired in August 2026</b>; the last box now reads its frozen archive, 946 runs, served as static JSON.</div>
+      <div class="arch-legend">Five of the eight boxes are live, click one. The dashed three are what the live ones talk to. Every arrow is a real call, not a decoration, most in-process, the last two over the wire. Everything above the last row runs in your tab. <b>eval-history ran as a live FastAPI service on Postgres until its API host was retired in August 2026</b>; the last box now reads its static archive, exported daily from the same Postgres database and served as JSON.</div>
     </div>
 
-    <p class="compose-note">An agent that retrieves, a gateway governing its model calls, a harness grading its answers, a dashboard showing what failed, and a database that remembers every run. One button runs a question through <b>all five</b> and hands you the result. Including the case that's <b>perfectly faithful and completely wrong</b>, which is the case that matters most. The last stage leaves your tab: it asks the <b>live Postgres service</b> what changed versus a run it really has stored, using <b>the same <code>compare.py</code> the server runs</b>, fetched from GitHub and executed in front of you.</p>
+    <p class="compose-note">An agent that retrieves, a gateway governing its model calls, a harness grading its answers, a dashboard showing what failed, and a database that remembers every run. One button runs a question through <b>all five</b> and hands you the result. Including the case that's <b>perfectly faithful and completely wrong</b>, which is the case that matters most. The last stage leaves your tab: it reads <b>eval-history's archive</b> of a run stored in Postgres, and compares against it using <b>eval-history's own <code>compare.py</code></b>, fetched from GitHub and executed in front of you.</p>
     <a class="plive" style="margin-top:14px" href="https://erikhill.dev/stack/">▶ Run all five together. One button</a>
-    <p class="compose-note" style="margin-top:12px">Or try each stage on its own. The five below are numbered in the order they run. That button runs stages 1–4 in your tab; stage 5 is the deployed one, so it answers from a database instead.</p>
-    <p class="compose-note" style="margin-top:18px; border-left:3px solid var(--amber-line); padding-left:14px">And it isn't only a demo of itself. The same eval stack powers <a href="https://github.com/egnaro9/prompt-regress" target="erikhill-out"><b>prompt-regress</b></a>: a GitHub Action that runs your evals on every pull request, compares them to the main-branch baseline, and <b>fails the job when the answers got worse</b>. It fills a gap the popular eval runner leaves open (no history, no cross-run comparison). It runs on pull requests in <a href="https://github.com/egnaro9/rag-eval-lab" target="erikhill-out">rag-eval-lab</a>, where a regression turns the check red. That branch has no protection rule, so today it surfaces a regression rather than blocking a merge, and making it a required check is the difference between the two. The demo is the machine; this is what it's <em>for</em>.</p>
+    <p class="compose-note" style="margin-top:12px">Or try each stage on its own. The five below are numbered in the order they run. That button runs stages 1 to 4 in your tab; stage 5 reads eval-history's archive instead.</p>
+    <p class="compose-note" style="margin-top:18px; border-left:3px solid var(--amber-line); padding-left:14px">And it isn't only a demo of itself. The same eval stack powers <a href="https://github.com/egnaro9/prompt-regress" target="erikhill-out"><b>prompt-regress</b></a>: a GitHub Action that runs your evals on every pull request, compares them to the main-branch baseline, and <b>fails the job when the answers got worse</b>. It fills a gap the popular eval runner leaves open (no history, no cross-run comparison). It ran on <a href="https://github.com/egnaro9/rag-eval-lab" target="erikhill-out">rag-eval-lab</a>'s pull requests until 2026-10-10, when it was removed after it had stopped running on 2026-09-22. Against eval-history's static archive it can read stored runs and their comparisons, but the gate stores the pull request's run before it compares, so it cannot gate a new run without a writable eval-history. The demo is the machine; this is what it's <em>for</em>.</p>
     <p class="compose-note" style="margin-top:14px; border-left:3px solid var(--amber-line); padding-left:14px">And the graders themselves get tested. <a href="#evalmut"><b>evalmut</b></a>, the flagship, up the page, injects a known defect mined from a real failure into an output a grader passed; pointed at <code>gradecore</code>'s own graders it found <b>four real holes</b>. The suite that grades everything here is itself graded.</p>
-    <p class="compose-note" style="margin-top:14px; border-left:3px solid var(--teal); padding-left:14px">The newest rung closes the loop from the outside: <b>model-drift</b> and <b>crashkit</b> each emit their central claim as an evidence bundle (<code>emit_vac.py</code>) into <a href="#program">the VAC registry</a>. Accepted entries are re-verified against fetched artifacts before the registry page deploys; both are accepted, and <b>model-drift's was once refused</b> by the verifier over its own evidence rather than replayed, until that evidence was repaired. So the claims <em>about</em> the system are checkable by a stranger too, and the ones that are not say so.</p>
+    <p class="compose-note" style="margin-top:14px; border-left:3px solid var(--teal); padding-left:14px">The newest rung closes the loop from the outside: <b>model-drift</b> and <b>crashkit</b> each emit their central claim as an evidence bundle (<code>emit_vac.py</code>) into <a href="#program">the VAC registry</a>. Accepted entries are re-verified against fetched artifacts before the registry page deploys; both are accepted, and <b>model-drift's was once refused</b> by the verifier over its own evidence rather than replayed, until that evidence was repaired. In the 2026-10-19 weekly replay, crashkit's entry replayed green and model-drift's did not: 11 of 12 replayed green. So the claims <em>about</em> the system are checkable by a stranger too, and the ones that are not say so.</p>
     <p class="compose-note" style="margin-top:14px; border-left:3px solid var(--teal); padding-left:14px">And an agent can now <strong>call this stack directly</strong>. Three of the five are exposed by an <a href="https://github.com/egnaro9/mcp-tools" target="erikhill-out"><strong>MCP server</strong></a>, each doing the job it was built for:</p>
     <ul class="compose-list">
       <li><strong>agent-graph's</strong> AST-sandboxed evaluator is the <code>calc</code> tool. Arithmetic and nothing else.</li>
@@ -847,7 +878,7 @@
           <span class="pname">eval-dashboard</span>
           <span class="pci live">live</span>
         </div>
-        <p>Turns an eval run into metric cards and a per-case table, flagging hallucinations in red. Strict TypeScript, runtime schema validation, static export, <strong>29 tests</strong>.</p>
+        <p>Turns an eval run into metric cards and a per-case table, flagging hallucinations in red. Strict TypeScript, runtime schema validation, static export, <strong>30 tests</strong>.</p>
         <div class="ptags"><span class="ptag">Next.js</span><span class="ptag">TypeScript</span><span class="ptag">Vitest</span></div>
         </div>
         <div class="pside">
@@ -861,10 +892,10 @@
         <div class="ph">
           <span class="pstep">5</span>
           <span class="pname">eval-history</span>
-          <span class="pci api"><span class="v"></span>live api</span>
+          <span class="pci api"><span class="v"></span>archive</span>
         </div>
-        <p>Ask it what regressed and a real database answers. Same commit, retrieval <code>k=3</code> vs <code>k=2</code>: <strong>five cases better, one worse, verdict <code>regressed</code></strong>. It won't let a better average bury the case that broke. Behind it, the only one of these five <strong>not computed in your tab</strong>: a <strong>FastAPI</strong> + <strong>SQLAlchemy 2.0</strong> service against <strong>Postgres</strong> on Neon, which collected <strong>rag-eval-lab's eval runs from CI automatically</strong>, tagged with the commit that produced them. The hosting is gone and its read routes are now served as a hashed static archive, so what you fetch is the recorded answer rather than a live query. Non-blocking, so the bookkeeping can never redden the suite it books.</p>
-        <div class="ptags"><a class="ptag mcp" href="https://github.com/egnaro9/mcp-tools" target="erikhill-out" title="Exposed by mcp-tools, a Model Context Protocol server built from the spec">MCP tool · compare_runs</a><span class="ptag">FastAPI</span><span class="ptag">SQLAlchemy 2.0</span><span class="ptag">Postgres</span><span class="ptag">Neon</span><span class="ptag">Render</span><span class="ptag">CI on PG 16 + 18</span><span class="ptag">Alembic drift test</span><span class="ptag">/health · /readyz</span></div>
+        <p>Ask it what regressed and you get the answer its database recorded. Same commit, retrieval <code>k=3</code> vs <code>k=2</code>: <strong>five cases better, one worse, verdict <code>regressed</code></strong>. It won't let a better average bury the case that broke. Behind it, the only one of these five <strong>not computed in your tab</strong>: a <strong>FastAPI</strong> + <strong>SQLAlchemy 2.0</strong> service against <strong>Postgres</strong> on Neon, which collects <strong>rag-eval-lab's and model-drift's eval runs from CI automatically</strong>, tagged with the commit that produced them. The API host is gone and its read routes are now served as a hashed static archive, exported daily, so what you fetch is the recorded answer rather than a live query. Non-blocking, so the bookkeeping can never redden the suite it books.</p>
+        <div class="ptags"><a class="ptag mcp" href="https://github.com/egnaro9/mcp-tools" target="erikhill-out" title="Exposed by mcp-tools, a Model Context Protocol server built from the spec">MCP tool · compare_runs</a><span class="ptag">FastAPI</span><span class="ptag">SQLAlchemy 2.0</span><span class="ptag">Postgres</span><span class="ptag">Neon</span><span class="ptag">CI on PG 16 + 18</span><span class="ptag">Alembic drift test</span><span class="ptag">/health · /readyz</span></div>
         </div>
         <div class="pside">
         <a class="plive" href="https://erikhill.dev/eval-compare/">▶ See it rendered</a>
@@ -902,7 +933,7 @@
         <span class="verdict"><span class="v"></span>3,000 boards · 0 disagreements</span>
       </div>
     </div>
-    <p class="intro" style="margin-top:20px"><strong>Proof the test can fail:</strong> a check that has never caught anything isn't evidence. So I planted a deliberately-wrong implementation, special gems on runs of 3 instead of 4, and <strong>both</strong> nets caught it: the differential check <strong>and</strong> an independent invariant checker, over <strong>3,000 more boards</strong>. Neither missed a board the other found.</p>
+    <p class="intro" style="margin-top:20px"><strong>Proof the test can fail:</strong> a check that has never caught anything isn't evidence. So I planted a deliberately-wrong implementation, special gems on runs of 3 instead of 4, and <strong>both</strong> nets caught it: the differential check <strong>and</strong> an independent invariant checker. Recounted over the test's <strong>3,000 seeded boards</strong>, the two flagged the same 829 boards, so neither missed a board the other found.</p>
     <p class="intro" style="margin-top:16px">This is the technique, running end-to-end and clickable. <strong>Where it's headed is the real thing:</strong> when a system's core logic exists in two independent implementations, a reference build and a performance-critical port, each becomes the other's oracle. <strong>Wiring two such implementations into an automated gate is the next step, not something I'm claiming runs today.</strong> What does run today is a property-based invariant suite on the authoritative implementation, plus on-device validation driven by adb, so &quot;it passed&quot; means it passed on real hardware.</p>
 
     <div class="oracle" style="margin-top:22px; border-left-color:var(--teal)">
@@ -942,7 +973,7 @@
     </div>
 
     <h3 class="subhead">The same trick, on someone else's</h3>
-    <p class="intro">Then the obvious question: <em>if porting my code to a second environment finds bugs, what about the thing doing the porting?</em> TeaVM is a Java-to-JavaScript compiler I didn't write: 12 years old, and the tool that caught the bug above.</p>
+    <p class="intro">Then the obvious question: <em>if porting my code to a second environment finds bugs, what about the thing doing the porting?</em> TeaVM is a Java-to-JavaScript compiler I didn't write, in development since 2013, and the tool that caught the bug above.</p>
     <div class="oracle" style="margin-top:20px; border-left-color:#c084fc">
       <p class="big">Its <code>Calendar</code> disagreed with the JVM's by <em>six days</em>, and had for twelve years.</p>
       <div class="diff">
@@ -953,7 +984,7 @@
       <p class="intro" style="margin-top:18px">Same test, two environments, one wrong. The cause was <strong>one character</strong>: <code>days - 2</code> where every neighbouring branch, including the line directly above it, uses <code>days - 3</code>. Apache Harmony, which TeaVM's calendar was ported <em>from</em>, has <code>days - 3</code>. Git blame puts it at a commit from June 2014. One about <code>SimpleDateFormat</code> tests, which is not where you look for it.</p>
       <p class="intro" style="margin-top:14px">Four assertions that reach that line had been <strong>commented out since 2015</strong>: one by the developer who later hit the bug and filed the issue, and <strong>three by the maintainer who eventually merged the fix</strong>. Nothing live reached the line, so the suite couldn't catch it. I re-enabled the four, changed the character, and they pass. <strong>No new tests.</strong></p>
       <a class="plive" style="margin-top:18px; display:inline-flex; border-color:#c084fc; color:#c084fc; background:rgba(192,132,252,.1)" href="https://github.com/konsoletyper/teavm/pull/1213" target="erikhill-out">▶ Read the pull request</a>
-      <p class="intro" style="margin-top:16px"><strong>Merged</strong>: <a href="https://github.com/konsoletyper/teavm/pull/1213" target="erikhill-out">konsoletyper/teavm#1213</a>, against <a href="https://github.com/konsoletyper/teavm/issues/371" target="erikhill-out">issue #371</a> (filed 2018, zero comments in the eight years since). Merged by the project lead on 17 July 2026. Nine lines changed, one of them the character that mattered. The finding never depended on it landing; it's just better that it did.</p>
+      <p class="intro" style="margin-top:16px"><strong>Merged</strong>: <a href="https://github.com/konsoletyper/teavm/pull/1213" target="erikhill-out">konsoletyper/teavm#1213</a>, against <a href="https://github.com/konsoletyper/teavm/issues/371" target="erikhill-out">issue #371</a> (filed December 2018, zero comments in the nearly eight years before it closed). Merged by the project lead on 17 July 2026. Nine lines changed, one of them the character that mattered. The finding never depended on it landing; it's just better that it did.</p>
     </div>
 
     <figure class="rec" id="independent-review">
@@ -963,7 +994,7 @@
        : Senior AI/ML Engineer &amp; NLP Researcher · ~12 years across academic and production ML/NLP
         <a class="rec-full" href="https://www.linkedin.com/in/erik-hill-98895575/details/recommendations/" target="erikhill-out">read it in full on LinkedIn <span>→</span></a>
       </figcaption>
-      <p class="rec-note">He wrote that about my work generally. The bug above is what it looks like in the concrete: no exception, no failing build, no alert. Just the wrong date, for more than twelve years, in a compiler thousands of projects depend on. A recommendation is a claim; <a href="https://github.com/konsoletyper/teavm/pull/1213" target="erikhill-out">#1213</a> is the receipt.</p>
+      <p class="rec-note">He wrote that about my work generally. The bug above is what it looks like in the concrete: no exception, no failing build, no alert. Just the wrong date, for more than twelve years, in a compiler with 3,000+ GitHub stars. A recommendation is a claim; <a href="https://github.com/konsoletyper/teavm/pull/1213" target="erikhill-out">#1213</a> is the receipt.</p>
     </figure>
 
     <p class="intro" style="margin-top:20px">That's the whole argument, three times: <strong>write it twice, run it in two places, and let the disagreement tell you which one lied.</strong> It works on a demo, on my own shipped code, and on a stranger's compiler that had been quietly wrong since before I could program. And it's the same move that opens this page, where a deterministic grader catches its own lie about a real model.</p>
@@ -987,7 +1018,8 @@
         games</em> from one seed. The determinism test I already had was green throughout: it ran
         the engine twice in the <em>same</em> runtime, which cannot see a disagreement between
         runtimes. A golden file of the JVM trace passed too, because the JVM side never moved.
-        Only the diff between them fails.
+        Only the diff between them fails. The engine and the check are public in
+        <a href="https://github.com/egnaro9/tapdodge-engine" target="erikhill-out">tapdodge-engine</a>.
         <a href="https://asciinema.org/a/6vDCRqLuJ0FqzuHO" target="erikhill-out">play it as a terminal session</a>: the text is selectable.</figcaption>
     </figure>
   </section>
@@ -996,7 +1028,7 @@
     <div class="label"><span class="tick">//</span> The Harness</div>
     <h2>A loop that reviews itself before it lands</h2>
     <p class="intro">Agents that build unsupervised are easy. Agents you'd <em>let</em> build unsupervised are the problem. And the answer isn't a better model, it's knowing which steps a machine may never take alone. Here's the loop, how far it runs on its own, and exactly what stops it.</p>
-    <p class="intro">Work moves through five stages, and each leg arms the next through a hook rather than a hand-run command. Judgment runs on a different, colder model than execution, so the critic isn't grading its own homework.</p>
+    <p class="intro">Work moves through four stages, with Evaluation as a fifth role that runs alongside, and the manager hands each stage to the next rather than leaving it to a hand-run command. Judgment runs on a different, colder model than execution, so the critic isn't grading its own homework.</p>
 
     <div class="pipe-scroll">
       <div class="pipe" role="img" aria-label="Pipeline: Strategy to Execution to Critic to Evaluation to Ops">
@@ -1011,7 +1043,7 @@
 
     <div class="pipe-note">
       <div><b>Per-role model routing</b><span>Reasoning-heavy judgment and routine execution run on different models, matched to the job.</span></div>
-      <div><b>Hook-based handoff</b><span>Each stage arms the next leg through a Stop hook. Wiring, not a human, carries the work between stages.</span></div>
+      <div><b>Manager-driven handoff</b><span>A manager seat hands each stage to a fresh agent pinned to the model its role needs; a human still approves anything irreversible.</span></div>
       <div><b>Cold, independent critic</b><span>Review runs in fresh context so it catches what the builder rationalized away.</span></div>
     </div>
 
@@ -1022,7 +1054,7 @@
     <div class="ladder" role="list">
       <div class="rung" role="listitem"><span class="lv">L4</span><span class="rt"><b>Lights-out</b>: a doctrine amendment, not a default. Operator's call, never self-granted.</span><span class="tag">gated</span></div>
       <div class="rung" role="listitem"><span class="lv">L3</span><span class="rt"><b>Auto-advance launches</b>: the safe clicks fire on their own; write-gates still stop for a human.</span><span class="tag">gated</span></div>
-      <div class="rung here" role="listitem"><span class="lv">L2</span><span class="rt"><b>Hands-off relay</b>: each leg arms the next on its own; every irreversible act still waits for approval.</span><span class="tag">◀ current</span></div>
+      <div class="rung here" role="listitem"><span class="lv">L2</span><span class="rt"><b>Manager-driven handoffs</b>: every irreversible act still waits for approval.</span><span class="tag">◀ current</span></div>
       <div class="rung" role="listitem"><span class="lv">L1</span><span class="rt"><b>Assisted</b>: humans drive; the harness proposes and prepares each step.</span><span class="tag">manual</span></div>
       <div class="rung" role="listitem"><span class="lv">L0</span><span class="rt"><b>Manual</b>: every action is a human keystroke.</span><span class="tag">manual</span></div>
     </div>
@@ -1044,6 +1076,34 @@
         only an operator-driven hook may write. Never the agent's own words.
         <a href="https://asciinema.org/a/BRkqfTu5mbqrVZ8h" target="erikhill-out">play it as a terminal session</a>: the text is selectable.</figcaption>
     </figure>
+  </section>
+
+  <section id="tools">
+    <div class="label"><span class="tick">//</span> Smaller Tools</div>
+    <h2>Checks that cannot fail, and the tools that find them</h2>
+    <p class="intro">Each of these does one job, and each was pointed at real material before it was described here.</p>
+    <div class="bridge">
+      <div class="bridge-row">
+        <span class="bridge-b">deadgate</span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/deadgate" target="erikhill-out">deadgate</a></strong> finds CI checks that cannot fail: a required check satisfied by a skipped job, a pipe that swallows an exit status. <a href="https://pypi.org/project/deadgate/" target="erikhill-out">On PyPI</a>. Its pipe detector was hand-labelled in a complete census of 653 findings from a 275-repository corpus, and the published false rate is that census: 36.1%. Two other detectors were deleted rather than tuned, on hand-labelled evidence that they had never been right.</span>
+      </div>
+      <div class="bridge-row">
+        <span class="bridge-b">deadcheck</span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/deadcheck" target="erikhill-out">deadcheck</a></strong> measures what an eval rubric can and cannot see. Pointed at three rubrics I didn't write, from promptfoo, OpenAI evals and Inspect AI, each produced a finding on its first fair run. OpenAI evals' <code>Match</code>, for one, is a prefix match, so it accepts "10" for an expected "1".</span>
+      </div>
+      <div class="bridge-row">
+        <span class="bridge-b">readme-test-count</span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/readme-test-count" target="erikhill-out">readme-test-count</a></strong> fails CI when a README's advertised test count disagrees with what pytest collects. It reads counts written in prose and in a shields.io tests badge.</span>
+      </div>
+      <div class="bridge-row">
+        <span class="bridge-b">pi-gates &middot; pi-eval</span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/pi-gates" target="erikhill-out">pi-gates</a></strong> is a public port of <a href="#harness">the commit gate above</a> for the pi coding agent: a commit or push needs an approval the operator types, and an approval the session types for itself is refused. <strong><a href="https://github.com/egnaro9/pi-eval" target="erikhill-out">pi-eval</a></strong> gives pi deterministic grading over <code>gradecore</code>, with no LLM judge.</span>
+      </div>
+      <div class="bridge-row">
+        <span class="bridge-b">llm-wire-stub</span>
+        <span class="bridge-d"><strong><a href="https://github.com/egnaro9/llm-wire-stub" target="erikhill-out">llm-wire-stub</a></strong>, published on npm: a scripted Anthropic Messages API at the network boundary for Playwright tests. The real SDK, SSE decode and tool loop run; only the bytes are scripted.</span>
+      </div>
+    </div>
   </section>
 
   <section>
@@ -1071,11 +1131,12 @@
       </ul></div>
       <div><h3>Frontend &amp; JVM</h3><ul>
         <li>TypeScript (strict) · React</li>
-        <li>Next.js 15 · Vitest</li>
+        <li>Next.js 16 · Vitest</li>
         <li>Java · Gradle · JUnit · jqwik</li>
-        <li>WebAssembly (Pyodide · TeaVM)</li>
+        <li>WebAssembly (Pyodide) · TeaVM (Java to JS)</li>
         <li>Interactive SVG dashboards · data viz (no framework)</li>
-        <li>Capacitor · React → Android (Google Play)</li>
+        <li>Kotlin · Java → Android (Google Play)</li>
+        <li>React + Capacitor (in development)</li>
       </ul></div>
       <div><h3>Ship &amp; verify</h3><ul>
         <li>GitHub Actions. Matrix CI, Postgres 16 + 18 service containers</li>
@@ -1111,7 +1172,6 @@
       <span class="chip"><a href="https://dev.to/AgentDev9" target="erikhill-out">dev.to</a></span>
       <span class="chip"><a href="https://www.linkedin.com/in/erik-hill-98895575" target="erikhill-out">LinkedIn</a></span>
       <span class="chip"><a href="https://x.com/AgentDev9" target="erikhill-out">X</a></span>
-      <span class="chip"><a href="https://www.reddit.com/user/AgentDev9" target="erikhill-out">Reddit</a></span>
     </div>
     <p class="foot-range">Open to <strong>remote (US)</strong> roles in AI evaluation, ML test / SDET, backend, or applied AI engineering.</p>
     <div class="foot-note">Erik Hill · AI Evaluation &amp; Testing Engineer · 2026</div>

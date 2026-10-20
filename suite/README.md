@@ -2,8 +2,8 @@
 
 Two generated pages and the provenance system behind them.
 
-- `index.html` — six tools, one number each, every number recomputed from pinned bytes.
-- `runner.html` — the same evidence stepped through, ending with a verifier refusing tampered
+- `index.html`: six tools, one number each, every number recomputed from pinned bytes.
+- `runner.html`: the same evidence stepped through, ending with a verifier refusing tampered
   bundles by name.
 
 Both are **generated and committed**. Nothing on either page is typed by hand.

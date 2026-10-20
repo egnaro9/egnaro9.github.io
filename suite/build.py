@@ -137,10 +137,18 @@ def _fleet(d):
 
 def _drift(d):
     real = [s for s in d["series"] if not str(s).startswith("mock:")]
-    return (str(len(real)), [
-        ("models tracked", str(len(real))),
+    # A series that stopped producing points stays on the board as history, so counting every
+    # key reports retired models as tracked. "In the last run" means a point stamped with the
+    # board's own `updated` time, read from the artifact like every other number here.
+    # A board whose series are not keyed point lists raises here, which marks the panel ABSENT
+    # rather than quietly printing 0.
+    series = d["series"]
+    live = [s for s in real if series[s] and series[s][-1]["t"] == d["updated"]]
+    return (str(len(live)), [
+        ("LLMs in the last run", str(len(live))),
+        ("LLM series ever charted", f"{len(real)} ({len(real) - len(live)} retired)"),
         ("suite size", str(d["suite_size"])),
-        ("last run", str(d["updated"])[:10]),
+        ("last run at the pinned commit", str(d["updated"])[:10]),
         ("control series", str(len(d["series"]) - len(real))),
     ])
 

@@ -2,14 +2,14 @@
 // Four run in this tab. The fifth is a real service, so this actually calls it.
 //
 // Nothing here reimplements any of them. This page installs each project's own
-// published wheel — the exact artifact its CI built — and calls them. The
+// published wheel (the exact artifact its CI built) and calls them. The
 // arrows on the diagram are function calls.
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Swappable corpora — the point being that the pipeline isn't tied to any of
+// Swappable corpora: the point being that the pipeline isn't tied to any of
 // them. Whatever documents you give it become the only thing it knows.
 const CORPORA = {
   planets: [
@@ -162,7 +162,7 @@ from agentgraph.rag import rag_tools
 from agentgraph.gateway import GatewayPolicy
 
 GATEWAY = create_gateway(GwConfig(api_keys=frozenset({"dev-key"}), rate_capacity=60))
-# agent-graph's search IS rag-eval-lab's retriever. No policy change needed —
+# agent-graph's search IS rag-eval-lab's retriever. No policy change needed:
 # each tool owns its own trigger, so the planner adapts on its own.
 TOOLS = rag_tools()
 GW = GatewayPolicy(transport=None, model="mock-1")
@@ -191,7 +191,7 @@ CASES = [
     {"q": "Which planet is the hottest in the Solar System?", "gold": ["venus#0"]},
     {"q": "What is the tallest volcano in the Solar System?", "gold": ["mars#0"]},
     {"q": "Which planet is famous for its ring system?", "gold": ["saturn#0"]},
-    {"q": "Who wrote Hamlet?", "gold": []},   # NOT in the corpus — retrieval must fail honestly
+    {"q": "Who wrote Hamlet?", "gold": []},   # NOT in the corpus: retrieval must fail honestly
 ]
 
 DOCS = dict(SAMPLE_DOCS)
@@ -203,7 +203,7 @@ def reindex(docs_json):
     """Swap in a visitor-supplied corpus.
 
     rag_tools(docs=...) rebuilds the retriever around whatever it's given, so
-    the pipeline isn't tied to the sample data — the demo just happened to ship
+    the pipeline isn't tied to the sample data; the demo just happened to ship
     with planets.
     """
     global TOOLS, DOCS
@@ -254,7 +254,7 @@ async def run_custom(q):
     """One visitor-supplied question through the four in-tab projects.
 
     No gold label exists for an arbitrary question, so precision/recall are
-    left out rather than invented — faithfulness and the retrieval are what
+    left out rather than invented; faithfulness and the retrieval are what
     can be honestly reported.
     """
     state = agent_run(q, tools_registry=TOOLS)
@@ -267,7 +267,7 @@ async def run_custom(q):
         gw = await _asgi("POST", "/v1/chat/completions", GW.build_request(q, obs))
     f = faithfulness(state["answer"], contexts) if contexts else 0.0
     # Did retrieval actually surface anything about the question? Cheap lexical
-    # check — the same content-word overlap the harness uses, applied to the
+    # check: the same content-word overlap the harness uses, applied to the
     # QUESTION rather than the answer.
     from ragevallab.evals import _content_tokens
     q_tokens = set(_content_tokens(q))
@@ -300,7 +300,7 @@ def build_eval_run(cases_json):
                        "citation": 1.0 if c["retrieved"] else 0.0,
                        "faithfulness": c["faithfulness"]},
             "flagged": c["flagged"],
-            "note": "" if c["in_corpus"] else "Not in the corpus — the retriever returned its closest chunk anyway.",
+            "note": "" if c["in_corpus"] else "Not in the corpus: the retriever returned its closest chunk anyway.",
         })
     n = len(out)
     mean = lambda k: round(sum(x["scores"][k] for x in out) / n, 3) if n else 0.0
@@ -319,7 +319,7 @@ def build_eval_run(cases_json):
     // wakeEvalHistory is an empty no-op kept only so this call site stays put.
     wakeEvalHistory();
 
-    setStatus("Ready — four projects installed in this tab, and a fifth read from a recorded archive", "ready");
+    setStatus("Ready: four projects installed in this tab, and a fifth read from a recorded archive", "ready");
     document.querySelectorAll("button").forEach((b) => (b.disabled = false));
     const docs = JSON.parse(await py.runPythonAsync("corpus_json()"));
     $("corpusBox").value = Object.entries(docs).map(([k, v]) => `${k}: ${v}`).join("\n");
@@ -336,16 +336,16 @@ const tone = (v) => (v >= 0.9 ? "good" : v >= 0.6 ? "warn" : "bad");
 const pct = (v) => (v * 100).toFixed(0) + "%";
 
 /* ── the fifth project ───────────────────────────────────────────────────────
-   Four of these run in your tab. eval-history doesn't — it's a FastAPI service
-   on Postgres, and the only honest way to include it in a browser demo is to
-   actually call it.
+   Four of these run in your tab. eval-history doesn't: it's a FastAPI service
+   on Postgres whose read routes are now published as a hashed static archive,
+   exported daily from the same database, so this page reads that archive.
 
    It can't be written to: writes need a key, and a key in a page is not a key.
-   So this reads. It pulls a run the service really has stored, fetches
-   eval-history's REAL compare.py from GitHub, and runs that exact code — the
-   comparer the server itself uses, pure and I/O-free by design — against the
-   run you just produced. Nothing is simulated; the comparison logic and the
-   baseline are both the genuine article.                                     */
+   So this reads. It pulls a run the database really stored, fetches
+   eval-history's REAL compare.py from GitHub, and runs that exact code (the
+   project's own comparer, pure and I/O-free by design) against the run you
+   just produced. Nothing is simulated; the comparison logic and the baseline
+   are both the genuine article.                                              */
 
 const EVAL_HISTORY = "https://erikhill.dev/eval-history";
 const COMPARE_SRC =
@@ -361,8 +361,8 @@ function wakeEvalHistory() {}
 /** A stored run in eval_run.json shape, plus how to describe it. */
 async function fetchStoredBaseline(signal) {
   // runs.json is the whole ordered list, newest first. There is no ?limit on a
-  // static file, and none is needed: 946 runs are 39 KB over the wire gzipped,
-  // and .find below still lands on the newest CI run exactly as it did before.
+  // static file, and none is needed: the whole list is small over the wire
+  // gzipped, and .find below still lands on the newest CI run exactly as it did before.
   const list = await fetch(`${EVAL_HISTORY}/runs.json`, { signal }).then((r) => {
     if (!r.ok) throw new Error(`eval-history returned ${r.status}`);
     return r.json();
@@ -428,9 +428,9 @@ async function runStack() {
 
     step(2, `<span class="proj a">agent-graph</span> → <span class="proj r">rag-eval-lab</span> · retrieve`,
       `<div class="mono">tools: ${c.tools.join(" → ") || "none"}</div>
-       <div class="mono ids">${c.retrieved.join(", ") || "—"}</div>
+       <div class="mono ids">${c.retrieved.join(", ") || "none"}</div>
        <div class="ctx">${esc((c.contexts[0] || "").slice(0, 110))}${(c.contexts[0] || "").length > 110 ? "…" : ""}</div>
-       ${!c.in_corpus ? `<div class="warnline">Not in the corpus — a real retriever returns its closest chunk anyway rather than admitting defeat. Watch step 4.</div>` : ""}`, "r");
+       ${!c.in_corpus ? `<div class="warnline">Not in the corpus: a real retriever returns its closest chunk anyway rather than admitting defeat. Watch step 4.</div>` : ""}`, "r");
     await sleep(320);
 
     step(3, `<span class="proj a">agent-graph</span> → <span class="proj g">llm-gateway</span> · compose`,
@@ -445,11 +445,11 @@ async function runStack() {
         · precision@k <b class="${c.in_corpus ? "" : "bad"}">${pct(c.precision)}</b> · threshold ${c.threshold}</div>
        <div class="verdictline ${groundedButWrong ? "warn" : c.flagged ? "bad" : "good"}">${
         groundedButWrong
-          ? "⚠ perfectly faithful — and completely wrong"
+          ? "⚠ perfectly faithful, and completely wrong"
           : c.flagged
-          ? "🚩 flagged — the answer isn't grounded in what was retrieved"
+          ? "🚩 flagged: the answer isn't grounded in what was retrieved"
           : "✓ grounded in the retrieved context"}</div>
-       ${groundedButWrong ? `<div class="warnline">This is the honest lesson. <b>Faithfulness measures grounding, not correctness.</b> The agent answered from the chunk it was handed, so it's 100% faithful — to a document about Mercury. <b>precision@k = 0%</b> is what exposes it. One metric alone would have called this a pass; that's why you measure retrieval and grounding separately.</div>` : ""}`,
+       ${groundedButWrong ? `<div class="warnline">This is the honest lesson. <b>Faithfulness measures grounding, not correctness.</b> The agent answered from the chunk it was handed, so it's 100% faithful, to a document about Mercury. <b>precision@k = 0%</b> is what exposes it. One metric alone would have called this a pass; that's why you measure retrieval and grounding separately.</div>` : ""}`,
       groundedButWrong ? "bad" : c.flagged ? "bad" : "r");
     await sleep(420);
   }
@@ -459,12 +459,12 @@ async function runStack() {
   const m = await py.runPythonAsync("await gateway_metrics()").then(JSON.parse);
   localStorage.setItem("ragevallab:eval_run", JSON.stringify(evalRun));
 
-  // These two chips were never lit by anything — lit() was only called in the wheel
-  // install loop, so the labels promising "at the end" and "a real server" could not
+  // These two chips were never lit by anything: lit() was only called in the wheel
+  // install loop, so the labels promising "at the end" and "archive" could not
   // come true no matter how the run went.
   lit("chip-eval-dashboard");
   step(5, `<span class="proj r">rag-eval-lab</span> → <span class="proj d">eval-dashboard</span> · the artifact`,
-    `<div class="mono">wrote <b>eval_run.json</b> — ${evalRun.metrics.n_cases} cases ·
+    `<div class="mono">wrote <b>eval_run.json</b>: ${evalRun.metrics.n_cases} cases ·
       ${evalRun.metrics.flagged_cases} flagged · mean faithfulness ${pct(evalRun.metrics.faithfulness)}</div>`, "d");
   await sleep(420);
 
@@ -481,9 +481,9 @@ async function runStack() {
     </div>
     <a class="handoff-btn" href="https://egnaro9.github.io/eval-dashboard/?from=rag-eval-lab" target="_blank" rel="noopener">
       Open this run in eval-dashboard →</a>
-    <div class="handoff-note">That button hands the <b>eval_run.json you just produced</b> to the fourth project. Five repos, one loop — and every arrow above was a function call, not a diagram.
-      <br><br>Four of them ran <b>in this tab</b>, from their own published wheels. Step 6 didn't: that one left your browser and asked <b>eval-history</b> — a FastAPI service on Postgres — what changed against a run it really has stored, and judged it with <b>the server's own <code>compare.py</code></b>, fetched from GitHub and run here. Nothing on this page is a mock.
-      ${m.cache_hits > 0 ? `<br><br>Note the <b>${m.cache_hits} cache hits</b>: you ran it twice, so the gateway served the agent's LLM calls without touching the provider.` : `<br><br>Run it again — the gateway will serve every one of those LLM calls from cache the second time.`}</div>`;
+    <div class="handoff-note">That button hands the <b>eval_run.json you just produced</b> to the fourth project. Five repos, one loop, and every arrow above was a function call, not a diagram.
+      <br><br>Four of them ran <b>in this tab</b>, from their own published wheels. Step 6 didn't: that one left your browser and read <b>eval-history</b>'s archive of what its Postgres stored, and judged it with <b>eval-history's own <code>compare.py</code></b>, fetched from GitHub and run here. Nothing on this page is a mock.
+      ${m.cache_hits > 0 ? `<br><br>Note the <b>${m.cache_hits} cache hits</b>: you ran it twice, so the gateway served the agent's LLM calls without touching the provider.` : `<br><br>Run it again: the gateway will serve every one of those LLM calls from cache the second time.`}</div>`;
   $("finale").scrollIntoView({ block: "nearest", behavior: "smooth" });
 
   btn.disabled = false;
@@ -491,9 +491,9 @@ async function runStack() {
 }
 
 /**
- * Stage 6 — the only stage that leaves the tab.
+ * Stage 6: the only stage that leaves the tab.
  *
- * Failure here must not break the demo: it's a free-tier service, and the other
+ * Failure here must not break the demo: it's a network fetch, and the other
  * five stages already ran. A missing sixth stage that says why is honest; a
  * spinner that never resolves is not.
  */
@@ -518,23 +518,23 @@ async function stageEvalHistory(evalRun) {
     ));
 
     const when = new Date(meta.created_at).toLocaleDateString();
-    const sha = meta.git_sha ? `<code>${esc(meta.git_sha)}</code>` : "—";
+    const sha = meta.git_sha ? `<code>${esc(meta.git_sha)}</code>` : "no sha";
     const verdictTone = cmp.is_regression ? "bad" : cmp.verdict === "improved" ? "good" : "";
 
     $(id).innerHTML = `
       <div>baseline: <b>${esc(meta.label ?? meta.name)}</b> · ${sha} · stored ${when}
-        <span class="dim">— a real row in Postgres, not a fixture</span></div>
+        <span class="dim">(a real row exported from Postgres, not a fixture)</span></div>
       <div style="margin-top:8px">verdict: <b class="${verdictTone}">${esc(cmp.verdict)}</b>
         · ${cmp.regressions.length} regression(s) · ${cmp.improvements.length} improvement(s)</div>
       ${(cmp.added.length || cmp.removed.length) ? `
-      <div style="margin-top:8px" class="dim">${cmp.added.length} question(s) added, ${cmp.removed.length} removed —
+      <div style="margin-top:8px" class="dim">${cmp.added.length} question(s) added, ${cmp.removed.length} removed,
         reported separately, <b>never scored</b>. A suite that changed isn't a system that regressed.</div>` : ""}
       <div style="margin-top:8px" class="dim">Compared by eval-history's own <b>compare.py</b>, fetched from GitHub
-        and executed here — the same code the server runs.</div>`;
+        and executed here.</div>`;
   } catch (err) {
     clearTimeout(bail);
     $(id).innerHTML = `<span class="dim">eval-history didn't answer
-      (${esc(String(err.message || err))}). It's a free service that sleeps — the five stages above
+      (${esc(String(err.message || err))}). The archive did not answer; the five stages above
       still ran entirely in this tab, which is rather the point of them being here.</span>`;
   }
 }
@@ -552,10 +552,10 @@ async function runMine() {
     await sleep(280);
 
     step(2, `<span class="proj a">agent-graph</span> → <span class="proj r">rag-eval-lab</span> · retrieve`,
-      `<div class="mono">tools: ${c.tools.join(" → ") || "none — no tool matched your question"}</div>
-       <div class="mono ids">${c.retrieved.join(", ") || "—"}</div>
+      `<div class="mono">tools: ${c.tools.join(" → ") || "none: no tool matched your question"}</div>
+       <div class="mono ids">${c.retrieved.join(", ") || "none"}</div>
        <div class="ctx">${esc((c.contexts[0] || "").slice(0, 120))}${(c.contexts[0] || "").length > 120 ? "…" : ""}</div>
-       ${c.off_corpus && c.retrieved.length ? `<div class="warnline">Your question doesn't overlap the corpus much (${Math.round(c.question_overlap * 100)}% of its content words appear in what was retrieved). A real retriever still returns its closest chunk — watch step 4.</div>` : ""}`, "r");
+       ${c.off_corpus && c.retrieved.length ? `<div class="warnline">Your question doesn't overlap the corpus much (${Math.round(c.question_overlap * 100)}% of its content words appear in what was retrieved). A real retriever still returns its closest chunk; watch step 4.</div>` : ""}`, "r");
     await sleep(280);
 
     step(3, `<span class="proj a">agent-graph</span> → <span class="proj g">llm-gateway</span> · compose`,
@@ -566,11 +566,11 @@ async function runMine() {
     step(4, `<span class="proj r">rag-eval-lab</span> grades the answer`,
       `<div class="mono">faithfulness <b class="${tone(c.faithfulness)}">${pct(c.faithfulness)}</b> · threshold ${c.threshold}</div>
        <div class="verdictline ${groundedButWrong ? "warn" : c.flagged ? "bad" : "good"}">${
-         groundedButWrong ? "⚠ perfectly faithful — and probably answering the wrong question"
-         : c.flagged ? "🚩 flagged — not grounded in what was retrieved"
+         groundedButWrong ? "⚠ perfectly faithful, and probably answering the wrong question"
+         : c.flagged ? "🚩 flagged: not grounded in what was retrieved"
          : "✓ grounded in the retrieved context"}</div>
-       ${groundedButWrong ? `<div class="warnline"><b>Faithfulness measures grounding, not correctness.</b> The agent answered from the chunk it was handed, so it scores high — but the corpus only knows about planets. Only precision against a gold label would catch this, and an arbitrary question has no gold label. That gap is the honest limit of this metric.</div>` : ""}
-       ${!c.retrieved.length ? `<div class="warnline">No tool fired — the planner saw nothing to retrieve or compute.</div>` : ""}`,
+       ${groundedButWrong ? `<div class="warnline"><b>Faithfulness measures grounding, not correctness.</b> The agent answered from the chunk it was handed, so it scores high, but the corpus only knows about planets. Only precision against a gold label would catch this, and an arbitrary question has no gold label. That gap is the honest limit of this metric.</div>` : ""}
+       ${!c.retrieved.length ? `<div class="warnline">No tool fired: the planner saw nothing to retrieve or compute.</div>` : ""}`,
       groundedButWrong || c.flagged ? "bad" : "r");
 
     const m = await py.runPythonAsync("await gateway_metrics()").then(JSON.parse);
@@ -603,7 +603,7 @@ async function reindex() {
   btn.disabled = true;
   const r = JSON.parse(await py.runPythonAsync(`reindex(${JSON.stringify(JSON.stringify(docs))})`));
   $("corpusNote").innerHTML = r.ok
-    ? `<span class="good">✓ re-indexed ${r.n} document(s)</span> — ask it anything about <b>your</b> corpus now. The canned four-case run still uses the planet questions, so reset if you want that.`
+    ? `<span class="good">✓ re-indexed ${r.n} document(s)</span>. Ask it anything about <b>your</b> corpus now. The canned four-case run still uses the planet questions, so reset if you want that.`
     : `<span class="bad">${esc(r.error)}</span>`;
   btn.disabled = false;
 }
