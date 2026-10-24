@@ -103,16 +103,22 @@ const page = (p, bodyHtml) => {
 // differ between markdown and html; the prose may not.
 function assertNothingDropped(slug, rawMd, html) {
   const strip = t => t.replace(/https?:\/\/\S+/g, " ");
-  const words = t => strip(t.replace(/<[^>]+>/g, " ")
-      .replace(/&[a-z]+;|&#\d+;/g, " "))
+  const words = t => strip(t.replace(/&[a-z]+;|&#\d+;/g, " "))
       .toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
+  const tags = t => t.replace(/<[^>]+>/g, " ");
+  // Angle brackets inside code are text, not tags: `grep -F "<path>"` renders as
+  // &lt;path&gt; and the page keeps the word "path". Stripping it from the
+  // markdown as a tag made the source lose a word the page still had, and the
+  // 2026-10-21 note failed this check while rendering correctly.
+  const tagsOutsideCode = t => t.split(/(```[\s\S]*?```|`[^`\n]*`)/)
+      .map((seg, i) => i % 2 ? seg : tags(seg)).join("");
   // Fence DELIMITERS are metadata, not prose: a ```sh line contributes the word
   // "sh" to the markdown and nothing to the page, so a window spanning one would
   // read as a gap once render.js started emitting <pre> instead of a paragraph.
   // The fence CONTENTS are still compared, which is the part that must survive.
-  const src = words(rawMd.replace(/^---\n[\s\S]*?\n---\n/, "")
+  const src = words(tagsOutsideCode(rawMd.replace(/^---\n[\s\S]*?\n---\n/, ""))
                          .replace(/^```[\w+-]*[ \t]*$/gm, ""));
-  const out = words(html).join(" ");
+  const out = words(tags(html)).join(" ");
   const gaps = [];
   for (let i = 0; i + 8 < src.length; i += 4) {
     const w = src.slice(i, i + 8).join(" ");
