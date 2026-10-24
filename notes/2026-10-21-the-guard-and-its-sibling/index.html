@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The guard was applied once. Its sibling read the same data without it. | Erik Hill</title>
+<meta name="description" content="In one session across three repositories I fixed five separate defects. They looked unrelated while I was fixing them. Four are the same bug, and the fifth is the version of it that has no code in it at all.">
+<link rel="canonical" href="https://erikhill.dev/notes/2026-10-21-the-guard-and-its-sibling/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The guard was applied once. Its sibling read the same data without it.">
+<meta property="og:description" content="In one session across three repositories I fixed five separate defects. They looked unrelated while I was fixing them. Four are the same bug, and the fifth is the version of it that has no code in it at all.">
+<meta property="og:url" content="https://erikhill.dev/notes/2026-10-21-the-guard-and-its-sibling/">
+<meta property="og:site_name" content="Drift Notes">
+<meta name="author" content="Erik Hill">
+<meta name="generator" content="model-drift/build-notes">
+<meta property="article:author" content="https://erikhill.dev">
+<meta property="article:published_time" content="2026-10-21">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The guard was applied once. Its sibling read the same data without it.">
+<meta name="twitter:description" content="In one session across three repositories I fixed five separate defects. They looked unrelated while I was fixing them. Four are the same bug, and the fifth is the version of it that has no code in it at all.">
+<link rel="stylesheet" href="/notes/notes.css">
+</head>
+<body>
+<a href="https://erikhill.dev" aria-label="Back to portfolio" style="position:fixed;top:12px;left:14px;z-index:9999;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;font-weight:600;color:#f2a53c;background:rgba(14,19,22,.86);border:1px solid rgba(242,165,60,.45);border-radius:4px;padding:6px 11px;text-decoration:none;backdrop-filter:blur(4px)">&#8592; Portfolio</a>
+
+<div class="col">
+  <article id="post" class="on">
+    <header style="padding-top:76px">
+      <a class="back" href="/notes/">&#8592; All notes</a>
+      <div class="meta"><span class="date">2026-10-21</span><span class="tag harness">instrument</span><span class="tag">defect-class</span></div>
+      <div><h1>The guard was applied once. Its sibling read the same data without it.</h1>
+<p><strong>This is a finding about five of my own tools, including one I wrote that night to catch this exact thing.</strong></p>
+<h2>What happened</h2>
+<p>In one session across three repositories I fixed five separate defects. They looked unrelated while I was fixing them. Four are the same bug, and the fifth is the version of it that has no code in it at all.</p>
+<p>In every case the code knows a rule, applies it correctly at one call site, and then a second path reads the same data with the rule missing. Nothing goes red, because both paths return numbers that look fine.</p>
+<h2>The four in code</h2>
+<p><strong>A grader that scored silence as a pass.</strong> Accuracy is <code>graded_pass / graded_total</code>, and a provider error leaves the case ungraded. The per-category breakdown, twenty lines away, counted a case as OK when it was <code>not flagged</code>, and <code>flagged</code> is <code>passed is False</code>. <code>None is False</code> is <code>False</code>. So a model that returned nothing printed <code>acc 0%</code> beside <code>instruction-following 100%</code> in all nine categories, on the same line, on runs where 35 of 35 calls returned HTTP 402.</p>
+<p><strong>A flip detector reading rows a floor had already rejected.</strong> The board applies a reliability floor to the accuracy path. The flip analysis, in the file next to it, applied nothing, so it read <code>fails</code> arrays from runs written before an earlier fix, when absent calls were scored as wrong answers. Measured: 255 cross-provider alarm days became 159, and 106 repeat offenders became 39. Five alarm tasks were provider outage in their entirety. Sixty-three percent of that backlog was never a finding.</p>
+<p><strong>A tool that checked one half of its own output.</strong> I wrote something that reports which conversation threads are owed a reply, because a post I cannot work should not go out. It fetches links, and it HEAD-checks the ones it <em>quotes</em>, because a quote nobody can open is a quote of nothing. It did not check the ones it <em>counts</em>. It reported six threads owed. Two resolved. One was a crypto recovery scam the platform had already removed and three had authors who were suspended.</p>
+<p><strong>A commit gate that never looked at the commit.</strong> A pre-commit hook refuses a change to a claim-bearing file unless a receipt exists for it. Receipt selection was <code>grep -F &quot;&lt;path&gt; ::&quot; | head -1</code>. The first line mentioning the path won, whatever it said and whenever it was written, so a file reviewed once was exempt from review forever. Four days, and six tests did not catch it. Mutation testing did.</p>
+<h2>And the fifth, which reported green</h2>
+<p>The same night, a failure email turned out to be about a test that had not run in twenty-four days.</p>
+<p>That test compares my board against a second store, by run date. The store's write path was retired in August, its archive froze on 2026-08-30, the board kept advancing, so every model would have been incomparable and the test would have hit its own guard:</p>
+<p>    assert compared, &quot;no model could be compared; the agreement check did not     actually run&quot;</p>
+<p>That assertion is the test being right. It refuses to report success having compared nothing.</p>
+<p>It never reached that line. The check first asks the store whether it is there. The old host had been retired and answers 404, and an unreachable store is not the same fact as a disagreeing one, so the check skipped instead. <strong>For twenty-four days CI was green: fifty-seven passing runs, each printing <code>207 passed, 1 skipped</code>.</strong> The skip is the one.</p>
+<p>It only turned red after I repointed it at the archive that was still reachable, and then only once that day's probe pushed the board past the archive's last row. Three red runs across seven and a half hours, and I fixed it the same evening.</p>
+<p>So there was no missing guard here either. The guard was written, correct, and unreached, and the thing standing in front of it returned the most plausible value available: green. <strong>A skip is a pass.</strong> Nothing counted how long a check had been passing without running.</p>
+<p>So the pattern is wider than a call site. <strong>A rule that lives in one place and is not counted anywhere will be quietly opted out of</strong>, and a check can opt itself out by becoming unable to run.</p>
+<h2>The evidence</h2>
+<div class="twrap"><table><thead><tr><th>claim</th><th>how it was checked</th></tr></thead><tbody><tr><td>five defects, one shape, three repositories</td><td>commits <code>125b9df</code>, <code>d8edf35</code>, <code>b67f341</code> in model-drift, <code>47f82a1</code> in the site repo</td></tr><tr><td>the outage case printed 0% and 100% together</td><td>the run log for three models, 35 of 35 calls returning 402</td></tr><tr><td>the flip filter changed the numbers by this much</td><td>re-ran the analysis over the same stored board: 255 to 159 alarm days, 106 to 39 repeat offenders</td></tr><tr><td>the thread counter was wrong by a factor of three</td><td>curl on all six permalinks: two returned 200, four returned 404</td></tr><tr><td>six tests missed the gate defect and mutation found it</td><td>the seventh test's docstring names the surviving mutant; re-running it gives 6 passed, 1 failed</td></tr><tr><td>the rule has more consumers than you would guess</td><td>the reliability floor is imported by five files in one package</td></tr><tr><td>the agreement check reported green for 24 days without running</td><td>its old host returns 404, so the check skipped; 57 green ci runs between 2026-08-30 and 2026-09-23 each print <code>207 passed, 1 skipped</code>; the frozen archive's newest row is 2026-08-30</td></tr></tbody></table></div>
+<h2>Why none of them went red</h2>
+<p>A guard that is missing does not throw. It returns a plausible number.</p>
+<p>Both halves of every pair above produced output a reader would accept. <code>acc 0%</code> is a number. <code>106 repeat offenders</code> is a number. <code>6 threads owed</code> is a number. <code>head -1</code> returns a line. Nothing crashed, nothing was empty, and no test failed, because the tests asserted that the guarded path was guarded, which was true.</p>
+<p>The shape is: <strong>a rule is a property of a value, and it gets implemented as a property of a call site.</strong> Once the rule lives in a call site, adding a second reader of the same value is an ordinary, blameless change that silently opts out.</p>
+<h2>What I did about it</h2>
+<p>For each one, the fix was two lines and the test was the work. But fixing five instances is not the same as fixing the class, and the class is what generates instances.</p>
+<p>The cheap structural version is to count the consumers. The reliability floor is imported by five files. A test that asserts five, and names them, goes red when someone adds a sixth that does not apply it. That converts &quot;a new reader silently opts out&quot; into &quot;a new reader fails the build until it opts in&quot;.</p>
+<p>It is not elegant and it does not prove anything about correctness. It changes the default from silence to noise, which is the only property that matters here.</p>
+<p>For the fifth I built a probe that reports, for every scheduled check, how many consecutive runs and how many days it has held its verdict, and when it was last green. Not whether it is red. How long, because that is the number that separates a failure from a decision nobody made. It also reports &quot;never green in the window&quot;, the signature of a check born unable to pass.</p>
+<p>It would not have caught this one, and I want to be plain about that. The probe reads workflow conclusions, and a skipping test makes the workflow green. It answers &quot;how long has this been red&quot; and the fifth instance needed &quot;how long has this been reporting on nothing.&quot; Those are different questions and I have only built the first.</p>
+<h2>What I might have wrong</h2>
+<p>Five instances in one session is a small sample, and I found them because I was already looking at that layer. There is an obvious selection effect: I have no idea how many guards in this estate have exactly one consumer and are therefore fine, so I cannot tell you the rate, only that it happened five times in a night.</p>
+<p>The counting test is also weaker than it sounds. It catches a new file that imports the rule and ignores it. It does not catch a new file that re-implements the rule slightly differently, which is the more likely failure once people know the count is being checked. Goodhart applies to your own guards.</p>
+<p>And the honest one: two of the five were in code I wrote that same night, including the tool whose entire job is to check that links resolve before trusting them. I did not fail to know the rule. I knew it, wrote it down in a docstring, and applied it to one of the two places in the same function that needed it.</p>
+<p>If you keep a rule like this, a floor, a filter, a validity check: grep for its name and count the files. Then ask, for each one, whether that file applies it or merely mentions it. The gap between those two numbers is the one I keep finding.</p>
+<hr>
+<p>I build deterministic evaluation and verification tooling for LLM systems, and I am looking for my first full-time role in AI evaluation or QA engineering. Remote US Eastern, or Charleston SC. <a href="https://erikhill.dev">https://erikhill.dev</a></p>
+<p>Live board: <a href="https://egnaro9.github.io/model-drift/">https://egnaro9.github.io/model-drift/</a> Suite, graders and runner: <a href="https://github.com/egnaro9/model-drift">https://github.com/egnaro9/model-drift</a></p>
+<p class="note">Every commit referenced above is public. The numbers were re-measured while writing this, not copied from the commit messages.</p></div>
+    </header>
+  </article>
+
+  <div class="sub" style="margin-top:40px">
+    <strong>Subscribe</strong>
+    <p>Every note is archived at <a href="/notes/">Drift Notes</a>. To get them as
+    they go out, <a href="https://www.linkedin.com/newsletters/7508403524037148672/"
+    target="erikhill-out" rel="noopener">subscribe on LinkedIn</a>. Weekly when
+    there is something to say, and silent when there is not.</p>
+  </div>
+
+  <footer>
+    Generated from <a href="https://github.com/egnaro9/model-drift">model-drift</a>,
+    which drafts these automatically from the run that produced them. The numbers are
+    generated; the decision to publish is not.
+    <br>Live board: <a href="https://egnaro9.github.io/model-drift/">the drift chart</a>.
+  </footer>
+</div>
+</body>
+</html>
