@@ -114,11 +114,10 @@
     <h1>Erik Hill</h1>
     <div class="role">AI Evaluation &amp; Testing Engineer</div>
     <div class="rmeta">
-      Summerville, SC (Charleston area) <span class="sep">·</span> <a href="mailto:contact@erikhill.dev">contact@erikhill.dev</a><br>
+      Charleston, SC area <span class="sep">·</span> <a href="mailto:contact@erikhill.dev">contact@erikhill.dev</a><br>
       <a href="https://linkedin.com/in/erik-hill-98895575" target="erikhill-out">linkedin.com/in/erik-hill-98895575</a>
       <span class="sep">·</span> <a href="../">erikhill.dev</a>
-      <span class="sep">·</span> <a href="https://orcid.org/0009-0002-5912-967X" target="erikhill-out">ORCID 0009-0002-5912-967X</a>
-      <span class="sep">·</span> Open to remote (US) or relocation
+      <span class="sep">·</span> Open to remote (US) or relocation, including SF and NYC
     </div>
     <div style="margin-top:22px">
       <a class="plive" href="Erik_Hill_Resume.pdf" download>↓ Download the PDF, two pages</a>
@@ -141,6 +140,19 @@
   </section>
 
   <section>
+    <h2>Open-Source Contributions &amp; External Review</h2>
+    <div class="proj">&bull; <strong>Two pull requests merged into promptfoo</strong> (26k stars), both merged by its co-founder. #11278: a blank BLEU reference, such as an unset template variable, was scored instead of ignored; the fix shipped in promptfoo 0.124.0. #10256: the <code>rouge-l</code> / <code>rouge-s</code> assertion types, merged 2026-10-09.</div>
+    <div class="proj">&bull; <strong>Three merge requests merged into GitLab</strong>: two CVE records whose stored score contradicted their own published vector (CVE-2023-5009 stored 9.6 CRITICAL; its vector computes 8.2 HIGH), and the security handbook's disclosure window, corrected from 30 days to 90.</div>
+  <div class="proj">&bull; <strong>External audit of vac-protocol:</strong> an outside engineer falsified my own verifier,
+  cheapest forgery <strong>four bytes</strong>. Fix merged, then I found the same defect class <strong>four
+  more times</strong> (arXiv, below). As <strong>sole maintainer</strong> I merged four of his pull requests and answered his four specification issues (protocol v0.2); on two I showed his proposed fix would not close the hole and shipped a wider one.</div>
+  <div class="proj">&bull; <strong>Peer review with Bartłomiej Nawara</strong>, senior AI/ML engineer:
+  his missing-not-at-random critique shaped <b>model-drift</b>'s <strong>reliability
+  floor</strong> (credited in the repo); I found <strong>two design faults</strong> in his pre-registered study.</div>
+  <div class="proj">&bull; <strong>Closed a bug report open in TeaVM since 2018</strong> that its own suite could not catch: a <strong>one-character error</strong> in its GregorianCalendar emulation, found by differential-testing the browser port against the JVM. The patch re-enables the four commented-out assertions covering that line; merged same day by the maintainer.</div>
+  </section>
+
+  <section>
     <h2>Selected Projects<span class="hnote">, all public at <a href="https://github.com/egnaro9" target="erikhill-out">github.com/egnaro9</a></span></h2>
     <div class="proj">&bull; <b>agent-certlab</b>: <strong>Two real coding agents certified, every verdict regradeable from artifacts</strong>. Three <strong>seeded-defect task families</strong> with provable answer keys (incl. <strong>coordinated two-file defects</strong> no single-file patch can pass), a <strong>precondition prover</strong> (clean passes, every seed fails; it refused one of my own defects), and <strong>calibration agents</strong> the harness must separate before certifying.</div>
   <div class="proj">&bull; <b>reference-fleet</b>: <strong>An answer key for eval suites</strong>: six models each broken <strong>one documented way at an exactly reproducible seeded rate</strong>; a naive suite detects <strong>1 of 6</strong> (paired protocol). A <strong>LoRA-trained native defect</strong> showed training's rate control is lossy: mixture 0.507 &rarr; realized <strong>0.20 greedy, 0.31 at temp 1.0</strong>.</div>
@@ -155,19 +167,6 @@
   <div class="proj">&bull; <b>harness-builder</b>: <strong>More scaffolding scored worse, for 22x the cost</strong>. Three harness shapes on one 20-task suite, <strong>zero errors in 60 runs</strong>: one drafter 95%, planner plus drafter 90%, four-call panel with judge 80%. The panel won <strong>0 of 20 tasks</strong>, and the tool reported <strong>&ldquo;this suite cannot decide&rdquo;</strong> rather than ranking.</div>
   <div class="proj">&bull; <b>tapdodge-engine</b>: <strong>One rulebook, two runtimes, and a check that fails when they stop agreeing</strong>: a JVM-versus-browser (TeaVM) differential in CI. In a committed fault injection it was the <strong>only</strong> check that caught a runtime-supplied-RNG fault; the same-runtime determinism test and the golden file both passed it.</div>
   <div class="proj">&bull; <b>Also public:</b> <b>exposure-watch</b> (AI agents vs. plain code at known-exploited-vulnerability triage; pre-registered, 57 held-out pairs: a <strong>tie on correct answers</strong>, 47 to 45, p = 0.69, but the agent pipeline sent its 10 unsure cases to a person and got <strong>0 wrong</strong>, vs. 12 wrong from code plus a keyword rule) &middot; <b>crashkit</b> (live) &middot; <b>mcp-tools</b> (MCP server, no SDK) &middot; <b>pi-gates</b> / <b>pi-eval</b> (fail-closed commit and model gates, plus no-LLM-judge grading, for the pi coding agent) &middot; <b>llm-wire-stub</b> (npm) &middot; <b>readme-test-count</b> (fails CI when a README's test count disagrees with the suite; runs in the CI of six of my repos)</div>
-  </section>
-
-  <section>
-    <h2>Reviewed by Others</h2>
-    <div class="proj">&bull; <strong>Two pull requests merged into promptfoo</strong> (26k stars), both merged by its co-founder. #11278: a blank BLEU reference, such as an unset template variable, was scored instead of ignored; the fix shipped in promptfoo 0.124.0. #10256: the <code>rouge-l</code> / <code>rouge-s</code> assertion types, merged 2026-10-09.</div>
-    <div class="proj">&bull; <strong>Three merge requests merged into GitLab</strong>: two CVE records whose stored score contradicted their own published vector (CVE-2023-5009 stored 9.6 CRITICAL; its vector computes 8.2 HIGH), and the security handbook's disclosure window, corrected from 30 days to 90.</div>
-  <div class="proj">&bull; <strong>External audit of vac-protocol:</strong> an outside engineer falsified my own verifier,
-  cheapest forgery <strong>four bytes</strong>. Fix merged, then I found the same defect class <strong>four
-  more times</strong> (arXiv, below). As <strong>sole maintainer</strong> I merged four of his pull requests and answered his four specification issues (protocol v0.2); on two I showed his proposed fix would not close the hole and shipped a wider one.</div>
-  <div class="proj">&bull; <strong>Peer review with Bartłomiej Nawara</strong>, senior AI/ML engineer:
-  his missing-not-at-random critique shaped <b>model-drift</b>'s <strong>reliability
-  floor</strong> (credited in the repo); I found <strong>two design faults</strong> in his pre-registered study.</div>
-  <div class="proj">&bull; <strong>Closed a bug report open in TeaVM since 2018</strong> that its own suite could not catch: a <strong>one-character error</strong> in its GregorianCalendar emulation, found by differential-testing the browser port against the JVM. The patch re-enables the four commented-out assertions covering that line; merged same day by the maintainer.</div>
   </section>
 
   <section>
