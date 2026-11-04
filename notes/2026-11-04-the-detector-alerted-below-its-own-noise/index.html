@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My regression detector alerted on 4.3 points. The model moves 8.57 between runs. | Erik Hill</title>
+<meta name="description" content="On 2026-09-23 my drift tracker reported Grok 4.3 down 4.3 points, to 91.4%. The pipeline drafted it automatically, as designed: a finding clears a threshold, a note gets written, a human merges or does not.">
+<link rel="canonical" href="https://erikhill.dev/notes/2026-11-04-the-detector-alerted-below-its-own-noise/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="My regression detector alerted on 4.3 points. The model moves 8.57 between runs.">
+<meta property="og:description" content="On 2026-09-23 my drift tracker reported Grok 4.3 down 4.3 points, to 91.4%. The pipeline drafted it automatically, as designed: a finding clears a threshold, a note gets written, a human merges or does not.">
+<meta property="og:url" content="https://erikhill.dev/notes/2026-11-04-the-detector-alerted-below-its-own-noise/">
+<meta property="og:site_name" content="Drift Notes">
+<meta name="author" content="Erik Hill">
+<meta name="generator" content="model-drift/build-notes">
+<meta property="article:author" content="https://erikhill.dev">
+<meta property="article:published_time" content="2026-11-04">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="My regression detector alerted on 4.3 points. The model moves 8.57 between runs.">
+<meta name="twitter:description" content="On 2026-09-23 my drift tracker reported Grok 4.3 down 4.3 points, to 91.4%. The pipeline drafted it automatically, as designed: a finding clears a threshold, a note gets written, a human merges or does not.">
+<link rel="stylesheet" href="/notes/notes.css">
+</head>
+<body>
+<a href="https://erikhill.dev" aria-label="Back to portfolio" style="position:fixed;top:12px;left:14px;z-index:9999;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;font-weight:600;color:#f2a53c;background:rgba(14,19,22,.86);border:1px solid rgba(242,165,60,.45);border-radius:4px;padding:6px 11px;text-decoration:none;backdrop-filter:blur(4px)">&#8592; Portfolio</a>
+
+<div class="col">
+  <article id="post" class="on">
+    <header style="padding-top:76px">
+      <a class="back" href="/notes/">&#8592; All notes</a>
+      <div class="meta"><span class="date">2026-11-04</span><span class="tag harness">instrument</span><span class="tag">defect-class</span></div>
+      <div><h1>My regression detector alerted on 4.3 points. The model moves 8.57 between runs.</h1>
+<p><strong>The detector had a threshold. It was the wrong quantity, it had been the wrong quantity for months, and the reason nobody noticed is a sentence in my own documentation claiming the suite was deterministic.</strong></p>
+<h2>What happened</h2>
+<p>On 2026-09-23 my drift tracker reported Grok 4.3 down 4.3 points, to 91.4%. The pipeline drafted it automatically, as designed: a finding clears a threshold, a note gets written, a human merges or does not.</p>
+<p>The draft argued the move was real because it cleared the <strong>resolution floor</strong> of 2.94 points. That floor is <code>100 / graded_calls</code>. It is the smallest difference a single run can express, because accuracy is a count over a denominator and you cannot resolve a third of a question.</p>
+<p>Then I ran the same frozen suite against the same model three more times.</p>
+<div class="twrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>median accuracy over 3 runs</td><td><strong>97.06%</strong></td></tr><tr><td>reliability of the median run</td><td>1.0</td></tr><tr><td><strong>spread across the three runs</strong></td><td><strong>8.57 points</strong></td></tr></tbody></table></div>
+<p>The move I was reporting was 4.30 points. The model moves 8.57 points against an unchanged suite. The finding was less than half the noise, and the median of three clean runs came in <strong>higher than either number the note compared</strong>.</p>
+<h2>The two floors, which are not the same floor</h2>
+<p>This is the whole defect and it fits in two sentences.</p>
+<p><strong>Resolution floor:</strong> the smallest difference ONE run can print, given its denominator. <code>100/34 = 2.94</code>. Pure arithmetic. It is a fact about counting.</p>
+<p><strong>Noise floor:</strong> how far the SAME model moves between runs of the IDENTICAL suite. Measured, 8.57. It is a fact about the model and the stack under it.</p>
+<p>My detector thresholded on the first and reported anything above it. The second was roughly three times larger. So the detector was alerting, confidently and in public, on moves it had no ability to distinguish from taking the sample again.</p>
+<p>This is not a one-model problem. Across the fleet, <strong>10 of 20 models have a recorded run-to-run spread larger than the arithmetic floor.</strong></p>
+<h2>Why I never looked</h2>
+<p>The draft template opened every regression note with this:</p>
+<blockquote><p>against the live models, same questions, same graders, <strong>temperature 0</strong></p></blockquote>
+<p>Nine of the eighteen entries in the model registry carry <code>temperature: null</code>, and the provider layer omits the parameter for them because those models reject it. The other nine, the mock control among them, default to <code>temperature: 0</code>. So half the board had never been pinned at all, and the other half was pinned only as far as each provider honours a zero.</p>
+<p>That sentence is why the noise floor was invisible. A reader told a suite is deterministic has no reason to ask what it varies by, and I was the reader. The number was not hidden: the runner has been recording <code>acc_spread</code> on every point for months, because it already takes three samples per model per day. I had the measurement the entire time and never consulted it, because my own documentation told me it should be zero.</p>
+<h2>The fix, and how the fix was also wrong</h2>
+<p>A move now has to clear <strong>both</strong> floors: the arithmetic one, and the model's own spread taken as the median of its last ten recorded runs. On the live board that suppressed exactly one finding, the Grok note above, and left the other four.</p>
+<p>Then I checked the estimator against fresh measurements, and it does not hold up as well as the commit message I wrote for it implied.</p>
+<div class="twrap"><table><thead><tr><th>model</th><th>board estimate</th><th>measured over 3 fresh runs</th><th>error</th></tr></thead><tbody><tr><td>grok-4.3</td><td>5.72</td><td>8.57</td><td>under by 1.5x</td></tr><tr><td>grok-4-fast</td><td>5.71</td><td>2.86</td><td><strong>over by 2x</strong></td></tr><tr><td>claude-sonnet-5</td><td>3.11</td><td>3.28</td><td>within 5%</td></tr></tbody></table></div>
+<p>It missed in <strong>both directions</strong>, which is worse than missing consistently, because a bias can be corrected and a scatter cannot. It was accurate on exactly the model I expected it to fail on.</p>
+<p>That last row also retired something else. <code>probe_repeated</code>'s docstring has claimed for months that three runs half an hour apart moved Sonnet 5 by <strong>9 points</strong>. Measured today: 3.28. The repository's own documented noise figure does not reproduce.</p>
+<h2>What this run could and could not have seen</h2>
+<p>A spread taken from three samples is itself a noisy estimate. Max minus min on n=3 has large variance, so 8.57 and 2.86 are not precise numbers and I am not going to pretend they are. What survives is the ordering: these models sit somewhere in the 3 to 9 point range, and a 2.94 point threshold is below all of them.</p>
+<p>What it CAN see is whether the instrument itself is the source. If the harness or the grader were adding the variance, every model would scatter. So I ran the same three-probe procedure against GPT-5, same suite, same grader, same afternoon:</p>
+<div class="twrap"><table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>median accuracy</td><td>100.00%</td></tr><tr><td>reliability</td><td>1.0</td></tr><tr><td>graded</td><td>35 of 35</td></tr><tr><td><strong>spread across three runs</strong></td><td><strong>0.00 points</strong></td></tr></tbody></table></div>
+<p>Zero. The same runner that recorded 8.57 points of movement on one model recorded none at all on another, hours apart. <strong>The variance is in the models, not in the instrument</strong>, which is what makes a per-model threshold the right shape and a single global floor the wrong one. A global threshold set high enough for Grok 4.3 would blind the board to a real three point move on GPT-5, which this control shows it could resolve.</p>
+<p>One confound, and it is mine to state rather than yours to find: GPT-5 scored <strong>100.00%</strong>. A model that answers everything correctly every time has no room to move downward, so some of that 0.00 is a ceiling rather than stability. The control establishes that the harness does not ADD noise. A mid-scoring stable model would have been the stronger test, and I do not have one on this board.</p>
+<h2>What I might have wrong</h2>
+<p><strong>The fix is directionally right and numerically soft.</strong> I replaced a threshold that was definitely wrong with one that is roughly right, and I shipped it before checking its estimator. The order should have been reversed. The honest status is that the arithmetic floor was too low by a factor of about three, and that the median-of-ten is the best number I currently have rather than the correct one.</p>
+<p><strong>Median-of-ten is a choice I cannot yet defend with data.</strong> I picked the median over the max because Grok 4.5's worst recorded spread is 91.43 points, which is an outage signature rather than sampling, and taking the max would have muted every model that ever had a bad morning. That reasoning is sound. Whether ten is the right window, and whether the median is the right statistic, is unmeasured.</p>
+<p><strong>The whole thing rests on one fleet and one suite.</strong> Thirty-five questions, seventeen LLMs and a mock control, one operator, one grader. I have shown that this detector alerted below its own noise. I have not shown that anyone else's does, and the interesting version of this claim is the general one.</p>
+<p>If you run an eval suite that reports regressions: find the threshold, and then ask which of the two floors it is. If the answer is <code>100/n</code>, or a constant somebody picked, run your suite three times without changing anything and compare.</p>
+<hr>
+<p>I build deterministic evaluation and verification tooling for LLM systems, and I am looking for my first full-time role in AI evaluation or QA engineering. Remote US Eastern, or Charleston SC. <a href="https://erikhill.dev">https://erikhill.dev</a></p>
+<p>Live board: <a href="https://egnaro9.github.io/model-drift/">https://egnaro9.github.io/model-drift/</a> Suite, graders and runner: <a href="https://github.com/egnaro9/model-drift">https://github.com/egnaro9/model-drift</a></p>
+<p class="note">The retired finding, the threshold change and every number above are in public commits. The confirming runs are GitHub Actions 35945537690, 35946570084 and 35946669164.</p></div>
+    </header>
+  </article>
+
+  <div class="sub" style="margin-top:40px">
+    <strong>Subscribe</strong>
+    <p>Every note is archived at <a href="/notes/">Drift Notes</a>. To get them as
+    they go out, <a href="https://www.linkedin.com/newsletters/7508403524037148672/"
+    target="erikhill-out" rel="noopener">subscribe on LinkedIn</a>. Weekly when
+    there is something to say, and silent when there is not.</p>
+  </div>
+
+  <footer>
+    Generated from <a href="https://github.com/egnaro9/model-drift">model-drift</a>,
+    which drafts these automatically from the run that produced them. The numbers are
+    generated; the decision to publish is not.
+    <br>Live board: <a href="https://egnaro9.github.io/model-drift/">the drift chart</a>.
+  </footer>
+</div>
+</body>
+</html>
