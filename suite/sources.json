@@ -1,7 +1,7 @@
 {
   "_": "The evidence this page is willing to publish. A sibling checkout is byte transport; THIS is the pin. Every panel names the artifact, the immutable issuer commit its bytes came from, the sha256 those bytes must have, and a commit-pinned public URL a reader can fetch and hash themselves. A source whose bytes stop matching its pin renders STALE and loses its number: it never keeps yesterday's value. Bumping a pin is a deliberate edit here, never a side effect of someone else's push.",
   "manifest_version": 1,
-  "pinned_as_of": "2026-10-13",
+  "pinned_as_of": "2026-11-09",
   "sources": [
     {
       "panel": "evalmut",
@@ -28,9 +28,9 @@
       "label": "Models tracked by the frozen daily drift suite",
       "question": "Did a model move, or is that inside the noise floor?",
       "artifact": "model-drift/dashboard/drift_board.json",
-      "issuer_commit": "d4e7115a7455",
-      "sha256": "a0879c39c6b51e1d8050b36d785bfa7699df69b811bf38235aa48874993dcf5b",
-      "public_url": "https://github.com/egnaro9/model-drift/blob/d4e7115a7455/dashboard/drift_board.json",
+      "issuer_commit": "e963f2883d8a",
+      "sha256": "11c0c25e42bae3631dfaa919ef6a50bbd83034f716c1592b1042c4b5a0af5557",
+      "public_url": "https://github.com/egnaro9/model-drift/blob/e963f2883d8a/dashboard/drift_board.json",
       "derivation": "drift_metrics@1",
       "routine": {
         "_": "dashboard/drift_board.json is rewritten every day by model-drift's own probe, so this pin is BEHIND within a day of every bump and the weekly pin-drift run went red each Monday on news that is not news. A lag made ONLY of commits by this author with this message prefix is ROUTINE for up to max_lag_days. Any other commit, an unreadable history, or a longer lag is BEHIND as before. This rule excuses; it never bumps.",
