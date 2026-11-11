@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A check that cannot fail has never passed | Erik Hill</title>
+<meta name="description" content="Yesterday I went to verify a number in my own portfolio: ten repositories, a recorded total of 290 tests. I ran every suite. The real number is 683 passing, and nine of the ten per-repo figures I had written down were wrong.">
+<link rel="canonical" href="https://erikhill.dev/notes/2026-11-11-a-check-that-cannot-fail/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A check that cannot fail has never passed">
+<meta property="og:description" content="Yesterday I went to verify a number in my own portfolio: ten repositories, a recorded total of 290 tests. I ran every suite. The real number is 683 passing, and nine of the ten per-repo figures I had written down were wrong.">
+<meta property="og:url" content="https://erikhill.dev/notes/2026-11-11-a-check-that-cannot-fail/">
+<meta property="og:site_name" content="Drift Notes">
+<meta name="author" content="Erik Hill">
+<meta name="generator" content="model-drift/build-notes">
+<meta property="article:author" content="https://erikhill.dev">
+<meta property="article:published_time" content="2026-11-11">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="A check that cannot fail has never passed">
+<meta name="twitter:description" content="Yesterday I went to verify a number in my own portfolio: ten repositories, a recorded total of 290 tests. I ran every suite. The real number is 683 passing, and nine of the ten per-repo figures I had written down were wrong.">
+<link rel="stylesheet" href="/notes/notes.css">
+</head>
+<body>
+<a href="https://erikhill.dev" aria-label="Back to portfolio" style="position:fixed;top:12px;left:14px;z-index:9999;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;font-weight:600;color:#f2a53c;background:rgba(14,19,22,.86);border:1px solid rgba(242,165,60,.45);border-radius:4px;padding:6px 11px;text-decoration:none;backdrop-filter:blur(4px)">&#8592; Portfolio</a>
+
+<div class="col">
+  <article id="post" class="on">
+    <header style="padding-top:76px">
+      <a class="back" href="/notes/">&#8592; All notes</a>
+      <div class="meta"><span class="date">2026-11-11</span><span class="tag harness">instrument</span><span class="tag">defect-class</span></div>
+      <div><h1>A check that cannot fail has never passed</h1>
+<p>Yesterday I went to verify a number in my own portfolio: ten repositories, a recorded total of 290 tests. I ran every suite. The real number is 683 passing, and nine of the ten per-repo figures I had written down were wrong.</p>
+<p>That is not the interesting part. The interesting part is why nothing told me.</p>
+<h3>1. The build that reported a number it did not measure</h3>
+<p>One repo is a Java engine with 59 tests. I ran <code>./gradlew test</code>, parsed the JUnit XML, and got 59 passed, zero failures. Correct answer.</p>
+<p>Then I read the console output properly:</p>
+<pre><code>5 actionable tasks: 5 up-to-date</code></pre>
+<p>Gradle had decided nothing changed and skipped the task. The XML I parsed was from an earlier run. The number was right by luck, and I had measured a file, not a test suite. Forcing it with <code>clean test</code> gives a bare <code>&gt; Task :test</code> with no <code>UP-TO-DATE</code> suffix, and an XML timestamp from seconds ago rather than days.</p>
+<p>If that suite had been broken since the last build, I would have reported it green, with evidence, from a file.</p>
+<h3>2. The suite that reports zero tests instead of failing</h3>
+<p>Another repo keeps persistence behind an optional extra, which is a reasonable design: the base install runs in memory and needs no ORM. Its test suite does not. On a base install:</p>
+<pre><code>ImportError while importing test module 'tests/test_store.py'
+E   ModuleNotFoundError: No module named 'sqlalchemy'
+!!!! Interrupted: 1 error during collection !!!!</code></pre>
+<p>pytest never collects a single test. The output contains no count at all. If a pipeline keys on &quot;did any test fail&quot;, the answer is no, because no test ran. CI installs the dev extra and gets 29 passing, so CI is honest; the trap is anyone, including me, running the documented base command and reading the quiet as calm.</p>
+<h3>3. The badge that had drifted by 163</h3>
+<p>The same audit against public surfaces: a tests badge reading 198 where execution gives 361. Six of nine public claims understated. One README's prose said 39 while its own badge, in the same file, said 42.</p>
+<p>Understating is the benign direction, and I will take it over the alternative. But a README that disagrees with itself gives a reader no reason to trust either number, and that costs more than being three low.</p>
+<h3>4. The one that changes how I build checks</h3>
+<p>I keep a set of durable notes, each carrying a small shell command whose job is to detect that the note has gone stale. The format stores the command and its expected output.</p>
+<p>28 of 97 of those commands had recorded their own error as the expected output.</p>
+<p>The cause is one missing separator. The field held the command and a human annotation with nothing between them, so the annotation became arguments:</p>
+<pre><code>grep applicationId app/build.gradle -&gt; must still read &quot;com.example&quot; (line 8 today); ...
+zsh: no matches found: (line 8 today)</code></pre>
+<p>The shell aborts at glob expansion. <code>grep</code> never runs. Whatever wrote the baseline recorded the failure, and the failure reproduces perfectly, every time. <strong>The check agreed with itself on every evaluation it ever made.</strong> One of them had been pinning a repository's HEAD commit to a date three months stale.</p>
+<p>Then, repairing them, I wrote a check to count how many were still broken. It took three tries, and all three failed the same way:</p>
+<p>1. Count occurrences of the error pattern across the notes. Returned one too many: it matched    the pattern quoted in its own prose. 2. Narrow to the right field. Returned one too many again: the pattern appeared inside its own    command, because the command searches for it. 3. Slice off everything before the separator and search only the recorded output. Correct.</p>
+<p>Each fix was a real narrowing, and each one still counted itself. A measuring instrument stored alongside the things it measures will include itself unless the unit explicitly excludes it.</p>
+<p>The fourth failure was the best one. Repairing the last note drove the count to zero, and <code>grep -c</code> exits non-zero on zero matches, so the check went red at exactly the moment it should have gone green, and would have become the 28th instance of the defect it documents.</p>
+<h3>The thing they share</h3>
+<p>None of these are bugs in the usual sense. Nothing crashed. Every signal was green, and the green was not false, it was empty. A skipped task, an uncollected suite, a baseline equal to its own failure mode: each produces a passing result over a value that was never measured.</p>
+<p>So the question I now ask of anything that reports a verdict is not &quot;does it pass?&quot; but <strong>&quot;what would make this go red, and has it ever gone red?&quot;</strong> A check with no demonstrated failure mode is a check with no demonstrated anything.</p>
+<p>Which is easy to say and genuinely hard to apply to monitors, because a monitor cannot fail on clean data by design, so you cannot mutation-test it the way you would a function. The only way I have found that works is to pull the predicate out of the monitor and test the predicate.</p>
+<p>I would like to be argued with on that last point, because it is the part I am least sure of.</p></div>
+    </header>
+  </article>
+
+  <div class="sub" style="margin-top:40px">
+    <strong>Subscribe</strong>
+    <p>Every note is archived at <a href="/notes/">Drift Notes</a>. To get them as
+    they go out, <a href="https://www.linkedin.com/newsletters/7508403524037148672/"
+    target="erikhill-out" rel="noopener">subscribe on LinkedIn</a>. Weekly when
+    there is something to say, and silent when there is not.</p>
+  </div>
+
+  <footer>
+    Generated from <a href="https://github.com/egnaro9/model-drift">model-drift</a>,
+    which drafts these automatically from the run that produced them. The numbers are
+    generated; the decision to publish is not.
+    <br>Live board: <a href="https://egnaro9.github.io/model-drift/">the drift chart</a>.
+  </footer>
+</div>
+</body>
+</html>
