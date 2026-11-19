@@ -173,6 +173,7 @@
   .proj.p-hist{border-left-color:#f472b6}
   .proj.p-m3{border-left-color:#c084fc}
   .proj.p-drift{border-left-color:#48c1ac}
+  .proj.p-rugcheck{border-left-color:#fbbf24}
   .ptag.mcp{color:var(--teal); border-color:var(--teal); background:var(--teal-soft)}
   a.ptag.mcp{text-decoration:none; transition:background .15s}
   @media (hover:hover){a.ptag.mcp:hover{background:var(--teal); color:var(--ink)}}
@@ -1102,6 +1103,26 @@
       <div class="bridge-row">
         <span class="bridge-b">llm-wire-stub</span>
         <span class="bridge-d"><strong><a href="https://github.com/egnaro9/llm-wire-stub" target="erikhill-out">llm-wire-stub</a></strong>, published on npm: a scripted Anthropic Messages API at the network boundary for Playwright tests. The real SDK, SSE decode and tool loop run; only the bytes are scripted.</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="rugcheck">
+    <div class="label"><span class="tick">//</span> Live experiment</div>
+    <h2>A $5/month Solana rug-check API, run in public</h2>
+    <p class="intro">Not part of the eval stack. A public recreation of a viral experiment: a small paid FastAPI service that scores Solana token mints, prepaid in USDC, with a ledger anyone can check. Revenue so far is $0.</p>
+    <div class="projects-flow">
+      <div class="proj p-rugcheck">
+        <div class="pmain">
+          <div class="ph"><span class="pname">rugcheck</span><span class="pci live">live</span></div>
+          <p>A small paid <strong>FastAPI</strong> service that scores a Solana token mint from 0 to 100 using public Solana RPC and market data. Prepaid USDC credits an API key automatically. Built and operated with an AI agent on a $5/month VPS.</p>
+          <div class="ptags"><span class="ptag">FastAPI</span><span class="ptag">Solana</span><span class="ptag">USDC payments</span><span class="ptag">Vultr</span></div>
+        </div>
+        <div class="pside">
+          <a class="plive" href="https://rugcheck.erikhill.dev/" target="erikhill-out">Open the live API</a>
+          <a class="plink" href="https://rugcheck.erikhill.dev/public" target="erikhill-out">timestamped public checks <span>&rarr;</span></a>
+          <a class="plink" href="https://rugcheck.erikhill.dev/docs" target="erikhill-out">OpenAPI docs <span>&rarr;</span></a>
+        </div>
       </div>
     </div>
   </section>
