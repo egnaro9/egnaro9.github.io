@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My gate told me what it hadn't checked. I didn't read it. | Erik Hill</title>
+<meta name="description" content="I write verification gates for a living, more or less. The one in question checks a signed-ish capability claim: a JSON bundle asserting that some agent passed some task set, with hashes over the inputs and a recipe for re-earning the…">
+<link rel="canonical" href="https://erikhill.dev/notes/2026-11-18-my-gate-told-me-what-it-had-not-checked/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="My gate told me what it hadn't checked. I didn't read it.">
+<meta property="og:description" content="I write verification gates for a living, more or less. The one in question checks a signed-ish capability claim: a JSON bundle asserting that some agent passed some task set, with hashes over the inputs and a recipe for re-earning the…">
+<meta property="og:url" content="https://erikhill.dev/notes/2026-11-18-my-gate-told-me-what-it-had-not-checked/">
+<meta property="og:site_name" content="Drift Notes">
+<meta name="author" content="Erik Hill">
+<meta name="generator" content="model-drift/build-notes">
+<meta property="article:author" content="https://erikhill.dev">
+<meta property="article:published_time" content="2026-11-18">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="My gate told me what it hadn't checked. I didn't read it.">
+<meta name="twitter:description" content="I write verification gates for a living, more or less. The one in question checks a signed-ish capability claim: a JSON bundle asserting that some agent passed some task set, with hashes over the inputs and a recipe for re-earning the…">
+<link rel="stylesheet" href="/notes/notes.css">
+</head>
+<body>
+<a href="https://erikhill.dev" aria-label="Back to portfolio" style="position:fixed;top:12px;left:14px;z-index:9999;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;font-weight:600;color:#f2a53c;background:rgba(14,19,22,.86);border:1px solid rgba(242,165,60,.45);border-radius:4px;padding:6px 11px;text-decoration:none;backdrop-filter:blur(4px)">&#8592; Portfolio</a>
+
+<div class="col">
+  <article id="post" class="on">
+    <header style="padding-top:76px">
+      <a class="back" href="/notes/">&#8592; All notes</a>
+      <div class="meta"><span class="date">2026-11-18</span><span class="tag harness">instrument</span><span class="tag">gate-defect</span></div>
+      <div><h1>My gate told me what it hadn't checked. I didn't read it.</h1>
+<p>I write verification gates for a living, more or less. The one in question checks a signed-ish capability claim: a JSON bundle asserting that some agent passed some task set, with hashes over the inputs and a recipe for re-earning the verdicts. The gate refuses the bundle unless it holds up.</p>
+<p>It had been passing. It also printed this, on every single run:</p>
+<pre><code>not run: semantic invalidation: no bindings declared — recorded subject/protocol
+         pins were not compared to this consumer's current inputs</code></pre>
+<p>That is the gate's strongest check. It is the one that asks whether the certificate still describes reality, rather than whether the certificate is internally consistent. It had never run. The gate told me so, in the same block as the passes, in a line beginning <code>not run:</code>.</p>
+<p>I read that output many times. I read it as a pass.</p>
+<h3>What the gate got right, which is the interesting part</h3>
+<p>This is not a story about a badly built gate. The design is better than mine usually are.</p>
+<p>It separates its report into <code>ran:</code> and <code>not run:</code>. It refuses to let an unperformed check read as a performed one. When I later tried to enable the missing check and got it wrong, the gate caught that too, with a named reason. And it carries scope lines on every pass stating what a green result does <strong>not</strong> mean.</p>
+<p>The defect was entirely in the reading. A report that distinguishes <code>ran</code> from <code>not run</code> only works if someone compares the two lists. I was checking the exit code.</p>
+<p>So the gate was honest and the result was still worthless, which is a combination I had not really considered. I had been thinking about instruments that lie. This one told the truth to nobody.</p>
+<h3>Then the fix nearly became the bug</h3>
+<p>Enabling the check meant writing a file declaring my current bound inputs. The gate compares each declared key to the bundle's recorded pin and fails on mismatch. The bundle records:</p>
+<pre><code class="language-json">&quot;subject&quot;:  {&quot;id&quot;: &quot;claude-code-headless&quot;,
+             &quot;version&quot;: {&quot;model&quot;: null, &quot;harness_commit&quot;: &quot;7954393&quot;, &quot;python&quot;: &quot;3.14.6&quot;}},
+&quot;protocol&quot;: {&quot;task&quot;: &quot;machine&quot;,
+             &quot;hashes&quot;: {&quot;taskset_hash&quot;: &quot;4430506556753096&quot;,
+                        &quot;prompt_hash&quot;:  &quot;a61a9abe48592e97&quot;}}</code></pre>
+<p>The obvious way to write that file is to copy those values across. It takes a minute, the gate goes green, the <code>not run:</code> line disappears.</p>
+<p>It would also have been worthless, for a reason I want to state precisely, because I nearly did it. A declared binding is supposed to be <strong>what I am using now</strong>. The recorded pin is <strong>what was used then</strong>. If I populate &quot;now&quot; from &quot;then,&quot; the gate compares a document to itself. It passes on the day I write it and it passes forever after, including on every day the thing it describes has changed. It cannot fail. And a check that cannot fail has never passed.</p>
+<p>So I derived the two hashes instead, by calling the live code:</p>
+<pre><code class="language-python">from certlab.regrade import FAMILIES
+FAMILIES['machine'].taskset_hash()   # '4430506556753096'
+FAMILIES['machine'].prompt_hash()    # 'a61a9abe48592e97'</code></pre>
+<p>They matched. That match is worth something, because it was computed from the current task definitions rather than read off the certificate. Edit a task and the hash moves and the gate fires <code>binding-drift</code>. That is a live check.</p>
+<h3>Three keys I left undeclared, which is the honest part</h3>
+<p><code>model</code> is recorded <code>null</code>. The gate treats a null pin as unrecorded and refuses a declaration against it, with a comment I now think is the best line in the codebase: a gate that read an unpinned input as <em>matching your current one</em> would be laundering the claim. An explicit &quot;not pinned&quot; is information. Treating it as agreement destroys that information.</p>
+<p><code>python</code> and <code>harness_commit</code> describe the subject at certification time. My CI runner is on a different Python, and the repository has moved on. I do not have a way to read what the subject runs <em>today</em>, so declaring either would mean asserting something I never checked. Same failure as copying the hashes, wearing a different hat.</p>
+<p>The result says <code>4 declared binding(s) compared, 4 matched exactly</code>. Not six. Six was available and would have looked better.</p>
+<h3>How I now check that a check can fail</h3>
+<p>Before trusting the new file, I mutated it, one key at a time, against the gate's own comparison logic:</p>
+<pre><code>unmutated            -&gt; PASS
+mutate agent_id      -&gt; agent_id:drift
+mutate family        -&gt; family:drift
+mutate taskset_hash  -&gt; taskset_hash:drift
+mutate prompt_hash   -&gt; prompt_hash:drift
+add model (null pin) -&gt; model:unrecorded</code></pre>
+<p>Six lines, and the only ones that convinced me of anything were the five that failed. A green run tells you the check agrees with the world today. A red run under mutation tells you the check is attached to the world at all.</p>
+<h3>The two questions I keep now</h3>
+<p><strong>What did this not check?</strong> Not &quot;did it pass.&quot; Any report that separates <code>ran</code> from <code>not run</code> is handing you that answer, and I had been throwing it away. If your tooling does not separate them, that is the first thing to fix, because the alternative is a single boolean that cannot express &quot;I declined.&quot;</p>
+<p><strong>Could this check ever have failed?</strong> Ask it of the check itself, not the system under test. If the answer involves comparing a thing to a copy of itself, you have built a mirror.</p>
+<p>The uncomfortable version, which is why I am writing it down: the gate was well designed, its output was honest and specific, and it still took me weeks to notice, because <code>not run:</code> and <code>ran:</code> both sit under a green check mark. I would like to know how other people surface a declined check so it cannot be read as a passed one. Failing the build on any skip is the obvious answer and I do not think it is right, because a legitimately inapplicable check would then block everything.</p></div>
+    </header>
+  </article>
+
+  <div class="sub" style="margin-top:40px">
+    <strong>Subscribe</strong>
+    <p>Every note is archived at <a href="/notes/">Drift Notes</a>. To get them as
+    they go out, <a href="https://www.linkedin.com/newsletters/7508403524037148672/"
+    target="erikhill-out" rel="noopener">subscribe on LinkedIn</a>. Weekly when
+    there is something to say, and silent when there is not.</p>
+  </div>
+
+  <footer>
+    Generated from <a href="https://github.com/egnaro9/model-drift">model-drift</a>,
+    which drafts these automatically from the run that produced them. The numbers are
+    generated; the decision to publish is not.
+    <br>Live board: <a href="https://egnaro9.github.io/model-drift/">the drift chart</a>.
+  </footer>
+</div>
+</body>
+</html>
