@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nine missing tests reported as &quot;1 skipped | Erik Hill</title>
+<meta name="description" content="I was correcting a stale badge on one of my repos. The README claimed 30 tests; running the suite gave 33. Fine, bump the number, move on.">
+<link rel="canonical" href="https://erikhill.dev/notes/2026-11-25-nine-missing-tests-reported-as-one-skip/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nine missing tests reported as &quot;1 skipped">
+<meta property="og:description" content="I was correcting a stale badge on one of my repos. The README claimed 30 tests; running the suite gave 33. Fine, bump the number, move on.">
+<meta property="og:url" content="https://erikhill.dev/notes/2026-11-25-nine-missing-tests-reported-as-one-skip/">
+<meta property="og:site_name" content="Drift Notes">
+<meta name="author" content="Erik Hill">
+<meta name="generator" content="model-drift/build-notes">
+<meta property="article:author" content="https://erikhill.dev">
+<meta property="article:published_time" content="2026-11-25">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Nine missing tests reported as &quot;1 skipped">
+<meta name="twitter:description" content="I was correcting a stale badge on one of my repos. The README claimed 30 tests; running the suite gave 33. Fine, bump the number, move on.">
+<link rel="stylesheet" href="/notes/notes.css">
+</head>
+<body>
+<a href="https://erikhill.dev" aria-label="Back to portfolio" style="position:fixed;top:12px;left:14px;z-index:9999;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13px;font-weight:600;color:#f2a53c;background:rgba(14,19,22,.86);border:1px solid rgba(242,165,60,.45);border-radius:4px;padding:6px 11px;text-decoration:none;backdrop-filter:blur(4px)">&#8592; Portfolio</a>
+
+<div class="col">
+  <article id="post" class="on">
+    <header style="padding-top:76px">
+      <a class="back" href="/notes/">&#8592; All notes</a>
+      <div class="meta"><span class="date">2026-11-25</span><span class="tag infrastructure">infrastructure</span><span class="tag">evidence-gap</span></div>
+      <div><h1>Nine missing tests reported as &quot;1 skipped&quot;</h1>
+<p>I was correcting a stale badge on one of my repos. The README claimed 30 tests; running the suite gave 33. Fine, bump the number, move on.</p>
+<p>Except the file defines 36.</p>
+<p>Three tests existed that pytest never collected, and I could not explain the gap from the summary line, which read:</p>
+<pre><code>33 passed, 1 skipped in 0.40s</code></pre>
+<p>One skip. I had assumed one test.</p>
+<h3>The arithmetic</h3>
+<p>Parsing the test files with <code>ast</code> rather than grep, so parametrization and nesting could not confuse the count:</p>
+<pre><code>36 test functions defined   (no duplicates, none nested, none in classes)
+ -9  tests/test_rag.py, never collected
+ +6  parametrize expansions (a 5-value list and a 3-value list, from 2 definitions)
+ ---
+33 collected</code></pre>
+<p>Two changes in opposite directions, nine months apart, that happened to nearly cancel. The badge was wrong, the suite was green, and the net number looked plausible enough that I almost just wrote 33 and left.</p>
+<h3>One skip, nine tests</h3>
+<p>Line 4 of the uncollected file:</p>
+<pre><code class="language-python">ragevallab = pytest.importorskip(&quot;ragevallab&quot;, reason=&quot;optional rag extra&quot;)</code></pre>
+<p>At module scope, <code>importorskip</code> raises during collection. The whole file is skipped, and the summary reports that as a single skip. Nine tests absent, one line of output, no indication of magnitude. If those nine had been nine separate module-level skips in nine files, I would have seen <code>9 skipped</code> and looked immediately.</p>
+<p>So: how long had they been skipped? The extra is a git dependency:</p>
+<pre><code class="language-toml">rag = [&quot;ragevallab @ git+https://github.com/egnaro9/rag-eval-lab@main&quot;]</code></pre>
+<p>And the workflow installs:</p>
+<pre><code class="language-yaml">pip install -e &quot;.[dev]&quot;</code></pre>
+<p><code>git log -p</code> on that workflow file returns exactly one change to that line: the commit that created the repository. <strong>The extra had never been installed in CI. Those nine tests had never run, once, in the repository's entire history.</strong></p>
+<h3>The part that actually stung</h3>
+<p>The nine were not peripheral. The file's docstring:</p>
+<blockquote><p>The agent's search tool backed by rag-eval-lab's retriever (arrow 1 of the stack).</p></blockquote>
+<p>They are the cross-repository integration tests. This repo is an agent; another repo is a retrieval pipeline; the claim that one is wired to the other is the only claim in the project that is about more than one project. That is the part with no coverage. The calculator guard had ten tests. The thing that made it a system had nine, and they never ran.</p>
+<p>I do not think that is a coincidence. The tests that are cheap to run get run. A test needing an optional dependency, a database, a built artifact, or a second service is the test most likely to be quietly excluded, and it is also the test covering the integration you cannot verify any other way. The exclusion mechanism selects against exactly the coverage that matters most.</p>
+<h3>They pass</h3>
+<p>Installing the extra and running the file: <code>9 passed in 0.37s</code>.</p>
+<p>That is the good version of this. The coverage exists and is correct; it was simply never reached. The bad version is where you reach a long-unrun test and discover it rotted against an API that changed under it, which is a different afternoon.</p>
+<p>The fix was one line, <code>&quot;.[dev]&quot;</code> to <code>&quot;.[dev,rag]&quot;</code>, and the count went 33 to 42. Which means the badge I had been about to correct from 30 to 33 was wrong in both directions at once: too low for what exists, too high for what CI verified.</p>
+<h3>What I changed about how I read a suite</h3>
+<p>Not &quot;is it green&quot;. Three questions now:</p>
+<p>1. <strong>How many tests are defined, and does that match how many ran?</strong> Different numbers, counted    different ways. <code>ast</code> for defined, the runner for collected. They should reconcile, and if    they do not, the difference is the interesting part. 2. <strong>What does each skip actually cover?</strong> A skip count is a count of skip EVENTS, not of    skipped tests. One module-level skip can hide an arbitrary number. 3. <strong>Has this test ever passed?</strong> Not &quot;is it passing&quot;, which a never-collected test answers    vacuously. <code>git log -p</code> on the CI config answers it faster than reading the test.</p>
+<p>The one I keep coming back to: a skip is reported in the same breath as a pass, in the same summary line, in a tone that invites you to move on. It is the only test outcome that means &quot;we do not know&quot; while reading like &quot;fine&quot;.</p>
+<p>If you run a suite with optional extras, I would genuinely like to know how you keep the optional path honest. A matrix leg is the obvious answer and it doubles CI time, and I am not sure that is the right trade for every repo.</p></div>
+    </header>
+  </article>
+
+  <div class="sub" style="margin-top:40px">
+    <strong>Subscribe</strong>
+    <p>Every note is archived at <a href="/notes/">Drift Notes</a>. To get them as
+    they go out, <a href="https://www.linkedin.com/newsletters/7508403524037148672/"
+    target="erikhill-out" rel="noopener">subscribe on LinkedIn</a>. Weekly when
+    there is something to say, and silent when there is not.</p>
+  </div>
+
+  <footer>
+    Generated from <a href="https://github.com/egnaro9/model-drift">model-drift</a>,
+    which drafts these automatically from the run that produced them. The numbers are
+    generated; the decision to publish is not.
+    <br>Live board: <a href="https://egnaro9.github.io/model-drift/">the drift chart</a>.
+  </footer>
+</div>
+</body>
+</html>
